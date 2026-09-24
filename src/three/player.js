@@ -5,14 +5,15 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
 import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, letteringCanvas, eyeCanvas, swooshCanvas } from './garments.js';
 import { Helmet } from './helmet.js';
+import { asset, loadGLB, loadJSON } from '../assets.js';
 
 // The player: a sculpted athlete (tools/build_player.py → public/models/player.glb)
 // dressed with painted garments and decals for numbers, names and logos.
 
 export const SKIN_TONES = ['#8D5A3B', '#5C3A24', '#C68B5E', '#E5B895'];
-const MODEL_URL = './public/models/player.glb';
-const META_URL = './public/models/player.json';
-const LOGO_URL = (key) => `./public/logos/${key}.png`;
+const MODEL_URL = 'public/models/player.glb';
+const META_URL = 'public/models/player.json';
+const LOGO_URL = (key) => asset(`public/logos/${key}.png`);
 
 // Blender (z-up, facing -y) → three.js (y-up, facing +z)
 const B2T = ([x, y, z]) => new THREE.Vector3(x, z, -y);
@@ -75,18 +76,35 @@ let modelPromise = null;
 function loadModel() {
   if (!modelPromise) {
     modelPromise = Promise.all([
-      loader.loadAsync(MODEL_URL),
-      fetch(META_URL).then((r) => r.json()),
+      loadGLB(loader, MODEL_URL),
+      loadJSON(META_URL),
     ]);
   }
   return modelPromise;
 }
 
 const logoCache = new Map();
+// 'KEY@white' gives a single-colour silhouette of a logo (e.g. a white "ny" on a blue jersey)
 function loadLogo(key) {
   if (!logoCache.has(key)) {
+    const [file, tint] = key.split('@');
     logoCache.set(key, new Promise((resolve) => {
-      new THREE.TextureLoader().load(LOGO_URL(key), (t) => { t.colorSpace = THREE.SRGBColorSpace; resolve(t); }, undefined, () => resolve(null));
+      new THREE.TextureLoader().load(LOGO_URL(file), (t) => {
+        if (tint) {
+          const img = t.image;
+          const c = document.createElement('canvas');
+          c.width = img.width; c.height = img.height;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          ctx.globalCompositeOperation = 'source-in';
+          ctx.fillStyle = tint === 'white' ? '#ffffff' : tint;
+          ctx.fillRect(0, 0, c.width, c.height);
+          t.dispose();
+          t = new THREE.CanvasTexture(c);
+        }
+        t.colorSpace = THREE.SRGBColorSpace;
+        resolve(t);
+      }, undefined, () => resolve(null));
     }));
   }
   return logoCache.get(key);

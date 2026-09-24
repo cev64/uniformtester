@@ -713,7 +713,7 @@ export const TEAMS = [
           logo: { t: 'text', s: 'GIANTS', fill: W, stroke: RED, font: 'italic' } },
       ],
       jerseys: [
-        { id: 'blue', name: 'Blue', tag: 'Home', base: B, num: [W], tv: 'shoulder', centerLogo: 'NYG' },
+        { id: 'blue', name: 'Blue', tag: 'Home', base: B, num: [W], tv: 'shoulder', centerLogo: 'NYG@white' },
         { id: 'white', name: 'White', tag: 'Road', base: W, num: [RED], tv: 'shoulder', centerLogo: 'NYG', sleeve: { stripes: rep(RED, 0.9, 0.6, 4), from: 2.5 } },
         { id: 'vintage', name: 'Vintage White', tag: 'Color Rush', base: W, num: [ROY, RED], tv: 'sleeve', centerLogo: 'NYG',
           collar: [[RED, 0.7], [W, 0.5], [ROY, 0.8]], sleeve: { stripes: [[RED, 0.6], [ROY, 0.6]], from: 2 } },

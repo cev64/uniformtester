@@ -3,14 +3,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintHelmet, paintLogo, paintHelmetNumber } from './paint.js';
+import { asset, loadGLB } from '../assets.js';
 
 // SpeedFlex-style helmet (tools/build_helmet.py → public/models/helmet.glb).
 // The shell is painted per team (base colour + stripe), the flex-panel groove
 // and vents come from a baked bump map, logos are projected decals.
 
-const URL = './public/models/helmet.glb';
-const DETAIL_URL = './public/models/helmet_detail.png';
-const LOGO_URL = (key) => `./public/logos/${key}.png`;
+const URL = 'public/models/helmet.glb';
+const DETAIL_URL = asset('public/models/helmet_detail.png');
+const LOGO_URL = (key) => asset(`public/logos/${key}.png`);
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 let modelPromise = null;
@@ -40,7 +41,7 @@ export class Helmet {
       pad: new THREE.MeshStandardMaterial({ color: '#232428', roughness: 0.95 }),
     };
     modelPromise ||= Promise.all([
-      loader.loadAsync(URL),
+      loadGLB(loader, URL),
       new THREE.TextureLoader().loadAsync(DETAIL_URL).catch(() => null),
     ]);
     this.ready = modelPromise.then(([gltf, detail]) => {

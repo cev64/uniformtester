@@ -1,4 +1,5 @@
 // Small SVG swatches for the option cards, drawn from the same data as the 3D model.
+import { asset } from '../assets.js';
 
 let uid = 0;
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -22,7 +23,7 @@ export function helmetIcon(h) {
   const logo = h.logo || {};
   const logoFill = logo.img ? null : (logo.bg?.fill || logo.fill || null);
   const logoImg = logo.img
-    ? `<image href="./public/logos/${logo.img}.png" x="17" y="14" width="24" height="22" preserveAspectRatio="xMidYMid meet"${logo.faces === 'right' ? ' transform="translate(58 0) scale(-1 1)"' : ''}/>`
+    ? `<image href="${asset(`public/logos/${logo.img}.png`)}" x="17" y="14" width="24" height="22" preserveAspectRatio="xMidYMid meet"${logo.faces === 'right' ? ' transform="translate(58 0) scale(-1 1)"' : ''}/>`
     : '';
   const stripe = h.stripe ? stripeStroke('M12 24 C13 11 27 5.5 37 5.8 C48 6.2 56 13 57.5 22', h.stripe, h.shell, 0.9) : '';
   const tri = h.pattern?.t === 'triangles'

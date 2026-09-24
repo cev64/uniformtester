@@ -28,20 +28,39 @@ npm install
 npm run dev          # local dev server
 npm run build        # static site in dist/ (deploy anywhere)
 npm run build:single # one self-contained HTML file in dist-single/
+npm run build:model  # regenerate the player and helmet (needs `pip install bpy` and MakeHuman data)
 ```
+
+GitHub Pages can serve the repository as-is (no build step): `index.html`
+loads three.js through an import map and the models from `public/`.
 
 ## How it's built
 
-Plain JavaScript + [three.js](https://threejs.org), bundled with Vite. There
-are no model files: the player is generated in code.
+Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
+
+- **Player**: `tools/build_player.py` builds an athletic body in Blender from
+  [MakeHuman](https://github.com/makehumancommunity/makehuman) assets (CC0),
+  proportioned after a modern NFL quarterback (6'5", 237 lb), with the
+  arms relaxed at the sides. The jersey, pants, socks, cleats and gloves are
+  cut from the body surface with clean hems and a compression fit over
+  low-profile pads, and given UV layouts the app paints uniforms onto.
+- **Helmet**: `tools/build_helmet.py` models a Riddell SpeedFlex-style shell
+  (jaw flaps, rear skirt, front flex panel, vents, ear holes, rubber trim)
+  with a SpeedFlex-style facemask, clips and chin strap.
+- **Uniforms**: stripes, collars and numbers are painted per team at real
+  sizes; logos, the NFL shield and swooshes are projected decals.
+- **Reference**: `research/uniforms/` holds each team's uniform sheet from
+  Wikimedia Commons (CC0) that the data was built from, with notes in
+  `research/notes.md`. Team logos in `public/logos/` come from Wikimedia.
 
 | File | What's in it |
 | --- | --- |
 | `src/data/teams.js` | The uniform database: colors, stripes, number fonts, logos and documented looks for all 32 teams |
 | `src/data/status.js` | Worn / announced / fantasy logic |
-| `src/three/tube.js` | Lofted-tube generator with arc-length UVs so stripes and numbers are drawn in real centimetres |
-| `src/three/paint.js` | Canvas painters for jerseys, sleeves, pants, socks, helmet shells and logo decals |
-| `src/three/player.js` | Builds the player (torso, sleeves with shoulder domes, helmet shell with jaw flaps, facemask, legs, cleats) |
+| `tools/build_player.py`, `tools/build_helmet.py` | Blender scripts that generate `public/models/*.glb` (`npm run build:model`) |
+| `src/three/garments.js`, `src/three/paint.js` | Canvas painters for jerseys, sleeves, pants, socks, helmet shells and drawn marks |
+| `src/three/player.js` | Loads the player, paints the garments and places number/name/logo decals |
+| `src/three/helmet.js` | Loads the helmet and applies shell paint, finish and logo decals |
 | `src/three/stage.js` | Renderer, lighting, turf, camera and controls |
 | `src/main.js` | UI state, panel, team picker, matchup mode |
 
@@ -52,4 +71,5 @@ Everything the renderer draws comes from `src/data/teams.js`. Each team has
 `[color, widthInCm]` pairs from edge to edge (`null` = a gap in the base color),
 and `debut: 'YYYY-MM-DD'` marks anything announced but not yet worn.
 
-Team logos are simplified stand-ins drawn by the app, not official artwork.
+Unofficial fan project, not affiliated with the NFL or its teams. Team names
+and logos are trademarks of their owners.

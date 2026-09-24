@@ -205,7 +205,7 @@ function renderPanel() {
       </div>
     </section>
 
-    <p class="fineprint">Uniform data reflects the 2026 season as announced by the teams. "Worn" means the combination appears in our game-day records; "Announced" pieces haven't debuted yet. Logos are simplified stand-ins, not official artwork.</p>
+    <p class="fineprint">Uniforms are built from each team's 2026 uniform sheet on Wikipedia plus team announcements. "Worn" means the combination appears in our game-day records; "Announced" pieces haven't debuted yet. Unofficial fan project, not affiliated with the NFL or its teams; team names and logos are trademarks of their owners.</p>
   `;
 }
 
