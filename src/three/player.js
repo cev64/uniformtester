@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { paintFabricNormal, shade, luminance } from './paint.js';
+import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
 import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, letteringCanvas, eyeCanvas, swooshCanvas } from './garments.js';
 import { Helmet } from './helmet.js';
 
@@ -162,10 +162,9 @@ export class Player {
 
     // Joints (three.js space)
     this.J = Object.fromEntries(Object.entries(meta.joints).map(([k, v]) => [k, B2T(v)]));
-    const headTop = B2T(meta.head_tail);
-    // helmet sits over the skull: centre a little above the ears, slightly forward
-    this.helmet.group.position.copy(this.J.head.clone().lerp(headTop, 0.52)).add(new THREE.Vector3(0, 0, 0.012));
-    this.helmet.group.scale.setScalar(1.06);
+    // helmet: brow just above the eyes, shell centred over the skull
+    const eyes = this.J['eye.L'].clone().add(this.J['eye.R']).multiplyScalar(0.5);
+    this.helmet.group.position.set(0, eyes.y + 0.004, eyes.z - 0.078);
     this.loaded = true;
     if (this.pending) this.setUniform(...this.pending);
   }
@@ -187,7 +186,7 @@ export class Player {
     const socks = team.socks.find((x) => x.id === sel.s) || team.socks[0];
 
     // Logos load asynchronously; fetch them before tearing down the current look
-    const logoKeys = [jersey.chestLogo, jersey.sleeveLogo, pants.hipLogo, 'NFL_shield'].filter(Boolean);
+    const logoKeys = [jersey.chestLogo, jersey.sleeveLogo, jersey.centerLogo, jersey.shoulder?.img, pants.hipLogo, 'NFL_shield'].filter(Boolean);
     const logos = Object.fromEntries(await Promise.all(logoKeys.map(async (k) => [k, await loadLogo(k)])));
     if (token !== this.token) return;
 
@@ -222,9 +221,7 @@ export class Player {
     m.cleat.color.set(cleat);
 
     this.placeDecals(team, jersey, pants, player, logos, cleat);
-    // the helmet still uses three's own sphere UVs (flipped like a normal canvas texture)
-    const T2 = (c) => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = this.aniso; t.wrapS = THREE.RepeatWrapping; this.textures.push(t); return t; };
-    this.helmet.set(helmet, player, T2);
+    this.helmet.set(helmet, player);
   }
 
   // ─── decals ─────────────────────────────────────────────────────────
@@ -294,9 +291,18 @@ export class Player {
     if (w) {
       this.lettering(torso, front(neckY - 0.165), w.s, 0.034, [w.c, w.o].filter(Boolean), w.script ? 'script' : (w.font || font), { tracking: w.script ? 0 : 0.12, o1: 0.08 });
     }
-    this.lettering(torso, front(neckY - (w ? 0.3 : 0.28)), num, 0.18, colors, font);
+    const top = w || jersey.centerLogo;
+    this.lettering(torso, front(neckY - (top ? 0.3 : 0.28)), num, 0.18, colors, font);
+    if (jersey.centerLogo) this.image(torso, front(neckY - 0.17), 0.06, logos[jersey.centerLogo]);
     this.image(torso, front(neckY - 0.105), 0.036, logos.NFL_shield);
-    if (jersey.chestLogo) this.image(torso, front(neckY - 0.17, 0.1), 0.075, logos[jersey.chestLogo]);
+    // chest patch sits on the player's left chest (viewer's right)
+    if (jersey.chestLogo) this.image(torso, front(neckY - 0.16, 0.11), 0.07, logos[jersey.chestLogo]);
+
+    // Back collar tag just under the neckline
+    if (jersey.neckTag) {
+      const t = jersey.neckTag;
+      this.lettering(torso, back(neckY - 0.045), t.s, t.s.length > 12 ? 0.012 : 0.016, [t.c], 'block', { tracking: 0.08 });
+    }
 
     // Back: nameplate and number
     if (player.name) this.lettering(torso, back(neckY - 0.1), player.name.toUpperCase(), 0.052, [colors[0]], font === 'script' ? 'block' : font, { tracking: 0.06 });
@@ -314,6 +320,19 @@ export class Player {
         const p = sh.clone().lerp(el, 0.28);
         const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
         this.lettering(sleeves, hit, num, 0.07, colors.slice(0, 2), font);
+      }
+      if (jersey.shoulder) {
+        // shoulder graphic (bolts, stars, horns) on the front of each shoulder, aimed from above and in front
+        const sp = jersey.shoulder;
+        const at = sh.clone().add(new THREE.Vector3(-sx * 0.02, 0.05, 0.0));
+        const dir = new THREE.Vector3(sx * 0.35, 0.55, 1).normalize();
+        const hit = this.raycast([...sleeves, ...torso], at.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate());
+        let t = sp.img ? logos[sp.img] : null;
+        if (!t) {
+          const c = paintLogo(sp, sx > 0 ? 'right' : 'left');
+          if (c) { t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t); }
+        }
+        if (t) this.decal([...sleeves, ...torso], hit, sp.size || 0.1, sp.size || 0.1, t, { depth: 0.14 });
       }
       if (jersey.sleeveLogo) {
         const p = sh.clone().lerp(el, 0.18);

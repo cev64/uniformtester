@@ -20,15 +20,22 @@ export function helmetIcon(h) {
   const id = `hc${uid++}`;
   const shell = 'M9 33 C7 15 21 5 36 5 C50 5 58 15 58 27 L57 31 L47 31 L45 38 L35 39 L31 45 L17 45 C12 42 9 38 9 33 Z';
   const logo = h.logo || {};
-  const logoFill = logo.bg?.fill || logo.fill || (h.pattern ? h.pattern.c : null);
+  const logoFill = logo.img ? null : (logo.bg?.fill || logo.fill || null);
+  const logoImg = logo.img
+    ? `<image href="./public/logos/${logo.img}.png" x="17" y="14" width="24" height="22" preserveAspectRatio="xMidYMid meet"${logo.faces === 'right' ? ' transform="translate(58 0) scale(-1 1)"' : ''}/>`
+    : '';
   const stripe = h.stripe ? stripeStroke('M12 24 C13 11 27 5.5 37 5.8 C48 6.2 56 13 57.5 22', h.stripe, h.shell, 0.9) : '';
+  const tri = h.pattern?.t === 'triangles'
+    ? [14, 20, 26, 32].map((x) => `<path d="M${x} ${9 - x * 0.1} l4 1 l-4 2 z" fill="${h.pattern.c}"/>`).join('')
+    : '';
   const tiger = h.pattern?.t === 'tiger'
     ? [18, 26, 34, 42, 50].map((x, i) => `<path d="M${x} 6 Q${x - 4} 16 ${x - 8 + i} ${22 + (i % 2) * 4} L${x - 3} 6 Z" fill="${h.pattern.c}"/>`).join('')
     : '';
   const mask = h.mask ? `<path d="M50 20 L62 22 L61 38 L47 39 M50 29 L62 30 M55 21 L54 39" fill="none" stroke="${h.mask}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` : '';
   return `<svg viewBox="0 0 64 48" aria-hidden="true"><defs><clipPath id="${id}"><path d="${shell}"/></clipPath></defs>
     <path d="${shell}" fill="${h.shell}" stroke="${EDGE}" stroke-width="1"/>
-    <g clip-path="url(#${id})">${stripe}${tiger}</g>
+    <g clip-path="url(#${id})">${stripe}${tiger}${tri}</g>
+    ${logoImg}
     ${logoFill ? `<ellipse cx="28" cy="26" rx="7" ry="6" fill="${logoFill}" stroke="${logo.stroke || EDGE}" stroke-width="1.2"/>` : ''}
     ${mask}</svg>`;
 }
@@ -44,7 +51,7 @@ export function jerseyIcon(j, team, number = '12') {
     : '';
   const loop = j.loop ? stripeStroke('M17 22 C17 10 24 7 26 5 M47 22 C47 10 40 7 38 5', j.loop, j.base, 0.6) : '';
   const [f, o1, o2] = j.num;
-  const font = { modern: 'Big Shoulders Display', varsity: 'Graduate', slab: 'Alfa Slab One', block: 'Oswald' }[j.font || team.font] || 'Oswald';
+  const font = { modern: 'Big Shoulders Display', varsity: 'Graduate', slab: 'Alfa Slab One', block: 'Oswald', italic: 'Oswald' }[j.font || team.font] || 'Oswald';
   const weight = (j.font || team.font) === 'modern' ? 900 : 700;
   const outline = o2 ? `stroke="${o2}" stroke-width="3.2"` : o1 ? `stroke="${o1}" stroke-width="2"` : '';
   const spots = j.pattern?.t === 'spots'
@@ -53,7 +60,7 @@ export function jerseyIcon(j, team, number = '12') {
   return `<svg viewBox="0 0 64 62" aria-hidden="true"><defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs>
     <path d="${body}" fill="${j.base}" stroke="${EDGE}" stroke-width="1"/>
     <g clip-path="url(#${id})">${sleeves}${spots}${st}${loop}</g>
-    <path d="M26 4 C28 9 36 9 38 4" fill="none" stroke="${j.collar || EDGE}" stroke-width="1.6"/>
+    <path d="M26 4 C28 9 36 9 38 4" fill="none" stroke="${(Array.isArray(j.collar) ? j.collar[0][0] : j.collar) || EDGE}" stroke-width="2"/>
     <text x="32" y="47" text-anchor="middle" font-family="${font}, Impact, sans-serif" font-weight="${weight}" font-size="22" fill="${f}" ${outline} paint-order="stroke" stroke-linejoin="round">${esc(number)}</text>
     </svg>`;
 }

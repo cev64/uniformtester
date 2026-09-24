@@ -7,7 +7,7 @@
     "build": "vite build",
     "build:single": "vite build --mode single",
     "preview": "vite preview",
-    "build:model": "python3 tools/build_player.py --mh ${MAKEHUMAN_DATA:-/tmp/mh/makehuman/data} --out /tmp/uniformlab-model && gltf-transform meshopt /tmp/uniformlab-model/player.glb public/models/player.glb && cp /tmp/uniformlab-model/player.json public/models/"
+    "build:model": "python3 tools/build_player.py --mh ${MAKEHUMAN_DATA:-/tmp/mh/makehuman/data} --out /tmp/uniformlab-model && python3 tools/build_helmet.py --out /tmp/uniformlab-model && gltf-transform meshopt /tmp/uniformlab-model/player.glb public/models/player.glb && gltf-transform meshopt /tmp/uniformlab-model/helmet.glb public/models/helmet.glb && cp /tmp/uniformlab-model/player.json /tmp/uniformlab-model/helmet.json /tmp/uniformlab-model/helmet_detail.png public/models/"
   },
   "repository": {
     "type": "git",

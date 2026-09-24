@@ -522,7 +522,8 @@ def is_sleeve_face(c, inf):
     out = abs(c.x)
     if out <= ARMHOLE[s_]:
         return False
-    return c.z > ARMPIT_Z or inf['arm']
+    # above the armpit the armhole plane decides; below it, only the free-hanging arm
+    return c.z > ARMPIT_Z or (inf['arm'] and t_arm(c, s_) > 0.045)
 set_materials(jersey, ['jersey', 'sleeve'])
 me = jersey.data
 me.uv_layers[0].name = 'UVMap'

@@ -411,7 +411,7 @@ export function paintSocks(socks, meta) {
 // Canvas x = around the head (0.25 back, 0.5 crown, 0.75 front)
 // Canvas y = side to side (top row = right-hand +x side, middle = centre line)
 
-export const HELMET_R = { x: 0.135, yz: 0.152 };
+export const HELMET_R = { x: 0.126, yz: 0.14 };
 
 export function paintHelmet(helmet) {
   const W = 2048, H = 1024;
@@ -423,7 +423,34 @@ export function paintHelmet(helmet) {
   const pxPerCmX = W / (2 * Math.PI * HELMET_R.yz * 100);
   const pxPerCmY = H / (Math.PI * HELMET_R.x * 100);
 
-  if (helmet.finish === 'matte' && helmet.id === 'leather') {
+  if (helmet.pattern?.t === 'triangles') {
+    // Broncos: a line of small arrowheads running down the back of the crown
+    ctx.fillStyle = helmet.pattern.c;
+    const s = 1.5 * pxPerCmX;
+    for (let u = 0.2; u < 0.5; u += 0.022) {
+      const x = u * W, y = H / 2;
+      ctx.beginPath();
+      ctx.moveTo(x + s, y); ctx.lineTo(x - s * 0.6, y - s * 0.75); ctx.lineTo(x - s * 0.6, y + s * 0.75);
+      ctx.fill();
+    }
+  }
+  if (helmet.pattern?.t === 'leather') {
+    // 1920s leather: panel seams running front to back, with stitching
+    ctx.strokeStyle = 'rgba(40,22,10,0.8)';
+    ctx.lineWidth = 0.35 * pxPerCmY;
+    for (const v of [0.2, 0.33, 0.44, 0.5, 0.56, 0.67, 0.8]) {
+      ctx.beginPath(); ctx.moveTo(0.1 * W, v * H); ctx.lineTo(0.74 * W, v * H); ctx.stroke();
+    }
+    ctx.setLineDash([0.5 * pxPerCmX, 0.5 * pxPerCmX]);
+    ctx.strokeStyle = 'rgba(230,200,160,0.55)';
+    ctx.lineWidth = 0.15 * pxPerCmY;
+    for (const v of [0.2, 0.33, 0.44, 0.56, 0.67, 0.8]) {
+      ctx.beginPath(); ctx.moveTo(0.1 * W, v * H + 0.5 * pxPerCmY); ctx.lineTo(0.74 * W, v * H + 0.5 * pxPerCmY); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  if (helmet.finish === 'matte' && (helmet.id === 'leather' || helmet.pattern?.t === 'leather')) {
     const r = rng(4);
     ctx.save();
     for (let i = 0; i < 5000; i++) {
@@ -495,8 +522,26 @@ export function paintLogo(logo, facing, size = 512) {
     case 'star':
       fillStroke(ctx, (g) => starPath(g, cx, cy + S * 0.03, S * 0.44, S * 0.18), logo.fill, logo.stroke, S * 0.04, logo.stroke2, S * 0.02);
       break;
+    case 'streak': {
+      // Bills "Charge": a long red streak sweeping from the brow to the back
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(dirX, 1);
+      const path = (g) => {
+        g.moveTo(0.5 * S, -0.1 * S);
+        g.lineTo(-0.5 * S, -0.02 * S);
+        g.lineTo(-0.5 * S, 0.1 * S);
+        g.lineTo(0.5 * S, 0.06 * S);
+        g.closePath();
+      };
+      fillStroke(ctx, path, logo.fill, logo.stroke, S * 0.03);
+      ctx.restore();
+      break;
+    }
     case 'bolt': {
-      const pts = [[-0.46, -0.1], [0.06, -0.2], [0.02, -0.06], [0.46, -0.12], [-0.08, 0.16], [-0.02, 0.02], [-0.46, 0.08]];
+      const pts = logo.vertical
+        ? [[-0.05, -0.48], [0.14, -0.48], [0.02, -0.12], [0.14, -0.14], [-0.1, 0.48], [-0.02, 0.04], [-0.14, 0.06]]
+        : [[-0.46, -0.1], [0.06, -0.2], [0.02, -0.06], [0.46, -0.12], [-0.08, 0.16], [-0.02, 0.02], [-0.46, 0.08]];
       const path = (g) => pts.forEach(([x, y], i) => (i ? g.lineTo(cx + x * S * dirX, cy + y * S) : g.moveTo(cx + x * S * dirX, cy + y * S)));
       fillStroke(ctx, (g) => { path(g); g.closePath(); }, logo.fill, logo.stroke, S * 0.035);
       break;

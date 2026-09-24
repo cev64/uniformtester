@@ -83,6 +83,11 @@ export function paintSleeveTex(jersey, meta) {
   ctx.fillStyle = base;
   ctx.fillRect(0, 0, W, H);
   if (jersey.pattern?.t === 'spots') spots(ctx, W, H, jersey.pattern.c, 5);
+  if (sl.top) {
+    // upper part of the sleeve in another colour (shoulder panels)
+    ctx.fillStyle = sl.top[0];
+    ctx.fillRect(0, 0, W, rowCm(sl.top[1]));
+  }
 
   if (sl.pattern?.t === 'tiger') {
     // Bengals: claw-like stripes sweeping down from the top of the shoulder

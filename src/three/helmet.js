@@ -1,189 +1,177 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintHelmet, paintLogo, paintHelmetNumber } from './paint.js';
 
-// Procedural helmet: shell with jaw flaps, facemask and logo decals.
-// Built around its own centre; the player places it on the head.
+// SpeedFlex-style helmet (tools/build_helmet.py → public/models/helmet.glb).
+// The shell is painted per team (base colour + stripe), the flex-panel groove
+// and vents come from a baked bump map, logos are projected decals.
 
-const HELMET_CENTER = new THREE.Vector3(0, 0, 0);
-const HELMET_SCALE = new THREE.Vector3(0.9, 0.95, 1.08);
-const HELMET_BASE_R = 0.154;
+const URL = './public/models/helmet.glb';
+const DETAIL_URL = './public/models/helmet_detail.png';
+const LOGO_URL = (key) => `./public/logos/${key}.png`;
 
-// Helmet shell cut-outs are done in the fragment shader so edges stay smooth.
-function helmetCut(material, inner = false) {
-  material.onBeforeCompile = (shader) => {
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float cut;\nvarying float vCut;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCut = cut;');
-    shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying float vCut;')
-      .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (vCut < 0.0) discard;');
-  };
-  material.customProgramCacheKey = () => (inner ? 'helmet-cut-inner' : 'helmet-cut');
-}
-
-const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-
-function buildHelmetGeometry() {
-  const g = new THREE.SphereGeometry(1, 160, 96);
-  g.rotateZ(-Math.PI / 2);
-  g.rotateX(Math.PI);
-  const p = g.attributes.position;
-  const nrm = g.attributes.normal;
-  const sphereNormals = nrm.array.slice();
-  const cut = new Float32Array(p.count);
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    const bottom = y + 0.6;
-    const face = Math.max(y - 0.2, 0.3 - z, Math.abs(x) - 0.64);
-    const back = Math.max(z + 0.22, y + 0.4);
-    cut[i] = Math.min(bottom, face, back);
-    // Real shells aren't spheres: the jaw flaps sweep forward toward the facemask
-    const jaw = smooth(0.25, -0.5, y) * smooth(-0.1, 0.55, z);
-    p.setZ(i, z + 0.3 * jaw);
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+let modelPromise = null;
+const logoCache = new Map();
+function loadLogo(key) {
+  if (!logoCache.has(key)) {
+    logoCache.set(key, new Promise((resolve) => {
+      new THREE.TextureLoader().load(LOGO_URL(key), (t) => { t.colorSpace = THREE.SRGBColorSpace; resolve(t); }, undefined, () => resolve(null));
+    }));
   }
-  g.setAttribute('cut', new THREE.BufferAttribute(cut, 1));
-  g.computeVertexNormals();
-  // Sphere poles (the logo spots) get unreliable computed normals; keep the originals there
-  for (let i = 0; i < p.count; i++) {
-    if (Math.abs(p.getX(i)) > 0.93) nrm.setXYZ(i, sphereNormals[i * 3], sphereNormals[i * 3 + 1], sphereNormals[i * 3 + 2]);
-  }
-  return g;
+  return logoCache.get(key);
 }
-
-function tube(points, radius, closed = false) {
-  const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)), closed, 'centripetal');
-  return new THREE.TubeGeometry(curve, 64, radius, 10, closed);
-}
-
-function mirrorPts(pts) {
-  const right = pts.map(([x, y, z]) => [-x, y, z]).reverse();
-  return [...right, ...pts.slice(1)];
-}
-
 
 export class Helmet {
   constructor() {
     this.group = new THREE.Group();
     this.decals = [];
+    this.textures = [];
     this.mats = {
-      helmet: new THREE.MeshPhysicalMaterial({ side: THREE.FrontSide }),
-      helmetInner: new THREE.MeshStandardMaterial({ side: THREE.BackSide, color: '#1b1c1f', roughness: 0.9 }),
-      mask: new THREE.MeshPhysicalMaterial({ roughness: 0.35, clearcoat: 0.6 }),
-      strap: new THREE.MeshStandardMaterial({ color: '#f1f1f1', roughness: 0.5 }),
+      shell: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: 0.06, roughness: 0.2 }),
+      liner: new THREE.MeshStandardMaterial({ color: '#1a1b1e', roughness: 0.9, side: THREE.DoubleSide }),
+      trim: new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.65 }),
+      mask: new THREE.MeshPhysicalMaterial({ roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2 }),
+      clip: new THREE.MeshPhysicalMaterial({ color: '#2a2c30', roughness: 0.3, clearcoat: 0.5 }),
+      cup: new THREE.MeshPhysicalMaterial({ color: '#f2f2f2', roughness: 0.35, clearcoat: 0.4 }),
+      strap: new THREE.MeshStandardMaterial({ color: '#efefef', roughness: 0.6 }),
+      pad: new THREE.MeshStandardMaterial({ color: '#232428', roughness: 0.95 }),
     };
-    helmetCut(this.mats.helmet);
-    helmetCut(this.mats.helmetInner, true);
-    const G = this.group;
-    // ── Helmet ──
-    const hg = buildHelmetGeometry();
-    const shell = new THREE.Mesh(hg, this.mats.helmet);
-    shell.castShadow = true;
-    const inner = new THREE.Mesh(hg, this.mats.helmetInner);
-    inner.scale.setScalar(0.985);
-    const helmet = new THREE.Group();
-    helmet.add(shell, inner);
-    helmet.position.copy(HELMET_CENTER);
-    helmet.scale.copy(HELMET_SCALE).multiplyScalar(HELMET_BASE_R);
-    G.add(helmet);
-    this.helmetShell = shell;
-    this.helmetGroup = helmet;
-
-    // facemask (in metres relative to the helmet centre)
-    const mask = new THREE.Group();
-    const R = 0.0055;
-    const bars = [
-      [[0.104, 0.024, 0.112], [0.094, 0.025, 0.152], [0.056, 0.026, 0.184], [0, 0.027, 0.194]],
-      [[0.1, -0.034, 0.138], [0.09, -0.035, 0.166], [0.056, -0.037, 0.197], [0, -0.038, 0.207]],
-      [[0.094, -0.082, 0.138], [0.082, -0.09, 0.166], [0.048, -0.098, 0.184], [0, -0.1, 0.19]],
-    ];
-    for (const b of bars) mask.add(new THREE.Mesh(tube(mirrorPts(b), R), this.mats.mask));
-    for (const s of [1, -1]) {
-      // verticals
-      mask.add(new THREE.Mesh(tube([[s * 0.056, 0.026, 0.184], [s * 0.056, -0.037, 0.197], [s * 0.048, -0.098, 0.184]], R), this.mats.mask));
-    }
-    mask.add(new THREE.Mesh(tube([[0, -0.038, 0.207], [0, -0.07, 0.2], [0, -0.1, 0.19]], R), this.mats.mask));
-    // chin strap cup
-    const chin = new THREE.Mesh(new THREE.SphereGeometry(0.027, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), this.mats.strap);
-    chin.rotation.x = Math.PI * 0.62;
-    chin.scale.set(1, 1, 0.55);
-    chin.position.set(0, -0.122, 0.12);
-    mask.add(chin);
-    for (const s of [1, -1]) {
-      mask.add(new THREE.Mesh(tube([[s * 0.024, -0.128, 0.112], [s * 0.07, -0.11, 0.1], [s * 0.1, -0.075, 0.1]], 0.004), this.mats.strap));
-    }
-    mask.position.copy(HELMET_CENTER);
-    mask.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-    G.add(mask);
-    this.maskGroup = mask;
-
+    modelPromise ||= Promise.all([
+      loader.loadAsync(URL),
+      new THREE.TextureLoader().loadAsync(DETAIL_URL).catch(() => null),
+    ]);
+    this.ready = modelPromise.then(([gltf, detail]) => {
+      const root = gltf.scene.clone(true);
+      this.parts = {};
+      root.traverse((o) => {
+        if (!o.isMesh) return;
+        const key = o.material.name.split('.')[0];
+        if (this.mats[key]) o.material = this.mats[key];
+        o.castShadow = true;
+        o.receiveShadow = true;
+        (this.parts[key] ||= []).push(o);
+      });
+      if (detail) {
+        detail.flipY = false;
+        detail.wrapS = THREE.RepeatWrapping;
+        this.mats.shell.bumpMap = detail;
+        this.mats.shell.bumpScale = 1.2;
+      }
+      this.group.add(root);
+      this.loaded = true;
+      if (this.pending) this.set(...this.pending);
+    });
   }
 
-  set(helmet, player, T) {
+  clear() {
     for (const d of this.decals) { d.geometry.dispose(); d.material.dispose(); d.parent?.remove(d); }
     this.decals = [];
-    this.applyHelmet(helmet, player, T);
+    for (const t of this.textures) t.dispose();
+    this.textures = [];
   }
 
-  applyHelmet(helmet, player, T) {
-    const m = this.mats.helmet;
+  async set(helmet, player) {
+    this.pending = [helmet, player];
+    if (!this.loaded) return;
+    const token = (this.token = Symbol('helmet'));
+    const logo = helmet.logo || { t: 'none' };
+    const img = logo.img ? await loadLogo(logo.img) : null;
+    if (token !== this.token) return;
+    this.clear();
+
+    const m = this.mats.shell;
     const { canvas } = paintHelmet(helmet);
-    m.map = T(canvas);
-    m.color.set('#ffffff');
+    const map = new THREE.CanvasTexture(canvas);
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.flipY = false;
+    map.wrapS = THREE.RepeatWrapping;
+    map.anisotropy = 8;
+    this.textures.push(map);
+    m.map = map;
     const fin = helmet.finish;
-    m.roughness = fin === 'matte' ? 0.62 : fin === 'metallic' ? 0.28 : fin === 'chrome' ? 0.08 : 0.2;
-    m.metalness = fin === 'metallic' ? 0.55 : fin === 'chrome' ? 0.95 : 0.0;
-    m.clearcoat = fin === 'matte' ? 0.0 : 1.0;
-    m.clearcoatRoughness = fin === 'metallic' ? 0.12 : 0.06;
+    m.roughness = fin === 'matte' ? 0.6 : fin === 'metallic' ? 0.3 : fin === 'chrome' ? 0.08 : 0.18;
+    m.metalness = fin === 'metallic' ? 0.55 : fin === 'chrome' ? 0.95 : 0;
+    m.clearcoat = fin === 'matte' ? 0 : 1;
+    m.clearcoatRoughness = fin === 'metallic' ? 0.14 : 0.05;
     m.needsUpdate = true;
 
-    this.maskGroup.visible = Boolean(helmet.mask);
-    if (helmet.mask) {
-      this.mats.mask.color.set(helmet.mask);
-      this.mats.mask.metalness = 0.1;
-    }
+    const hasMask = Boolean(helmet.mask);
+    for (const k of ['mask', 'clip']) for (const o of this.parts[k] || []) o.visible = hasMask;
+    if (hasMask) this.mats.mask.color.set(helmet.mask);
+    this.mats.cup.color.set(helmet.chinstrap || '#f2f2f2');
+    this.mats.strap.color.set(helmet.chinstrap || '#efefef');
 
-    // Decals: logo on both sides, plus sideline numbers where the team wears them
-    const shell = this.helmetShell;
-    shell.updateWorldMatrix(true, false);
-    const logo = helmet.logo || { t: 'none' };
-    const sides = logo.side === 'right' ? [-1] : [1, -1]; // player's right is -x
-    const finish = { roughness: m.roughness, metalness: m.metalness * 0.3, clearcoat: m.clearcoat, clearcoatRoughness: 0.06 };
-
-    const place = (canvas, side, dirLocal, size) => {
-      if (!canvas) return;
-      // hit point on the ellipsoid in world space
-      const d = dirLocal.clone().normalize();
-      const local = new THREE.Vector3(d.x * HELMET_SCALE.x, d.y * HELMET_SCALE.y, d.z * HELMET_SCALE.z).multiplyScalar(HELMET_BASE_R);
-      const world = local.clone().add(HELMET_CENTER).applyMatrix4(this.group.matrixWorld);
-      const normal = new THREE.Vector3(d.x / HELMET_SCALE.x, d.y / HELMET_SCALE.y, d.z / HELMET_SCALE.z).normalize();
-      const helper = new THREE.Object3D();
-      helper.position.copy(world);
-      helper.lookAt(world.clone().add(normal));
-      const geo = new DecalGeometry(shell, world, helper.rotation, new THREE.Vector3(size, size, 0.12));
-      const mat = new THREE.MeshPhysicalMaterial({
-        map: T(canvas), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, ...finish,
-      });
-      const decal = new THREE.Mesh(geo, mat);
-      // Decal geometry is in world space; move it into the player's frame
-      decal.geometry.applyMatrix4(new THREE.Matrix4().copy(this.group.matrixWorld).invert());
-      this.group.add(decal);
-      this.decals.push(decal);
-    };
-
-    const big = { wing: 0.24, ramhorn: 0.26, horn: 0.15, bolt: 0.17, horseshoe: 0.12 };
-    for (const side of sides) {
-      // side +1 is +x: seen from outside, the front of the helmet is on the left
-      const facing = side > 0 ? 'left' : 'right';
-      const canvas = logo.t === 'none' ? null : paintLogo(logo, facing);
-      const size = big[logo.t] || (logo.t === 'steelmark' ? 0.085 : 0.105);
-      const dir = logo.t === 'wing' ? new THREE.Vector3(side, 0.35, 0.18)
-        : logo.t === 'ramhorn' ? new THREE.Vector3(side, 0.25, 0.15)
-          : new THREE.Vector3(side, 0.06, -0.04);
-      place(canvas, side, dir, size);
-      if (helmet.numbers) {
-        place(paintHelmetNumber(player.number, helmet.numbers), side, new THREE.Vector3(side, -0.12, -0.72), 0.06);
+    this.group.updateMatrixWorld(true);
+    const shell = this.parts.shell || [];
+    const finish = { roughness: m.roughness, metalness: m.metalness * 0.4, clearcoat: m.clearcoat, clearcoatRoughness: 0.05 };
+    const sides = logo.side === 'right' ? [-1] : [1, -1];   // the player's right is -x
+    for (const sx of sides) {
+      // +x side: seen from outside, the front of the helmet is on the viewer's left
+      const facing = sx > 0 ? 'left' : 'right';
+      if (img) {
+        const flip = logo.faces && logo.faces !== facing;
+        const a = img.image.width / img.image.height;
+        const w = logo.size || 0.125;
+        this.decal(shell, this.hitSide(sx, logo.at), w, w / a, img, finish, flip);
+      } else if (logo.t && logo.t !== 'none') {
+        const c = paintLogo(logo, facing);
+        if (c) {
+          const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+          const size = { wing: 0.23, ramhorn: 0.25, horn: 0.15, bolt: 0.17, horseshoe: 0.12, steelmark: 0.085 }[logo.t] || 0.11;
+          const at = logo.t === 'wing' ? [0.35, 0.25] : logo.t === 'ramhorn' ? [0.25, 0.2] : logo.at;
+          this.decal(shell, this.hitSide(sx, at), size, size, t, finish, false);
+        }
       }
+      if (helmet.numbers) {
+        const c = paintHelmetNumber(player.number ?? '', helmet.numbers);
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+        this.decal(shell, this.hitSide(sx, [-0.2, -0.7]), 0.06, 0.06, t, finish, false);
+      }
+    }
+  }
+
+  // point on the shell side: at = [up, back] offsets of the aim direction
+  hitSide(sx, at = [0.2, 0.06]) {
+    const [up, back] = at;
+    const dir = new THREE.Vector3(sx, up, -back).normalize();
+    const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
+    const origin = center.clone().add(dir.clone().multiplyScalar(0.6));
+    const rc = new THREE.Raycaster(origin, dir.clone().negate(), 0, 1);
+    return rc.intersectObjects(this.parts.shell || [], false)[0] || null;
+  }
+
+  decal(meshes, hit, w, h, texture, finish, flip) {
+    if (!hit || !texture) return;
+    const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+    const helper = new THREE.Object3D();
+    helper.position.copy(hit.point);
+    helper.lookAt(hit.point.clone().add(n));
+    const mat = new THREE.MeshPhysicalMaterial({
+      map: texture, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, ...finish,
+    });
+    const inv = new THREE.Matrix4().copy(this.group.matrixWorld).invert();
+    for (const mesh of meshes) {
+      const geo = new DecalGeometry(mesh, hit.point, helper.rotation, new THREE.Vector3(w, h, 0.08));
+      if (!geo.attributes.position.count) { geo.dispose(); continue; }
+      // keep only triangles facing the projector (avoids smearing at the rim)
+      const pos = geo.attributes.position, nor = geo.attributes.normal, uv = geo.attributes.uv;
+      const idx = [];
+      const tmp = new THREE.Vector3();
+      for (let t = 0; t < pos.count; t += 3) {
+        tmp.set(0, 0, 0);
+        for (let k = 0; k < 3; k++) tmp.add(new THREE.Vector3().fromBufferAttribute(nor, t + k));
+        if (tmp.normalize().dot(n) > 0.3) idx.push(t, t + 1, t + 2);
+      }
+      if (flip) for (let k = 0; k < uv.count; k++) uv.setX(k, 1 - uv.getX(k));
+      geo.setIndex(idx);
+      geo.applyMatrix4(inv);
+      const d = new THREE.Mesh(geo, mat);
+      d.renderOrder = 2;
+      this.group.add(d);
+      this.decals.push(d);
     }
   }
 }
