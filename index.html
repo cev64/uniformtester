@@ -77,6 +77,16 @@
     </div>
   </div>
 
+  <!-- Lets the unbuilt source run straight from GitHub Pages: bare "three" imports resolve to the CDN.
+       Vite ignores this during dev/build and bundles its own copy. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+      }
+    }
+  </script>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
