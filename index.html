@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Gridiron Uniform Lab</title>
+  <meta name="description" content="Mix and match every NFL team's 2026 helmets, jerseys, pants and socks on a 3D player, and stage matchups side by side." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Big+Shoulders+Display:wght@700;800;900&family=Graduate&family=Oswald:wght@500;700&family=Yellowtail&display=swap" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M6 30 C6 12 18 4 26 4 C35 4 38 12 38 20 L38 24 L31 24 L29 30 L20 31 L17 36 L9 36 Z" fill="currentColor"/>
+        <path d="M9 20 C10 9 19 5 26 5.5" stroke="#0b0e0d" stroke-width="3" fill="none"/>
+      </svg>
+      <div>
+        <div class="brand-name">Uniform Lab</div>
+        <div class="brand-sub">2026 season · all 32 teams</div>
+      </div>
+    </div>
+    <div class="modes" role="tablist" aria-label="Mode">
+      <button id="mode-single" role="tab" data-mode="single" aria-selected="true">Locker Room</button>
+      <button id="mode-matchup" role="tab" data-mode="matchup" aria-selected="false">Matchup</button>
+    </div>
+  </header>
+
+  <main class="app" id="app" data-mode="single">
+    <section class="stage-wrap" aria-label="3D preview">
+      <div class="stages">
+        <div class="stage-slot" data-side="0">
+          <div class="stage-canvas" id="stage-0"></div>
+          <div class="stage-label" id="label-0"></div>
+        </div>
+        <div class="vs" aria-hidden="true">VS</div>
+        <div class="stage-slot" data-side="1">
+          <div class="stage-canvas" id="stage-1"></div>
+          <div class="stage-label" id="label-1"></div>
+        </div>
+      </div>
+      <div class="stage-tools">
+        <div class="seg" role="group" aria-label="Camera">
+          <button data-view="front">Front</button>
+          <button data-view="three">¾</button>
+          <button data-view="side">Side</button>
+          <button data-view="back">Back</button>
+          <button data-view="helmet">Helmet</button>
+        </div>
+        <button class="tool" id="spin" aria-pressed="false" title="Turntable">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-2-4.5M16 3v3.5h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Spin
+        </button>
+        <button class="tool" id="shuffle" title="Random combo">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h3l7 8h4M13 6h4M3 14h3l2-2.4M15 4l2 2-2 2M15 12l2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Shuffle
+        </button>
+      </div>
+      <p class="webgl-error" id="webgl-error" hidden>This browser couldn't start 3D graphics (WebGL). Try a recent Chrome, Safari, Firefox or Edge.</p>
+    </section>
+
+    <aside class="panel" id="panel" aria-label="Uniform builder"></aside>
+  </main>
+
+  <div class="picker" id="picker" hidden>
+    <div class="picker-sheet" role="dialog" aria-modal="true" aria-labelledby="picker-title">
+      <div class="picker-head">
+        <h2 id="picker-title">Pick a team</h2>
+        <input id="picker-search" type="search" placeholder="Search teams" autocomplete="off" />
+        <button class="icon-btn" id="picker-close" aria-label="Close">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="picker-grid" id="picker-grid"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

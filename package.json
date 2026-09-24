@@ -1,0 +1,31 @@
+{
+  "name": "uniform-lab",
+  "version": "1.0.0",
+  "description": "3D NFL uniform builder: mix helmets, jerseys, pants and socks for all 32 teams and stage matchups.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:single": "vite build --mode single",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cev64/uniformtester.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cev64/uniformtester/issues"
+  },
+  "homepage": "https://github.com/cev64/uniformtester#readme",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1",
+    "vite-plugin-singlefile": "^2.3.3"
+  },
+  "private": true,
+  "type": "module"
+}
