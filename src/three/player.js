@@ -3,14 +3,32 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
-import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, letteringCanvas, eyeCanvas, swooshCanvas } from './garments.js';
+import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, paintCollar, letteringCanvas, eyeCanvas, swooshCanvas } from './garments.js';
 import { Helmet } from './helmet.js';
 import { asset, loadGLB, loadJSON } from '../assets.js';
 
 // The player: a sculpted athlete (tools/build_player.py → public/models/player.glb)
 // dressed with painted garments and decals for numbers, names and logos.
 
-export const SKIN_TONES = ['#8D5A3B', '#5C3A24', '#C68B5E', '#E5B895'];
+// Photographic skin (MakeHuman CC0 textures) with a tint for in-between tones.
+// SKIN_TONES are the swatch colours shown in the UI.
+export const SKIN_TONES = ['#7A4B30', '#4E2F1E', '#B98563', '#E2B896'];
+const SKIN = [
+  { tex: 'dark', tint: '#ffffff' },
+  { tex: 'dark', tint: '#9c8a7e' },
+  { tex: 'light', tint: '#c9a080' },
+  { tex: 'light', tint: '#ffffff' },
+];
+const skinTex = {};
+function skinTexture(kind, aniso) {
+  if (!skinTex[kind]) {
+    const t = new THREE.TextureLoader().load(asset(`public/models/skin_${kind}.jpg`));
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = aniso;
+    skinTex[kind] = t;
+  }
+  return skinTex[kind];
+}
 const MODEL_URL = 'public/models/player.glb';
 const META_URL = 'public/models/player.json';
 const LOGO_URL = (key) => asset(`public/logos/${key}.png`);
@@ -35,31 +53,6 @@ function fabric(repeat, { sheen = 0.35, roughness = 0.78, normal = 0.35 } = {}) 
     roughness, metalness: 0, sheen, sheenRoughness: 0.6, sheenColor: new THREE.Color(0.2, 0.2, 0.2),
     normalMap: n, normalScale: new THREE.Vector2(normal, normal), side: THREE.DoubleSide,
   });
-}
-
-// Collar trim is drawn from a per-vertex distance-to-neckline field (TEXCOORD_1.x, metres),
-// so the stripes follow the V exactly with crisp edges.
-function withCollar(material) {
-  material.userData.bands = { value: Array.from({ length: 6 }, () => new THREE.Vector4(0, 0, 0, -1)) };
-  material.onBeforeCompile = (shader) => {
-    shader.uniforms.uCollar = material.userData.bands;
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec2 collarUv;\nvarying float vCollar;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCollar = collarUv.x;');
-    shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform vec4 uCollar[6];\nvarying float vCollar;')
-      .replace('#include <map_fragment>', `#include <map_fragment>
-        {
-          float d = vCollar * 100.0;
-          float aa = max(fwidth(d), 0.05);
-          for (int i = 5; i >= 0; i--) {
-            vec4 b = uCollar[i];
-            if (b.w > 0.0) diffuseColor.rgb = mix(diffuseColor.rgb, b.rgb, 1.0 - smoothstep(b.w - aa, b.w + aa, d));
-          }
-        }`);
-  };
-  material.customProgramCacheKey = () => 'jersey-collar';
-  return material;
 }
 
 function tex(canvas, aniso) {
@@ -154,11 +147,12 @@ export class Player {
   install(root, meta) {
     this.meta = meta;
     this.mats = {
-      jersey: withCollar(fabric([40, 20])),
+      jersey: fabric([40, 20]),
+      collar: fabric([90, 3], { roughness: 0.85, normal: 0.6 }),
       sleeve: fabric([14, 6]),
       pants: fabric([14, 18], { roughness: 0.55, sheen: 0.7, normal: 0.25 }),
       socks: fabric([8, 10], { roughness: 0.9, sheen: 0.3 }),
-      skin: new THREE.MeshPhysicalMaterial({ roughness: 0.52, sheen: 0.25, sheenRoughness: 0.5, sheenColor: new THREE.Color(0.35, 0.2, 0.15), color: SKIN_TONES[0] }),
+      skin: new THREE.MeshPhysicalMaterial({ roughness: 0.48, sheen: 0.3, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.08, clearcoatRoughness: 0.5 }),
       cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.25 }),
       glove: new THREE.MeshPhysicalMaterial({ roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5 }),
       eye: new THREE.MeshPhysicalMaterial({ roughness: 0.08, clearcoat: 1, map: tex(eyeCanvas(), this.aniso) }),
@@ -170,10 +164,6 @@ export class Player {
       if (this.mats[key]) o.material = this.mats[key];
       o.castShadow = true;
       o.receiveShadow = true;
-      if (key === 'jersey') {
-        const g = o.geometry;
-        g.setAttribute('collarUv', g.attributes.uv1 || new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2).fill(1), 2));
-      }
       (this.meshes[key] ||= []).push(o);
     });
     this.group.add(root);
@@ -218,19 +208,14 @@ export class Player {
     m.socks.map = T(paintSocksTex(socks, meta));
     for (const k of ['jersey', 'sleeve', 'pants', 'socks']) { m[k].color.set('#ffffff'); m[k].needsUpdate = true; }
 
-    // collar bands from the neckline outward
-    const collar = Array.isArray(jersey.collar) ? jersey.collar
-      : [[jersey.collar || shade(jersey.base, luminance(jersey.base) > 0.5 ? -0.12 : 0.12), 2.2]];
-    let acc = 0;
-    const bands = m.jersey.userData.bands.value;
-    bands.forEach((b) => b.set(0, 0, 0, -1));
-    collar.slice(0, 6).forEach(([col, w], i) => {
-      acc += w;
-      const c = new THREE.Color(col || jersey.base);
-      bands[i].set(c.r, c.g, c.b, acc);
-    });
+    m.collar.map = T(paintCollar(jersey, meta));
+    m.collar.color.set('#ffffff');
+    m.collar.needsUpdate = true;
 
-    m.skin.color.set(SKIN_TONES[player.skin ?? 0]);
+    const sk = SKIN[player.skin ?? 0] || SKIN[0];
+    m.skin.map = skinTexture(sk.tex, this.aniso);
+    m.skin.color.set(sk.tint);
+    m.skin.needsUpdate = true;
     const glove = player.gloves === 'white' ? '#F4F4F4' : player.gloves === 'black' ? '#141414' : jersey.base;
     m.glove.color.set(glove);
     const cleat = player.cleats === 'auto'

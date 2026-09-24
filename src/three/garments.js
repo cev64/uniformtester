@@ -304,3 +304,36 @@ export function swooshCanvas(color, px = 256) {
   ctx.fill();
   return c;
 }
+
+// ─── knit collar band ─────────────────────────────────────────────────
+// u runs around the neckline, v across the band (0 = rolled neck edge, 1 = outer edge).
+export function paintCollar(jersey, meta) {
+  const W = 1024, H = 64;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  const wCm = (meta.collar?.width || 0.03) * 100;
+  const bands = Array.isArray(jersey.collar) ? jersey.collar
+    : [[jersey.collar || jersey.base, wCm]];
+  const v0 = 0.08, v1 = 0.95;
+  ctx.fillStyle = bands[0][0] || jersey.base;
+  ctx.fillRect(0, 0, W, H);
+  let acc = 0;
+  const total = Math.max(wCm, bands.reduce((a, [, w]) => a + w, 0));
+  for (const [col, w] of bands) {
+    const y0 = (v0 + (acc / total) * (v1 - v0)) * H;
+    acc += w;
+    const y1 = (v0 + (acc / total) * (v1 - v0)) * H;
+    ctx.fillStyle = col || jersey.base;
+    ctx.fillRect(0, y0, W, y1 - y0 + 0.5);
+  }
+  // anything past the last band is jersey colour
+  const yEnd = (v0 + (acc / total) * (v1 - v0)) * H;
+  ctx.fillStyle = jersey.base;
+  ctx.fillRect(0, yEnd, W, H - yEnd);
+  // knit ribs
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = '#000';
+  for (let x = 0; x < W; x += 4) ctx.fillRect(x, 0, 1.5, H);
+  ctx.globalAlpha = 1;
+  return c;
+}

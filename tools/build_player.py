@@ -224,8 +224,8 @@ ANK = {s: V(f'foot.{s}') for s in 'LR'}
 NECK = V('neck01')
 SIGN = {'L': 1, 'R': -1}
 
-WAIST_Z = HIP['L'].z + 0.15        # top of the pants
-JERSEY_BOTTOM = HIP['L'].z + 0.06  # jersey tucks under the pants
+WAIST_Z = HIP['L'].z + 0.075       # top of the pants: just below the navel, like game pants
+JERSEY_BOTTOM = HIP['L'].z - 0.01  # jersey tucks well under the pants
 SLEEVE_LEN = 0.115                 # short modern sleeves: shoulder joint → hem along the arm
 PANTS_HEM = 0.07                   # below the knee joint
 SOCK_BOTTOM = 0.13                 # above the ankle joint (cleat collar covers the rest)
@@ -269,16 +269,62 @@ SHIN_AXIS = {s: (ANK[s] - KNEE[s]).normalized() for s in 'LR'}
 
 def t_arm(co, s): return (co - SH[s]).dot(ARM_AXIS[s])
 
+# ─── shoulder pads ───
+# Modern low-profile pads read as one smooth, slightly boxy shell over the
+# shoulders, chest and upper back. Jersey points inside that shell are pushed
+# out onto it (a soft max), which gives the flat-topped pro silhouette
+# instead of bumps.
+PAD_C = Vector((0, NECK.y + 0.01, SH['L'].z - 0.12))
+PAD_AX = 0.312
+PAD_FRONT, PAD_BACK = 0.168, 0.158
+PAD_UP, PAD_DOWN = NECK.z - 0.03 - PAD_C.z, 0.27
+PAD_N = 3.2
+
+def pad_f(p):
+    d = p - PAD_C
+    by = PAD_FRONT if d.y < 0 else PAD_BACK
+    cz = PAD_UP if d.z > 0 else PAD_DOWN
+    return (abs(d.x / PAD_AX) ** PAD_N + abs(d.y / by) ** PAD_N + abs(d.z / cz) ** PAD_N) ** (1 / PAD_N)
+
+def smax(a, b, k):
+    h = max(k - abs(a - b), 0) / k
+    return max(a, b) + h * h * k * 0.25
+
+def pad_shape(p, c):
+    if c['arm'] and t_arm(p, c['side']) > 0.07:
+        return p
+    f = pad_f(p)
+    if f > 1.25:
+        return p
+    scale = smax(1.0, 1.0 / max(f, 1e-6), 0.12)
+    q = PAD_C + (p - PAD_C) * scale
+    if c['arm']:
+        # fade out down the sleeve so the pad's cup meets the arm smoothly
+        w = 1 - smooth01(0.0, 0.07, t_arm(p, c['side']))
+        q = p.lerp(q, w)
+    return q
+
 # ─── offsets (how far each garment stands off the skin) ───
-def jersey_offset(co, c):
-    # compression fit over low-profile modern pads
+PAD_TOP = SH['L'].z + 0.075      # flat top of the pads, a little above the acromion
+
+def jersey_offset(co, c, n):
+    # compression fit over low-profile modern pads, built from three pieces:
     off = 0.005
-    for s in 'LR':
-        off += 0.032 * gauss(co, PAD_CENTER[s], 0.1)
-    if not c['arm']:
-        off += 0.016 * smooth01(CHEST_Z - 0.1, CHEST_Z + 0.06, co.z) * (1 - smooth01(NECK.z - 0.08, NECK.z - 0.02, co.z))
-    else:
-        off += 0.006 * (1 - smooth01(0.0, SLEEVE_LEN, t_arm(co, c['side'])))
+    s_ = c['side']
+    ax = abs(co.x)
+    # 1. front and back plates over the chest and shoulder blades
+    plate = smooth01(CHEST_Z - 0.1, CHEST_Z + 0.02, co.z) * (1 - smooth01(0.15, 0.21, ax))
+    off += 0.011 * plate * min(1.0, abs(n.y) * 1.4)
+    # 2. epaulet caps over the point of each shoulder
+    cap = SH[s_] + Vector((SIGN[s_] * -0.01, 0.0, 0.055))
+    d = co - cap
+    off += 0.024 * math.exp(-((d.x / 0.085) ** 2 + (d.y / 0.1) ** 2 + (d.z / 0.075) ** 2))
+    # 3. the pads' flat top: fill the slope between the neck and the shoulder
+    if n.z > 0.2 and 0.07 < ax < SH[s_].x * SIGN[s_] + 0.02 and co.z > CHEST_Z:
+        fill = max(0.0, PAD_TOP - co.z) * n.z
+        off += min(0.03, fill) * smooth01(0.07, 0.11, ax)
+    if c['arm']:
+        off += 0.004 * (1 - smooth01(0.0, SLEEVE_LEN, t_arm(co, s_)))
     return off
 
 def pants_offset(co, c):
@@ -318,7 +364,7 @@ def smooth_boundary(bm, iters):
         for v, co in new.items():
             v.co = co
 
-def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None):
+def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, shape=None):
     """keep_face(center, info) coarse region test; cuts = [(co, no, region(center, info))]
     Faces in `region` on the +normal side of a cut plane are removed; the cut gives a clean hem."""
     me = bdata.copy(); me.name = name
@@ -338,8 +384,12 @@ def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None):
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
     bmesh.ops.dissolve_degenerate(bm, dist=0.0015, edges=bm.edges[:])
     bm.normal_update()
-    for v in bm.verts:
-        v.co += v.normal * offset(v.co, info_at(v.co))
+    infos = [info_at(v.co) for v in bm.verts]
+    for v, inf in zip(bm.verts, infos):
+        v.co += v.normal * (offset(v.co, inf, v.normal) if offset.__code__.co_argcount == 3 else offset(v.co, inf))
+    if shape:
+        for v, inf in zip(bm.verts, infos):
+            v.co = shape(v.co, inf)
     inner = [v for v in bm.verts if not v.is_boundary]
     for _ in range(smooth_iters):
         bmesh.ops.smooth_vert(bm, verts=inner, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
@@ -413,7 +463,7 @@ for s in 'LR':
 jersey = make_garment(
     'Jersey',
     lambda c, i: (not i['leg']) and not (i['head'] and c.z > NECK.z + 0.01) and c.z > JERSEY_BOTTOM - 0.06 and (not i['arm'] or t_arm(c, i['side']) < SLEEVE_LEN + 0.06),
-    jersey_cuts, jersey_offset, smooth_iters=5, post_cut=neck_hook)
+    jersey_cuts, jersey_offset, smooth_iters=10, post_cut=neck_hook)
 
 # ─── pants ───
 pants_cuts = [(Vector((0, 0, WAIST_Z)), Vector((0, 0, 1)), lambda c, i: True)]
@@ -527,24 +577,9 @@ def is_sleeve_face(c, inf):
 set_materials(jersey, ['jersey', 'sleeve'])
 me = jersey.data
 me.uv_layers[0].name = 'UVMap'
-me.uv_layers.new(name='Collar')
-uv, uv2 = me.uv_layers['UVMap'], me.uv_layers['Collar']
+uv = me.uv_layers['UVMap']
 ARM_FRAME = {s: frame(ARM_AXIS[s], SIGN[s]) for s in 'LR'}
 T_TOP = min(t_arm(v.co, 'L' if v.co.x >= 0 else 'R') for v in me.vertices if abs(v.co.x) > ARMHOLE['L'] and v.co.z > ARMPIT_Z)
-# neck edge for the collar distance field
-bm = bmesh.new(); bm.from_mesh(me)
-neck_edge = []
-for e in bm.edges:
-    if e.is_boundary:
-        c = (e.verts[0].co + e.verts[1].co) / 2
-        if c.z > NECK.z - 0.2 and neck_d(c) < 0.16:
-            for k in range(6):
-                neck_edge.append(e.verts[0].co.lerp(e.verts[1].co, k / 5))
-bm.free()
-ekd = KDTree(len(neck_edge))
-for i, co in enumerate(neck_edge):
-    ekd.insert(co, i)
-ekd.balance()
 torso_pts, sleeve_pts = [], []
 for poly in me.polygons:
     c = poly.center
@@ -566,17 +601,136 @@ for poly in me.polygons:
             v = (co.z - Z0) / (Z1 - Z0)
             torso_pts.append((v, math.hypot(co.x, co.y - YC)))
         uv.data[li].uv = (u, v)
-        uv2.data[li].uv = (ekd.find(co)[2], 0.0)
 fix_seams(me, uv)
 region_meta('jersey', torso_pts, Z1 - Z0)
 region_meta('sleeve', sleeve_pts, SLEEVE_LEN - T_TOP)
 meta['jersey'] = {'z0': Z0, 'z1': Z1}
 
-# collar stands a touch proud of the jersey
-for v in me.vertices:
-    d = ekd.find(v.co)[2]
-    if d < 0.03:
-        v.co += v.normal * 0.002 * (1 - d / 0.03)
+# ─── knit collar: a separate raised band following the neckline ───
+COLLAR_W = 0.03
+def neck_loop(obj):
+    bm = bmesh.new(); bm.from_mesh(obj.data)
+    bm.normal_update()
+    edges = [e for e in bm.edges if e.is_boundary and (lambda c: c.z > NECK.z - 0.2 and neck_d(c) < 0.17)((e.verts[0].co + e.verts[1].co) / 2)]
+    adj = {}
+    for e in edges:
+        a, b = e.verts
+        adj.setdefault(a, []).append(b); adj.setdefault(b, []).append(a)
+    start = max(adj, key=lambda v: v.co.y)          # back centre
+    loop, prev, cur = [start], None, start
+    while True:
+        nxt = [n for n in adj[cur] if n is not prev]
+        if not nxt or nxt[0] is start:
+            break
+        prev, cur = cur, nxt[0]
+        loop.append(cur)
+    pts = [v.co.copy() for v in loop]
+    nrm = [v.normal.copy() for v in loop]
+    bm.free()
+    return pts, nrm
+
+pts, nrm = neck_loop(jersey)
+# resample evenly and smooth (keep the V point sharp)
+def resample(pts, nrm, n):
+    L = [0.0]
+    for i in range(1, len(pts) + 1):
+        L.append(L[-1] + (pts[i % len(pts)] - pts[i - 1]).length)
+    out, onr, j = [], [], 0
+    for k in range(n):
+        t = L[-1] * k / n
+        while L[j + 1] < t:
+            j += 1
+        f = (t - L[j]) / max(1e-9, L[j + 1] - L[j])
+        out.append(pts[j].lerp(pts[(j + 1) % len(pts)], f))
+        onr.append(nrm[j].lerp(nrm[(j + 1) % len(pts)], f).normalized())
+    return out, onr, L[-1]
+from mathutils.bvhtree import BVHTree
+N = 360
+raw, _, _ = resample(pts, nrm, N)
+# heights along the real neckline, heavily smoothed
+bz = [p.z for p in raw]
+for _ in range(120):
+    bz = [(bz[i - 1] + bz[i] * 2 + bz[(i + 1) % N]) / 4 for i in range(N)]
+def height_at(x, y):
+    k = min(range(N), key=lambda i: (raw[i].x - x) ** 2 + (raw[i].y - y) ** 2)
+    return bz[k]
+# parametric plan-view neckline: ellipse at the back and sides, straight V at the front
+VP = min(raw, key=lambda p: p.z + (0 if p.y < NECK.y else 9))
+RX, RY = R_NECK + 0.004, (R_NECK + 0.004) * 0.9
+A_V = math.radians(38)       # half-angle (from the front) where the V leaves the ellipse
+def ell(a):                   # a = 0 at the front (-y), increasing toward +x
+    return Vector((NECK_XY.x + RX * math.sin(a), NECK_XY.y - RY * math.cos(a)))
+nv = 40
+cp = []
+e1, e2 = ell(A_V), ell(2 * math.pi - A_V)
+z1 = height_at(e1.x, e1.y); z2 = height_at(e2.x, e2.y)
+for k in range(nv):
+    f = k / nv
+    cp.append(Vector((VP.x + (e1.x - VP.x) * f, VP.y + (e1.y - VP.y) * f, VP.z + (z1 - VP.z) * f)))
+for k in range(N - 2 * nv):
+    a = A_V + (2 * math.pi - 2 * A_V) * k / (N - 2 * nv)
+    e = ell(a)
+    cp.append(Vector((e.x, e.y, height_at(e.x, e.y))))
+for k in range(nv):
+    f = k / nv
+    cp.append(Vector((e2.x + (VP.x - e2.x) * f, e2.y + (VP.y - e2.y) * f, z2 + (VP.z - z2) * f)))
+perim = sum((cp[i] - cp[i - 1]).length for i in range(N))
+# put the UV seam at the back centre
+back = max(range(N), key=lambda i: cp[i].y)
+cp = cp[back:] + cp[:back]
+vi = (N - back) % N
+centre = sum(cp, Vector()) / N
+jbm = bmesh.new(); jbm.from_mesh(jersey.data)
+bvh = BVHTree.FromBMesh(jbm)
+def onsurf(p):
+    q = bvh.find_nearest(p)
+    return q[0] if q[0] is not None else p
+# outer edge: offset the neckline outward in plan view, then drop it onto the jersey
+outer = []
+for i in range(N):
+    t = cp[(i + 1) % N] - cp[i - 1]
+    t2 = Vector((t.x, t.y, 0)).normalized()
+    o = Vector((t2.y, -t2.x, 0))
+    if o.dot(Vector((cp[i].x - centre.x, cp[i].y - centre.y, 0))) < 0:
+        o = -o
+    w = COLLAR_W * (1.3 if abs(i - vi) <= 1 else 1.0)
+    outer.append(onsurf(cp[i] + o * w))
+for _ in range(30):
+    outer = [outer[i] if abs(i - vi) <= 1 else (outer[i - 1] + outer[i] * 2 + outer[(i + 1) % N]) / 4 for i in range(N)]
+outer = [onsurf(p) for p in outer]
+jbm.free()
+rows = []
+for i in range(N):
+    t = (cp[(i + 1) % N] - cp[i - 1]).normalized()
+    across = (outer[i] - cp[i])
+    n = t.cross(across).normalized()
+    if n.dot(cp[i] - Vector((0, NECK.y, cp[i].z - 0.3))) < 0:
+        n = -n
+    d = across.normalized()
+    rows.append([cp[i] - n * 0.004 - d * 0.004, cp[i] + n * 0.0042, outer[i] + n * 0.0036, outer[i] + d * 0.003 - n * 0.0008])
+cverts, cfaces = [], []
+for i in range(N):
+    cverts.extend(rows[i])
+for i in range(N):
+    j = (i + 1) % N
+    for r in range(3):
+        cfaces.append((i * 4 + r, j * 4 + r, j * 4 + r + 1, i * 4 + r + 1))
+cme = bpy.data.meshes.new('Collar')
+cme.from_pydata(cverts, [], cfaces)
+cuv = cme.uv_layers.new(name='UVMap')
+VS = [0.0, 0.08, 0.95, 1.0]
+for poly in cme.polygons:
+    for li in poly.loop_indices:
+        vidx = cme.loops[li].vertex_index
+        i, r = divmod(vidx, 4)
+        u = i / N
+        cuv.data[li].uv = (u, VS[r])
+fix_seams(cme, cuv)
+cme.shade_smooth()
+collar = bpy.data.objects.new('Collar', cme)
+bpy.context.collection.objects.link(collar)
+set_materials(collar, ['collar'])
+meta['collar'] = {'width': COLLAR_W, 'perimeter': round(perim, 4), 'v_point_u': round(vi / N, 4)}
 
 # Pants, both legs share one texture: lateral stripe at u = 0.5
 set_materials(pants, ['pants'])
