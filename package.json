@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:single": "vite build --mode single",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:model": "python3 tools/build_player.py --mh ${MAKEHUMAN_DATA:-/tmp/mh/makehuman/data} --out /tmp/uniformlab-model && gltf-transform meshopt /tmp/uniformlab-model/player.glb public/models/player.glb && cp /tmp/uniformlab-model/player.json public/models/"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "three": "^0.186.1"
   },
   "devDependencies": {
+    "@gltf-transform/cli": "^4.5.0",
     "vite": "^8.3.1",
     "vite-plugin-singlefile": "^2.3.3"
   },

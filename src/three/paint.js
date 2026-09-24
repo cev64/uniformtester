@@ -13,12 +13,12 @@ export function makeCanvas(w, h) {
 }
 
 // Deterministic RNG so patterns don't shimmer between repaints
-function rng(seed) {
+export function rng(seed) {
   let s = seed >>> 0 || 1;
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
 }
 
-const stripeTotal = (stripes) => (stripes || []).reduce((a, [, w]) => a + w, 0);
+export const stripeTotal = (stripes) => (stripes || []).reduce((a, [, w]) => a + w, 0);
 
 // Nested strokes: widest band first, each inner band narrower.
 // Works for symmetric stripe lists, which is how every stripe set is stored.
@@ -40,7 +40,7 @@ export function strokeStripes(ctx, path, stripes, pxPerCm, base, cap = 'butt', j
 }
 
 // Horizontal bands stacked from a start row. dir = -1 paints upward.
-function bandsH(ctx, stripes, y, pxPerCm, x0, x1, dir) {
+export function bandsH(ctx, stripes, y, pxPerCm, x0, x1, dir) {
   let cur = y;
   for (const [c, w] of stripes || []) {
     const h = w * pxPerCm;
@@ -55,7 +55,7 @@ function bandsH(ctx, stripes, y, pxPerCm, x0, x1, dir) {
 }
 
 // Draw something twice when it straddles the u seam
-function wrapped(W, fn) { fn(0); fn(W); fn(-W); }
+export function wrapped(W, fn) { fn(0); fn(W); fn(-W); }
 
 // ─── numbers & lettering ───────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, 
 // ─── patterns ──────────────────────────────────────────────────────────
 
 // A tapered, slightly curved claw-like stripe
-function wedge(ctx, x, y, len, width, angle, bend) {
+export function wedge(ctx, x, y, len, width, angle, bend) {
   const dx = Math.cos(angle), dy = Math.sin(angle);
   const nx = -dy, ny = dx;
   const tipX = x + dx * len + nx * bend, tipY = y + dy * len + ny * bend;
@@ -117,7 +117,7 @@ function wedge(ctx, x, y, len, width, angle, bend) {
   ctx.fill();
 }
 
-function spots(ctx, W, H, color, seed) {
+export function spots(ctx, W, H, color, seed) {
   const r = rng(seed);
   ctx.save();
   ctx.fillStyle = color;
@@ -132,7 +132,7 @@ function spots(ctx, W, H, color, seed) {
 }
 
 // Subtle fabric weave so flat colors don't read as plastic
-function grain(ctx, W, H, strength = 0.035, seed = 7) {
+export function grain(ctx, W, H, strength = 0.035, seed = 7) {
   const r = rng(seed);
   ctx.save();
   for (let i = 0; i < (W * H) / 900; i++) {

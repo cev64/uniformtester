@@ -118,7 +118,7 @@ export class Stage {
   }
 
   setView(v, instant = false) {
-    const target = v.target.clone();
+    const target = v.target.isVector3 ? v.target.clone() : new THREE.Vector3(...v.target);
     const pos = new THREE.Vector3().setFromSphericalCoords(v.r, v.phi, v.theta).add(target);
     if (instant) {
       this.camera.position.copy(pos);

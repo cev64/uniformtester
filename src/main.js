@@ -71,6 +71,7 @@ function ensureStage(i) {
     const st = new Stage($(`#stage-${i}`), { mirrorStart: i === 1 });
     st.onInteract = () => setView(null);
     stages[i] = st;
+    if (location.search.includes('debug')) window[`__stage${i}`] = st;
     st.setAutoRotate(state.spin);
     return st;
   } catch (err) {
