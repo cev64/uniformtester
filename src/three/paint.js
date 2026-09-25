@@ -78,7 +78,7 @@ function glyphMetrics(ctx, fontKey, text) {
  * sx squashes horizontally to undo the texture's aspect ratio.
  * colors: [fill, outline1?, outline2?]; outlines in px.
  */
-export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, o1px = 0, o2px = 0, tracking = 0) {
+export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, o1px = 0, o2px = 0, tracking = 0, skew = null) {
   if (!text) return;
   const f = NUMBER_FONTS[fontKey] || NUMBER_FONTS.block;
   const m = glyphMetrics(ctx, fontKey, text);
@@ -86,7 +86,8 @@ export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, 
   ctx.save();
   ctx.translate(cx, cy);
   ctx.scale(sx, 1);
-  if (f.skew) ctx.transform(1, 0, f.skew, 1, 0, 0);
+  const k = skew ?? f.skew;
+  if (k) ctx.transform(1, 0, k, 1, 0, 0);
   ctx.font = fontCss(fontKey, px);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
@@ -170,6 +171,19 @@ export function paintHelmet(helmet) {
       ctx.fill();
     }
   }
+  if (helmet.pattern?.t === 'halftone') {
+    // dots that grow toward the back of the shell (Saints black alternate)
+    ctx.fillStyle = helmet.pattern.c;
+    const step = 1.1 * pxPerCmX;
+    for (let x = 0.12 * W; x < 0.5 * W; x += step) {
+      const k = 1 - (x - 0.12 * W) / (0.38 * W);           // 1 at the back, 0 at the crown
+      const r = step * 0.42 * Math.max(0, k) ** 0.8;
+      if (r < 0.6) continue;
+      for (let y = step / 2 + ((x / step) % 2) * step / 2; y < H; y += step) {
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
   if (helmet.pattern?.t === 'leather') {
     // 1920s leather: panel seams running front to back, with stitching
     ctx.strokeStyle = 'rgba(40,22,10,0.8)';
@@ -200,7 +214,9 @@ export function paintHelmet(helmet) {
   if (helmet.stripe) {
     const total = stripeTotal(helmet.stripe);
     let y = H / 2 - (total * pxPerCmY) / 2;
-    const x0 = 0.1 * W, x1 = 0.725 * W;
+    // stripeSpan: [start, end] around the shell (0.25 back, 0.5 crown, 0.72 brow)
+    const [s0, s1] = helmet.stripeSpan || [0.1, 0.725];
+    const x0 = s0 * W, x1 = s1 * W;
     for (const [col, w] of helmet.stripe) {
       const h = w * pxPerCmY;
       if (col) {
@@ -255,6 +271,64 @@ export function paintLogo(logo, facing, size = 512) {
   const dirX = mirror ? -1 : 1; // +1 means front is to the right
 
   switch (logo.t) {
+    case 'football': {
+      // an American football with laces and lettering across it
+      ctx.save();
+      ctx.translate(cx, cy);
+      const fb = (g) => { g.ellipse(0, 0, S * 0.46, S * 0.27, 0, 0, Math.PI * 2); };
+      fillStroke(ctx, fb, logo.fill, logo.stroke || logo.text, S * 0.03);
+      ctx.fillStyle = logo.text;
+      for (const x of [-0.3, 0.3]) ctx.fillRect(x * S - S * 0.012, -S * 0.2, S * 0.024, S * 0.4);
+      ctx.restore();
+      drawLettering(ctx, logo.s, cx, cy, S * 0.2, 0.9, [logo.text], 'plate');
+      break;
+    }
+    case 'azflag': {
+      // Arizona state flag: 13 red and gold rays over blue, copper star
+      const w = S * 0.9, h = w * 2 / 3, x0 = cx - w / 2, y0 = cy - h / 2;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+      ctx.fillStyle = '#002868'; ctx.fillRect(x0, y0 + h / 2, w, h / 2);
+      for (let i = 0; i < 13; i++) {
+        const a0 = Math.PI + (i / 13) * Math.PI, a1 = Math.PI + ((i + 1) / 13) * Math.PI;
+        ctx.fillStyle = i % 2 ? '#FED700' : '#BF0A30';
+        ctx.beginPath(); ctx.moveTo(cx, y0 + h / 2);
+        ctx.lineTo(cx + Math.cos(a0) * w, y0 + h / 2 + Math.sin(a0) * w);
+        ctx.lineTo(cx + Math.cos(a1) * w, y0 + h / 2 + Math.sin(a1) * w);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#CE5C17';
+      ctx.beginPath(); starPath(ctx, cx, y0 + h / 2, h * 0.3, h * 0.12); ctx.fill();
+      ctx.restore();
+      break;
+    }
+    case 'mdshield': {
+      // Ravens sleeve shield: Maryland flag quarters under a purple band
+      ctx.save();
+      ctx.translate(cx, cy);
+      const shield = (g) => {
+        g.moveTo(-0.34 * S, -0.42 * S); g.lineTo(0.34 * S, -0.42 * S); g.lineTo(0.34 * S, 0.02 * S);
+        g.quadraticCurveTo(0.32 * S, 0.3 * S, 0, 0.46 * S); g.quadraticCurveTo(-0.32 * S, 0.3 * S, -0.34 * S, 0.02 * S); g.closePath();
+      };
+      fillStroke(ctx, shield, '#241773', '#FFFFFF', S * 0.05);
+      ctx.save(); ctx.beginPath(); shield(ctx); ctx.clip();
+      const cal = (x, y, w, h) => {
+        // Calvert: gold and black vertical bars with a counterchanged diagonal
+        for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? '#000' : '#FFC72C'; ctx.fillRect(x + (i * w) / 6, y, w / 6 + 1, h); }
+        ctx.save(); ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#FFC72C';
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y); ctx.fill(); ctx.restore();
+      };
+      const cro = (x, y, w, h) => {
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = '#C8102E'; ctx.fillRect(x, y + h * 0.4, w, h * 0.2); ctx.fillRect(x + w * 0.4, y, w * 0.2, h);
+      };
+      const top = -0.12 * S, q = 0.34 * S;
+      cal(-q, top, q, 0.3 * S); cro(0, top, q, 0.3 * S); cro(-q, top + 0.3 * S, q, 0.3 * S); cal(0, top + 0.3 * S, q, 0.3 * S);
+      ctx.restore();
+      drawLettering(ctx, 'RAVENS', 0, -0.27 * S, S * 0.1, 1, ['#FFFFFF'], 'roman', 0, 0, 0.05);
+      ctx.restore();
+      break;
+    }
     case 'star':
       fillStroke(ctx, (g) => starPath(g, cx, cy + S * 0.03, S * 0.44, S * 0.18), logo.fill, logo.stroke, S * 0.04, logo.stroke2, S * 0.02);
       break;
@@ -512,12 +586,6 @@ export function paintLogo(logo, facing, size = 512) {
     default:
       return null;
   }
-  return c;
-}
-
-export function paintHelmetNumber(number, color, size = 256) {
-  const c = makeCanvas(size, size);
-  drawLettering(c.getContext('2d'), String(number), size / 2, size / 2, size * 0.7, 1, [color], 'modern');
   return c;
 }
 

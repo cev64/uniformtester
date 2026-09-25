@@ -295,3 +295,25 @@ edge outward. Stripes listed edge→edge.
 - Rivalries: wolf gray jersey & pants, green numbers w/ navy outline textured, "SEAHAWKS" navy; green sound-wave pattern on shoulders; gray pants w/ navy|green stripe; navy socks.
 - Alternate Action Green: green jersey, navy numbers w/ gray outline; navy panels; green pants w/ navy feather stripe; green socks.
 - Throwback 90s: royal blue jersey, white numbers (block), collar green|white|blue; seahawk on sleeves; gray pants w/ blue|green|white? stripes; blue socks w/ white lower.
+
+
+## 2026 accuracy pass (full-resolution sheets)
+
+Every team was re-checked against the original-resolution Commons sheets
+(3,400-7,900 px wide rather than the 1,500 px copies in `uniforms/`), which
+show stripe order, collar bands and number outlines clearly. Highlights:
+
+- Stripe orders corrected where the small copies were ambiguous: Bills
+  (navy|red|white|red|navy sleeve bands), Packers collars (gold|white|gold on
+  green, green|gold|green on white), Cowboys road collar and sleeve bars,
+  Browns road/throwback sleeves (brown bands on white), Dolphins throwbacks.
+- Number styles: octagonal block with a footed 1 (Chiefs, Raiders,
+  Commanders, Panthers, Cardinals, 49ers, Seahawks), square footed block
+  (Cowboys road, Packers, Lions, Saints, Bucs), Steelers italic rounds,
+  Chargers italic rounds, Bears condensed, Vikings wide with notched waists,
+  Bengals narrow ovals, Ravens tall, Eagles with a black drop shadow.
+- Textures in the numbers: Patriots Nor'easter dots, Seahawks feathers, Lions
+  Concrete carbon fibre, Jaguars Rivalries spots, Rams gradient/perforation.
+- Throwback marks cut from the CC0 sheets (`public/logos/*_tb.png`,
+  `NYJ_classic`, `NYJ_plane`, `BAL_dark`, `PIT_crest`): cropped, background
+  flood-filled from the border, trimmed.

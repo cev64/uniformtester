@@ -2,8 +2,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { paintHelmet, paintLogo, paintHelmetNumber } from './paint.js';
+import { paintHelmet, paintLogo } from './paint.js';
+import { numeralCanvas, numeralStyle } from './numerals.js';
 import { asset, loadGLB } from '../assets.js';
+import { loadLogo } from './logos.js';
 
 // SpeedFlex-style helmet (tools/build_helmet.py → public/models/helmet.glb).
 // The shell is painted per team (base colour + stripe), the flex-panel groove
@@ -11,18 +13,30 @@ import { asset, loadGLB } from '../assets.js';
 
 const URL = 'public/models/helmet.glb';
 const DETAIL_URL = asset('public/models/helmet_detail.png');
-const LOGO_URL = (key) => asset(`public/logos/${key}.png`);
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 let modelPromise = null;
-const logoCache = new Map();
-function loadLogo(key) {
-  if (!logoCache.has(key)) {
-    logoCache.set(key, new Promise((resolve) => {
-      new THREE.TextureLoader().load(LOGO_URL(key), (t) => { t.colorSpace = THREE.SRGBColorSpace; resolve(t); }, undefined, () => resolve(null));
-    }));
-  }
-  return logoCache.get(key);
+// The Riddell nameplate bumper above the brow: black plate, white wordmark
+function nameplateTexture() {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#17181a';
+  ctx.fillRect(0, 0, 512, 128);
+  ctx.fillStyle = '#f4f4f4';
+  ctx.font = 'italic 900 78px "Barlow Condensed", "Arial Black", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.save();
+  ctx.translate(256, 66);
+  ctx.scale(1.25, 1);
+  ctx.fillText('Riddell', 0, 0);
+  ctx.restore();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.flipY = false;
+  t.anisotropy = 8;
+  return t;
 }
 
 export class Helmet {
@@ -35,10 +49,14 @@ export class Helmet {
       liner: new THREE.MeshStandardMaterial({ color: '#1a1b1e', roughness: 0.9, side: THREE.DoubleSide }),
       trim: new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.65 }),
       mask: new THREE.MeshPhysicalMaterial({ roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2 }),
-      clip: new THREE.MeshPhysicalMaterial({ color: '#2a2c30', roughness: 0.3, clearcoat: 0.5 }),
+      // SpeedFlex hardware: clear polycarbonate clips with grey screws, black buckles
+      clip: new THREE.MeshPhysicalMaterial({ color: '#dfe6ea', roughness: 0.12, clearcoat: 1, transparent: true, opacity: 0.55, depthWrite: false }),
+      screw: new THREE.MeshStandardMaterial({ color: '#8a8d91', roughness: 0.35, metalness: 0.8 }),
+      buckle: new THREE.MeshStandardMaterial({ color: '#141416', roughness: 0.45 }),
+      bumper: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.3, clearcoat: 0.6 }),
       cup: new THREE.MeshPhysicalMaterial({ color: '#f2f2f2', roughness: 0.35, clearcoat: 0.4 }),
-      strap: new THREE.MeshStandardMaterial({ color: '#efefef', roughness: 0.6 }),
-      pad: new THREE.MeshStandardMaterial({ color: '#232428', roughness: 0.95 }),
+      strap: new THREE.MeshStandardMaterial({ color: '#18191b', roughness: 0.7 }),
+      pad: new THREE.MeshStandardMaterial({ color: '#1d1e21', roughness: 0.95 }),
     };
     modelPromise ||= Promise.all([
       loadGLB(loader, URL),
@@ -55,6 +73,7 @@ export class Helmet {
         o.receiveShadow = true;
         (this.parts[key] ||= []).push(o);
       });
+      this.mats.bumper.map = nameplateTexture();
       if (detail) {
         detail.flipY = false;
         detail.wrapS = THREE.RepeatWrapping;
@@ -79,7 +98,7 @@ export class Helmet {
     if (!this.loaded) return;
     const token = (this.token = Symbol('helmet'));
     const logo = helmet.logo || { t: 'none' };
-    const img = logo.img ? await loadLogo(logo.img) : null;
+    const [img, shield] = await Promise.all([logo.img ? loadLogo(logo.img) : null, loadLogo('NFL_shield')]);
     if (token !== this.token) return;
     this.clear();
 
@@ -102,13 +121,14 @@ export class Helmet {
     const hasMask = Boolean(helmet.mask);
     for (const k of ['mask', 'clip']) for (const o of this.parts[k] || []) o.visible = hasMask;
     if (hasMask) this.mats.mask.color.set(helmet.mask);
-    this.mats.cup.color.set(helmet.chinstrap || '#f2f2f2');
-    this.mats.strap.color.set(helmet.chinstrap || '#efefef');
+    this.mats.cup.color.set('#f2f2f2');
+    this.mats.strap.color.set(helmet.chinstrap || '#18191b');
 
     this.group.updateMatrixWorld(true);
     const shell = this.parts.shell || [];
     const finish = { roughness: m.roughness, metalness: m.metalness * 0.4, clearcoat: m.clearcoat, clearcoatRoughness: 0.05 };
     const sides = logo.side === 'right' ? [-1] : [1, -1];   // the player's right is -x
+    this.shieldDecal(shield, finish);
     for (const sx of sides) {
       // +x side: seen from outside, the front of the helmet is on the viewer's left
       const facing = sx > 0 ? 'left' : 'right';
@@ -127,11 +147,25 @@ export class Helmet {
         }
       }
       if (helmet.numbers) {
-        const c = paintHelmetNumber(player.number ?? '', helmet.numbers);
-        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
-        this.decal(shell, this.hitSide(sx, [-0.2, -0.7]), 0.06, 0.06, t, finish, false);
+        const N = numeralCanvas(String(player.number ?? ''), [helmet.numbers], numeralStyle(player.font) ? player.font : 'block', { px: 160 });
+        if (N) {
+          const t = new THREE.CanvasTexture(N.canvas); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+          const h = 0.045 / N.inkHeight;
+          this.decal(shell, this.hitSide(sx, helmet.numAt || [-0.25, -0.75]), h * N.aspect, h, t, finish, false);
+        }
       }
     }
+  }
+
+  // NFL shield decal, low on the back of the shell
+  shieldDecal(shield, finish) {
+    if (!shield?.image) return;
+    const dir = new THREE.Vector3(0, -0.5, -1).normalize();
+    const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
+    const rc = new THREE.Raycaster(center.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate(), 0, 1);
+    const hit = rc.intersectObjects(this.parts.shell || [], false)[0];
+    const a = shield.image.width / shield.image.height;
+    this.decal(this.parts.shell || [], hit, 0.026 * a, 0.026, shield, finish, false);
   }
 
   // point on the shell side: at = [up, back] offsets of the aim direction

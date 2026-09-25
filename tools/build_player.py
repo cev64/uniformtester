@@ -21,7 +21,7 @@ MH = args.mh
 os.makedirs(args.out, exist_ok=True)
 
 HEIGHT_M = 1.95           # player height barefoot (Josh Allen: 6'4.9", 237 lb)
-MUSCLE, WEIGHT, HEIGHT = 0.74, 0.64, 0.78   # MakeHuman macro sliders (0..1)
+MUSCLE, WEIGHT, HEIGHT = 0.86, 0.7, 0.72   # MakeHuman macro sliders (0..1)
 RACE = {'african': 0.55, 'caucasian': 0.35, 'asian': 0.10}
 
 # ─── load base mesh ────────────────────────────────────────────────────
@@ -73,13 +73,24 @@ for m, a in mw.items():
 # Football build: thicker neck and traps, broader upper body
 # Modern athletic QB build: broad frame, strong but not bulky
 EXTRA = [
-    ('neck/neck-scale-horiz-incr.target', 0.45),
-    ('neck/neck-scale-depth-incr.target', 0.2),
+    ('neck/neck-scale-horiz-incr.target', 0.8),
+    ('neck/neck-scale-depth-incr.target', 0.5),
+    ('neck/neck-scale-vert-decr.target', 0.25),
     ('torso/torso-scale-horiz-incr.target', 0.08),
     ('torso/torso-vshape-incr.target', 0.3),
     ('torso/torso-muscle-pectoral-incr.target', 0.15),
-    ('armslegs/l-upperarm-muscle-incr.target', 0.15),
-    ('armslegs/r-upperarm-muscle-incr.target', 0.15),
+    ('armslegs/l-upperarm-muscle-incr.target', 0.45),
+    ('armslegs/r-upperarm-muscle-incr.target', 0.45),
+    ('armslegs/l-upperarm-scale-horiz-incr.target', 0.45),
+    ('armslegs/r-upperarm-scale-horiz-incr.target', 0.45),
+    ('armslegs/l-upperarm-scale-depth-incr.target', 0.35),
+    ('armslegs/r-upperarm-scale-depth-incr.target', 0.35),
+    ('armslegs/l-lowerarm-muscle-incr.target', 0.3),
+    ('armslegs/r-lowerarm-muscle-incr.target', 0.3),
+    ('armslegs/l-lowerarm-scale-horiz-incr.target', 0.25),
+    ('armslegs/r-lowerarm-scale-horiz-incr.target', 0.25),
+    ('armslegs/l-upperarm-shoulder-muscle-incr.target', 0.4),
+    ('armslegs/r-upperarm-shoulder-muscle-incr.target', 0.4),
     ('armslegs/l-upperleg-muscle-incr.target', 0.45),
     ('armslegs/r-upperleg-muscle-incr.target', 0.45),
     ('armslegs/l-upperleg-scale-horiz-incr.target', 0.1),
@@ -177,8 +188,8 @@ def aim(bone_name, target_dir):
 
 for side, sx in (('L', 1), ('R', -1)):
     # MakeHuman's left is +x
-    aim(f'upperarm01.{side}', (sx * 0.2, 0.02, -1.0))
-    aim(f'lowerarm01.{side}', (sx * 0.14, -0.3, -1.0))
+    aim(f'upperarm01.{side}', (sx * 0.27, 0.02, -1.0))
+    aim(f'lowerarm01.{side}', (sx * 0.2, -0.3, -1.0))
     aim(f'wrist.{side}', (sx * 0.06, -0.12, -1.0))
     # bring the feet in a little from MakeHuman's wide stance
     aim(f'lowerleg01.{side}', (sx * 0.035, 0.015, -1.0))
@@ -224,8 +235,8 @@ ANK = {s: V(f'foot.{s}') for s in 'LR'}
 NECK = V('neck01')
 SIGN = {'L': 1, 'R': -1}
 
-WAIST_Z = HIP['L'].z + 0.075       # top of the pants: just below the navel, like game pants
-JERSEY_BOTTOM = HIP['L'].z - 0.01  # jersey tucks well under the pants
+WAIST_Z = HIP['L'].z + 0.03        # top of the pants: at the hip bones, below the navel
+JERSEY_BOTTOM = HIP['L'].z - 0.05  # jersey tucks well under the pants
 SLEEVE_LEN = 0.115                 # short modern sleeves: shoulder joint → hem along the arm
 PANTS_HEM = 0.07                   # below the knee joint
 SOCK_BOTTOM = 0.13                 # above the ankle joint (cleat collar covers the rest)
@@ -260,8 +271,7 @@ for v in bdata.vertices:
 def gauss(co, center, sigma):
     return math.exp(-((co - center).length / sigma) ** 2)
 
-PAD_CENTER = {s: SH[s] + Vector((SIGN[s] * -0.03, 0.0, 0.06)) for s in 'LR'}
-CHEST_Z = 1.36
+CHEST_Z = SH['L'].z - 0.24
 ARM_AXIS = {s: (EL[s] - SH[s]).normalized() for s in 'LR'}
 FORE_AXIS = {s: (WR[s] - EL[s]).normalized() for s in 'LR'}
 THIGH_AXIS = {s: (KNEE[s] - HIP[s]).normalized() for s in 'LR'}
@@ -270,71 +280,85 @@ SHIN_AXIS = {s: (ANK[s] - KNEE[s]).normalized() for s in 'LR'}
 def t_arm(co, s): return (co - SH[s]).dot(ARM_AXIS[s])
 
 # ─── shoulder pads ───
-# Modern low-profile pads read as one smooth, slightly boxy shell over the
-# shoulders, chest and upper back. Jersey points inside that shell are pushed
-# out onto it (a soft max), which gives the flat-topped pro silhouette
-# instead of bumps.
-PAD_C = Vector((0, NECK.y + 0.01, SH['L'].z - 0.12))
-PAD_AX = 0.312
-PAD_FRONT, PAD_BACK = 0.168, 0.158
-PAD_UP, PAD_DOWN = NECK.z - 0.03 - PAD_C.z, 0.27
-PAD_N = 3.2
+# The pads are modelled as a signed-distance shell: a boxy front/back plate
+# over the chest and shoulder blades, plus an arch over each shoulder that
+# ends in a rounded epaulet. The three pieces are blended with a smooth
+# minimum so the jersey stretched over them has no creases. Jersey points
+# inside the shell are pushed out onto it, which gives the square, flat-topped
+# pro silhouette with the sleeve wrapping the epaulet.
+SHZ = SH['L'].z
+SHX = abs(SH['L'].x)
+PAD_SHAPES = [
+    # centre, (x-, x+), (front, back), (down, up), exponents (xz, y)
+    (Vector((0, -0.03, SHZ - 0.07)), (0.215, 0.215), (0.162, 0.15), (0.2, 0.16), (3.6, 2.6)),
+]
+for s_ in (1, -1):
+    PAD_SHAPES.append((Vector((s_ * (SHX - 0.02), -0.022, SHZ + 0.03)), (0.11, 0.105), (0.125, 0.118), (0.125, 0.058), (4.0, 2.6)))
 
-def pad_f(p):
-    d = p - PAD_C
-    by = PAD_FRONT if d.y < 0 else PAD_BACK
-    cz = PAD_UP if d.z > 0 else PAD_DOWN
-    return (abs(d.x / PAD_AX) ** PAD_N + abs(d.y / by) ** PAD_N + abs(d.z / cz) ** PAD_N) ** (1 / PAD_N)
+def _sdf_one(p, shape):
+    c, rx, ry, rz, (nxz, ny) = shape
+    d = p - c
+    ax = rx[1] if d.x > 0 else rx[0]
+    ay = ry[0] if d.y < 0 else ry[1]
+    az = rz[1] if d.z > 0 else rz[0]
+    f = (abs(d.x / ax) ** nxz + abs(d.y / ay) ** ny + abs(d.z / az) ** nxz)
+    f = f ** (1 / max(nxz, ny)) if f > 0 else 1e-6
+    L = d.length
+    return L * (1 - 1 / max(f, 1e-6))
 
-def smax(a, b, k):
+def smin(a, b, k):
     h = max(k - abs(a - b), 0) / k
-    return max(a, b) + h * h * k * 0.25
+    return min(a, b) - h * h * k * 0.25
+
+def pad_sdf(p):
+    d = _sdf_one(p, PAD_SHAPES[0])
+    for sh in PAD_SHAPES[1:]:
+        d = smin(d, _sdf_one(p, sh), 0.06)
+    return d
 
 def pad_shape(p, c):
-    if c['arm'] and t_arm(p, c['side']) > 0.07:
-        return p
-    f = pad_f(p)
-    if f > 1.25:
-        return p
-    scale = smax(1.0, 1.0 / max(f, 1e-6), 0.12)
-    q = PAD_C + (p - PAD_C) * scale
+    w = 1.0
     if c['arm']:
-        # fade out down the sleeve so the pad's cup meets the arm smoothly
-        w = 1 - smooth01(0.0, 0.07, t_arm(p, c['side']))
-        q = p.lerp(q, w)
-    return q
-
-# ─── offsets (how far each garment stands off the skin) ───
-PAD_TOP = SH['L'].z + 0.075      # flat top of the pads, a little above the acromion
+        # fade out down the sleeve so the epaulet meets the arm smoothly
+        w = 1 - smooth01(0.03, 0.1, t_arm(p, c['side']))
+        if w <= 0:
+            return p
+    if p.z < CHEST_Z - 0.12:
+        return p
+    q = p.copy()
+    e = 0.002
+    for _ in range(4):
+        d = pad_sdf(q)
+        if d >= 0:
+            break
+        g = Vector((pad_sdf(q + Vector((e, 0, 0))) - pad_sdf(q - Vector((e, 0, 0))),
+                    pad_sdf(q + Vector((0, e, 0))) - pad_sdf(q - Vector((0, e, 0))),
+                    pad_sdf(q + Vector((0, 0, e))) - pad_sdf(q - Vector((0, 0, e)))))
+        if g.length < 1e-9:
+            break
+        q = q - g.normalized() * d
+    return p.lerp(q, w)
 
 def jersey_offset(co, c, n):
-    # compression fit over low-profile modern pads, built from three pieces:
+    # compression fit: a few millimetres off the skin, a little more ease on the sleeve
     off = 0.005
-    s_ = c['side']
-    ax = abs(co.x)
-    # 1. front and back plates over the chest and shoulder blades
-    plate = smooth01(CHEST_Z - 0.1, CHEST_Z + 0.02, co.z) * (1 - smooth01(0.15, 0.21, ax))
-    off += 0.011 * plate * min(1.0, abs(n.y) * 1.4)
-    # 2. epaulet caps over the point of each shoulder
-    cap = SH[s_] + Vector((SIGN[s_] * -0.01, 0.0, 0.055))
-    d = co - cap
-    off += 0.024 * math.exp(-((d.x / 0.085) ** 2 + (d.y / 0.1) ** 2 + (d.z / 0.075) ** 2))
-    # 3. the pads' flat top: fill the slope between the neck and the shoulder
-    if n.z > 0.2 and 0.07 < ax < SH[s_].x * SIGN[s_] + 0.02 and co.z > CHEST_Z:
-        fill = max(0.0, PAD_TOP - co.z) * n.z
-        off += min(0.03, fill) * smooth01(0.07, 0.11, ax)
     if c['arm']:
-        off += 0.004 * (1 - smooth01(0.0, SLEEVE_LEN, t_arm(co, s_)))
+        off += 0.006 * (1 - smooth01(0.02, SLEEVE_LEN, t_arm(co, c['side'])))
     return off
 
 def pants_offset(co, c):
     s = c['side']
-    off = 0.007
-    knee_front = KNEE[s] + Vector((0, -0.06, 0.01))
-    thigh_front = (HIP[s] + KNEE[s]) / 2 + Vector((SIGN[s] * 0.01, -0.07, 0.04))
-    off += 0.012 * gauss(co, knee_front, 0.055)
-    off += 0.007 * gauss(co, thigh_front, 0.09)
-    off += 0.004 * gauss(co, HIP[s] + Vector((SIGN[s] * 0.1, 0, 0.02)), 0.08)
+    off = 0.009
+    # knee pad: a rounded cap over the front of the knee
+    knee_front = KNEE[s] + Vector((0, -0.06, 0.015))
+    off += 0.014 * gauss(co, knee_front, 0.06)
+    # thigh pad: a tall oval plate on the front of the thigh (flattens the quad)
+    tf = (HIP[s] + KNEE[s]) / 2 + Vector((SIGN[s] * 0.01, -0.075, 0.03))
+    d = co - tf
+    off += 0.012 * math.exp(-((d.x / 0.07) ** 2 + (d.y / 0.08) ** 2 + (d.z / 0.13) ** 4))
+    # girdle hip pads on the outside of each hip, tailbone pad at the back
+    off += 0.008 * gauss(co, HIP[s] + Vector((SIGN[s] * 0.11, 0, 0.03)), 0.07)
+    off += 0.004 * gauss(co, Vector((0, 0.1, HIP[s].z + 0.02)), 0.07)
     return off
 
 from mathutils.kdtree import KDTree
@@ -364,7 +388,21 @@ def smooth_boundary(bm, iters):
         for v, co in new.items():
             v.co = co
 
-def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, shape=None):
+from mathutils.bvhtree import BVHTree
+body_bvh = BVHTree.FromPolygons([v.co.copy() for v in bdata.vertices], [tuple(p.vertices) for p in bdata.polygons])
+
+def keep_out(bm, min_off):
+    # push any vertex that sank toward the skin back out to at least min_off
+    for v in bm.verts:
+        hit = body_bvh.find_nearest(v.co)
+        if hit[0] is None:
+            continue
+        loc, nrm = hit[0], hit[1]
+        d = (v.co - loc).dot(nrm)
+        if d < min_off:
+            v.co += nrm * (min_off - d)
+
+def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, shape=None, tension=None, min_off=0.0):
     """keep_face(center, info) coarse region test; cuts = [(co, no, region(center, info))]
     Faces in `region` on the +normal side of a cut plane are removed; the cut gives a clean hem."""
     me = bdata.copy(); me.name = name
@@ -393,6 +431,17 @@ def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, s
     inner = [v for v in bm.verts if not v.is_boundary]
     for _ in range(smooth_iters):
         bmesh.ops.smooth_vert(bm, verts=inner, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+    if tension:
+        # fabric stretched across hollows (e.g. over the abs below the pads)
+        pred, iters = tension
+        sel = [v for v in inner if pred(v.co)]
+        for _ in range(iters):
+            bmesh.ops.smooth_vert(bm, verts=sel, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+            keep_out(bm, min_off)
+    if min_off:
+        keep_out(bm, min_off)
+        for _ in range(2):
+            bmesh.ops.smooth_vert(bm, verts=inner, factor=0.3, use_axis_x=True, use_axis_y=True, use_axis_z=True)
     smooth_boundary(bm, 4)
     bm.to_mesh(me); bm.free()
     me.shade_smooth()
@@ -415,7 +464,7 @@ def solidify(ob, thickness):
     bpy.ops.object.modifier_apply(modifier='Solidify')
 
 # ─── jersey ───
-R_NECK = 0.078
+R_NECK = 0.086
 NECK_XY = Vector((NECK.x, NECK.y + 0.012))
 def neck_d(c):
     # elliptical neck opening, a little narrower front-to-back
@@ -431,7 +480,7 @@ inside_v = lambda c: c.y < NECK.y - 0.02 and all((c - V_POINT).dot(vplane(sx)) >
 def neck_hook(bm):
     near = lambda c: c.z > NECK.z - 0.2 and (Vector((c.x, c.y)) - NECK_XY).length < 0.2
     # round opening hugging the neck
-    bmesh.ops.delete(bm, geom=[f for f in bm.faces if (lambda c: c.z > NECK.z - 0.065 + 0.055 * smooth01(0.0, 0.07, c.y - NECK.y) and neck_d(c) < R_NECK)(f.calc_center_median())], context='FACES')
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if (lambda c: c.z > NECK.z - 0.065 + 0.025 * smooth01(0.0, 0.07, c.y - NECK.y) and neck_d(c) < R_NECK)(f.calc_center_median())], context='FACES')
     # V at the front
     for sx in (1, -1):
         faces = [f for f in bm.faces if (lambda c: c.y < NECK.y - 0.02 and abs(c.x) < 0.12 and c.z > NECK.z - 0.16)(f.calc_center_median())]
@@ -463,7 +512,8 @@ for s in 'LR':
 jersey = make_garment(
     'Jersey',
     lambda c, i: (not i['leg']) and not (i['head'] and c.z > NECK.z + 0.01) and c.z > JERSEY_BOTTOM - 0.06 and (not i['arm'] or t_arm(c, i['side']) < SLEEVE_LEN + 0.06),
-    jersey_cuts, jersey_offset, smooth_iters=10, post_cut=neck_hook)
+    jersey_cuts, jersey_offset, smooth_iters=10, post_cut=neck_hook, shape=pad_shape,
+    tension=(lambda c: c.z < CHEST_Z + 0.04 and abs(c.x) < 0.22, 25), min_off=0.004)
 
 # ─── pants ───
 pants_cuts = [(Vector((0, 0, WAIST_Z)), Vector((0, 0, 1)), lambda c, i: True)]
@@ -471,39 +521,122 @@ for s in 'LR':
     pants_cuts.append((KNEE[s] + THIGH_AXIS[s] * PANTS_HEM, THIGH_AXIS[s], lambda c, i, s=s: i['side'] == s and c.z < HIP[s].z - 0.1))
 pants = make_garment('Pants',
     lambda c, i: (not i['arm']) and c.z < WAIST_Z + 0.05 and c.z > KNEE['L'].z - PANTS_HEM - 0.08,
-    pants_cuts, pants_offset, smooth_iters=3)
+    pants_cuts, pants_offset, smooth_iters=4,
+    tension=(lambda c: c.z > HIP['L'].z - 0.22 and abs(c.x) < 0.11, 30), min_off=0.006)
 
 # ─── socks ───
 socks_cuts = []
 for s in 'LR':
     socks_cuts.append((KNEE[s] + SHIN_AXIS[s] * (PANTS_HEM - 0.05), -SHIN_AXIS[s], lambda c, i, s=s: i['side'] == s))
-    socks_cuts.append((ANK[s] + Vector((0, 0, SOCK_BOTTOM - 0.03)), Vector((0, 0, -1)), lambda c, i, s=s: i['side'] == s))
+    socks_cuts.append((ANK[s] + Vector((0, 0, SOCK_BOTTOM - 0.065)), Vector((0, 0, -1)), lambda c, i, s=s: i['side'] == s))
 socks = make_garment('Socks',
-    lambda c, i: (not i['arm']) and i['leg'] and c.z < KNEE[i['side']].z + 0.02 and c.z > ANK[i['side']].z + SOCK_BOTTOM - 0.06,
+    lambda c, i: (not i['arm']) and i['leg'] and c.z < KNEE[i['side']].z + 0.02 and c.z > ANK[i['side']].z + SOCK_BOTTOM - 0.1,
     socks_cuts, lambda co, c: 0.0045, smooth_iters=2)
 
 # ─── cleats ───
-CLEAT_TOP = ANK['L'].z + SOCK_BOTTOM
-cleat_cuts = [(Vector((0, 0, CLEAT_TOP + 0.02)), Vector((0, 0, 1)), lambda c, i: True)]
-cleats = make_garment('Cleats', lambda c, i: (not i['arm']) and c.z < CLEAT_TOP + 0.06,
-    cleat_cuts, lambda co, c: 0.012, smooth_iters=2)
-bm = bmesh.new(); bm.from_mesh(cleats.data)
-bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
-bm.to_mesh(cleats.data); bm.free()
-rm = cleats.modifiers.new('Remesh', 'REMESH'); rm.mode = 'VOXEL'; rm.voxel_size = 0.007
-bpy.context.view_layer.objects.active = cleats
-bpy.ops.object.modifier_apply(modifier='Remesh')
-sm = cleats.modifiers.new('Smooth', 'LAPLACIANSMOOTH'); sm.iterations = 12; sm.lambda_factor = 1.5
-bpy.ops.object.modifier_apply(modifier='Smooth')
-bm = bmesh.new(); bm.from_mesh(cleats.data)
-bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=Vector((0, 0, CLEAT_TOP)), plane_no=Vector((0, 0, 1)), clear_outer=True)
-# flat outsole
-zmin = min(v.co.z for v in bm.verts)
-for v in bm.verts:
-    if v.co.z < zmin + 0.012:
-        v.co.z = zmin + 0.004 * ((v.co.z - zmin) / 0.012)
-bm.to_mesh(cleats.data); bm.free()
-cleats.data.shade_smooth()
+# Built as a shoe last rather than cut from the foot: the foot is measured in
+# slices from heel to toe (width, centre line, instep height) and a smooth
+# rounded-box cross-section is swept along it, with a flat sole plate, toe
+# spring and an open mid-cut collar round the ankle.
+CLEAT_TOP = ANK['L'].z + SOCK_BOTTOM - 0.01
+
+def build_cleat(side):
+    sg = SIGN[side]
+    pts = [v.co.copy() for v, c in zip(bdata.vertices, cls) if c['side'] == side and c['leg'] and v.co.z < CLEAT_TOP + 0.01]
+    foot = [p for p in pts if p.z < ANK[side].z - 0.02]
+    heel = max(foot, key=lambda p: p.y)
+    toe = min(foot, key=lambda p: p.y)
+    ax = Vector((toe.x - heel.x, toe.y - heel.y, 0)).normalized()
+    lat = Vector((-ax.y, ax.x, 0)) * (1 if (-ax.y) * sg > 0 else -1)   # toward the outside of the foot
+    L = (toe - heel).dot(ax)
+    zsole = min(p.z for p in pts) - 0.012
+    NS, NR = 44, 36
+    ts = [i / (NS - 1) for i in range(NS)]
+    cen, wid, top = [], [], []
+    for t in ts:
+        sl = [p for p in pts if abs((p - heel).dot(ax) / L - t) < 0.035]
+        if not sl:
+            sl = pts
+        ls = [(p - heel).dot(lat) for p in sl]
+        cen.append((max(ls) + min(ls)) / 2)
+        wid.append((max(ls) - min(ls)) / 2 + 0.004)
+        top.append(min(CLEAT_TOP + 0.01, max(p.z for p in sl) + 0.009))
+    for arr in (cen, wid, top):
+        for _ in range(6):
+            arr[:] = [arr[0]] + [(arr[i - 1] + 2 * arr[i] + arr[i + 1]) / 4 for i in range(1, NS - 1)] + [arr[-1]]
+    # instep: the tongue slopes smoothly from the collar down to the toe box
+    toe_top = zsole + 0.043
+    for i, t in enumerate(ts):
+        if t > 0.22:
+            k = smooth01(0.22, 0.92, t) ** 0.75                 # convex ramp down the laces
+            top[i] = CLEAT_TOP - (CLEAT_TOP - toe_top) * k
+    rings = []
+    def ring(t, w, c, zt, scale=1.0, dz=0.0):
+        base = heel + ax * (t * L)
+        zb = zsole + dz
+        hz = (zt - zb) / 2 * scale
+        zm = zb + (zt - zb) / 2
+        r = []
+        for k in range(NR):
+            a = 2 * math.pi * k / NR
+            ca, sa = math.cos(a), math.sin(a)
+            n = 2.0 if sa > 0 else 5.0            # round on top, flat underneath
+            x = math.copysign(abs(ca) ** (2 / n), ca) * w * scale
+            z = math.copysign(abs(sa) ** (2 / n), sa)
+            z = zm + z * hz if sa > 0 else max(zb, zm + z * (zt - zb) / 2)
+            r.append(base + lat * (c + x) + Vector((0, 0, z - base.z)))
+        return r
+    # heel cap
+    for f, back in ((0.55, 0.016), (0.85, 0.009)):
+        rings.append(ring(-back / L, wid[0], cen[0], top[0], f))
+    for i, t in enumerate(ts):
+        rings.append(ring(t, wid[i], cen[i], top[i]))
+    # rounded toe box
+    for f, fwd in ((0.85, 0.01), (0.55, 0.018), (0.2, 0.022)):
+        rings.append(ring(1 + fwd / L, wid[-1] * (0.8 + 0.2 * f), cen[-1], zsole + (top[-1] - zsole) * (0.6 + 0.4 * f), f))
+    verts, faces = [], []
+    for r in rings:
+        verts.extend(r)
+    for i in range(len(rings) - 1):
+        for k in range(NR):
+            a, b = i * NR + k, i * NR + (k + 1) % NR
+            faces.append((a, b, b + NR, a + NR))
+    faces.append(tuple(range(NR))[::-1])
+    faces.append(tuple(range((len(rings) - 1) * NR, len(rings) * NR)))
+    me = bpy.data.meshes.new('Cleat' + side)
+    me.from_pydata(verts, [], faces)
+    ob = bpy.data.objects.new('Cleat' + side, me)
+    bpy.context.collection.objects.link(ob)
+    bm = bmesh.new(); bm.from_mesh(me)
+    # toe spring
+    for v in bm.verts:
+        t = (v.co - heel).dot(ax) / L
+        v.co.z += 0.014 * smooth01(0.72, 1.06, t) ** 1.5
+    # open the collar round the ankle
+    bm.normal_update()
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.calc_center_median().z > CLEAT_TOP - 0.012 and f.normal.z > 0.5], context='FACES')
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.to_mesh(me); bm.free()
+    sub = ob.modifiers.new('S', 'SUBSURF'); sub.levels = 1
+    so = ob.modifiers.new('T', 'SOLIDIFY'); so.thickness = 0.004; so.offset = -1
+    bpy.context.view_layer.objects.active = ob
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    bpy.ops.object.modifier_apply(modifier='S')
+    bpy.ops.object.modifier_apply(modifier='T')
+    me.shade_smooth()
+    return ob, zsole
+
+cl, zs = build_cleat('L')
+cr, _ = build_cleat('R')
+bpy.ops.object.select_all(action='DESELECT')
+cl.select_set(True); cr.select_set(True)
+bpy.context.view_layer.objects.active = cl
+bpy.ops.object.join()
+cleats = cl
+cleats.name = 'Cleats'
+CLEAT_SOLE_Z = zs + 0.018
 
 # ─── gloves ───
 glove_cuts = [(WR[s] - FORE_AXIS[s] * 0.035, -FORE_AXIS[s], lambda c, i, s=s: i['arm'] and i['side'] == s) for s in 'LR']
@@ -630,84 +763,96 @@ def neck_loop(obj):
     return pts, nrm
 
 pts, nrm = neck_loop(jersey)
-# resample evenly and smooth (keep the V point sharp)
-def resample(pts, nrm, n):
+from mathutils.bvhtree import BVHTree
+jbm = bmesh.new(); jbm.from_mesh(jersey.data)
+jbm.normal_update()
+bvh = BVHTree.FromBMesh(jbm)
+
+def surf(p):
+    q = bvh.find_nearest(p)
+    if q[0] is None:
+        return p, Vector((0, 0, 1))
+    n = q[1]
+    # face normals near the neckline aren't reliably wound; point them away from the body
+    if n.dot(q[0] - Vector((0, 0.0, q[0].z - 0.15))) < 0:
+        n = -n
+    return q[0], n
+
+def resample_loop(pts, n):
     L = [0.0]
     for i in range(1, len(pts) + 1):
         L.append(L[-1] + (pts[i % len(pts)] - pts[i - 1]).length)
-    out, onr, j = [], [], 0
+    out, j = [], 0
     for k in range(n):
         t = L[-1] * k / n
         while L[j + 1] < t:
             j += 1
         f = (t - L[j]) / max(1e-9, L[j + 1] - L[j])
         out.append(pts[j].lerp(pts[(j + 1) % len(pts)], f))
-        onr.append(nrm[j].lerp(nrm[(j + 1) % len(pts)], f).normalized())
-    return out, onr, L[-1]
-from mathutils.bvhtree import BVHTree
+    return out, L[-1]
+
 N = 360
-raw, _, _ = resample(pts, nrm, N)
-# heights along the real neckline, heavily smoothed
-bz = [p.z for p in raw]
-for _ in range(120):
-    bz = [(bz[i - 1] + bz[i] * 2 + bz[(i + 1) % N]) / 4 for i in range(N)]
-def height_at(x, y):
-    k = min(range(N), key=lambda i: (raw[i].x - x) ** 2 + (raw[i].y - y) ** 2)
-    return bz[k]
-# parametric plan-view neckline: ellipse at the back and sides, straight V at the front
-VP = min(raw, key=lambda p: p.z + (0 if p.y < NECK.y else 9))
-RX, RY = R_NECK + 0.004, (R_NECK + 0.004) * 0.9
-A_V = math.radians(38)       # half-angle (from the front) where the V leaves the ellipse
-def ell(a):                   # a = 0 at the front (-y), increasing toward +x
-    return Vector((NECK_XY.x + RX * math.sin(a), NECK_XY.y - RY * math.cos(a)))
-nv = 40
-cp = []
-e1, e2 = ell(A_V), ell(2 * math.pi - A_V)
-z1 = height_at(e1.x, e1.y); z2 = height_at(e2.x, e2.y)
-for k in range(nv):
-    f = k / nv
-    cp.append(Vector((VP.x + (e1.x - VP.x) * f, VP.y + (e1.y - VP.y) * f, VP.z + (z1 - VP.z) * f)))
-for k in range(N - 2 * nv):
-    a = A_V + (2 * math.pi - 2 * A_V) * k / (N - 2 * nv)
-    e = ell(a)
-    cp.append(Vector((e.x, e.y, height_at(e.x, e.y))))
-for k in range(nv):
-    f = k / nv
-    cp.append(Vector((e2.x + (VP.x - e2.x) * f, e2.y + (VP.y - e2.y) * f, z2 + (VP.z - z2) * f)))
-perim = sum((cp[i] - cp[i - 1]).length for i in range(N))
-# put the UV seam at the back centre
-back = max(range(N), key=lambda i: cp[i].y)
+cp, perim = resample_loop(pts, N)
+# put index 0 at the back centre and find the V point (lowest point at the front)
+back = max(range(N), key=lambda i: cp[i].y - abs(cp[i].x) * 2)
 cp = cp[back:] + cp[:back]
-vi = (N - back) % N
+vi = min(range(N), key=lambda i: cp[i].z + (0 if cp[i].y < NECK.y else 9))
+# smooth the neckline in 3D (keeping the V sharp) and settle it back on the jersey
+for _ in range(40):
+    cp = [cp[i] if min(abs(i - vi), N - abs(i - vi)) <= 1 else (cp[i - 1] + cp[i] * 2 + cp[(i + 1) % N]) / 4 for i in range(N)]
+    cp = [surf(p)[0] for p in cp]
+nrms = [surf(p)[1] for p in cp]
 centre = sum(cp, Vector()) / N
-jbm = bmesh.new(); jbm.from_mesh(jersey.data)
-bvh = BVHTree.FromBMesh(jbm)
-def onsurf(p):
-    q = bvh.find_nearest(p)
-    return q[0] if q[0] is not None else p
-# outer edge: offset the neckline outward in plan view, then drop it onto the jersey
-outer = []
+# outward direction across the band, in the jersey surface
+outs = []
 for i in range(N):
-    t = cp[(i + 1) % N] - cp[i - 1]
-    t2 = Vector((t.x, t.y, 0)).normalized()
-    o = Vector((t2.y, -t2.x, 0))
-    if o.dot(Vector((cp[i].x - centre.x, cp[i].y - centre.y, 0))) < 0:
+    t = (cp[(i + 1) % N] - cp[i - 1]).normalized()
+    o = nrms[i].cross(t).normalized()
+    # outward = toward the fabric, away from the neck hole
+    da = (surf(cp[i] + o * 0.015)[0] - (cp[i] + o * 0.015)).length
+    db = (surf(cp[i] - o * 0.015)[0] - (cp[i] - o * 0.015)).length
+    if db < da:
         o = -o
-    w = COLLAR_W * (1.3 if abs(i - vi) <= 1 else 1.0)
-    outer.append(onsurf(cp[i] + o * w))
-for _ in range(30):
-    outer = [outer[i] if abs(i - vi) <= 1 else (outer[i - 1] + outer[i] * 2 + outer[(i + 1) % N]) / 4 for i in range(N)]
-outer = [onsurf(p) for p in outer]
+    outs.append(o)
+outer = [surf(cp[i] + outs[i] * COLLAR_W)[0] for i in range(N)]
+# trim any jersey fabric left inside the collar line (so nothing pokes out above the band)
+tbm = bmesh.new(); tbm.from_mesh(jersey.data)
+from mathutils.kdtree import KDTree as _KD
+ckd = _KD(N)
+for i, p in enumerate(cp):
+    ckd.insert(p, i)
+ckd.balance()
+kill = []
+for f in tbm.faces:
+    c = f.calc_center_median()
+    co, i, dist = ckd.find(c)
+    if dist < 0.04 and (c - cp[i]).dot(outs[i]) < -0.003:
+        kill.append(f)
+bmesh.ops.delete(tbm, geom=kill, context='FACES')
+bmesh.ops.delete(tbm, geom=[v for v in tbm.verts if not v.link_faces], context='VERTS')
+tbm.to_mesh(jersey.data); tbm.free()
+# the two outer edges of the V meet in a point below the neckline's V
+step = perim / N
+side_a, side_b = (cp[(vi + 12) % N] - cp[vi]).normalized(), (cp[vi - 12] - cp[vi]).normalized()
+half = max(0.5, side_a.angle(side_b) / 2)
+down = -(side_a + side_b).normalized()
+v_outer = surf(cp[vi] + down * (COLLAR_W / math.sin(half)))[0]
+m = max(2, int(math.ceil(COLLAR_W / math.tan(half) / step)) + 2)
+for k in range(-m, m + 1):
+    i = (vi + k) % N
+    j = (vi + (m if k >= 0 else -m)) % N
+    outer[i] = surf(v_outer.lerp(outer[j], abs(k) / m))[0]
+for _ in range(12):
+    outer = [outer[i] if min(abs(i - vi), N - abs(i - vi)) <= m else (outer[i - 1] + outer[i] * 2 + outer[(i + 1) % N]) / 4 for i in range(N)]
+    outer = [surf(p)[0] for p in outer]
+onrm = [surf(p)[1] for p in outer]
 jbm.free()
 rows = []
 for i in range(N):
-    t = (cp[(i + 1) % N] - cp[i - 1]).normalized()
-    across = (outer[i] - cp[i])
-    n = t.cross(across).normalized()
-    if n.dot(cp[i] - Vector((0, NECK.y, cp[i].z - 0.3))) < 0:
-        n = -n
-    d = across.normalized()
-    rows.append([cp[i] - n * 0.004 - d * 0.004, cp[i] + n * 0.0042, outer[i] + n * 0.0036, outer[i] + d * 0.003 - n * 0.0008])
+    n0, n1 = nrms[i], onrm[i]
+    d = (outer[i] - cp[i]).normalized()
+    # rolled neck edge, flat band lying on the jersey, feathered outer edge
+    rows.append([cp[i] - n0 * 0.002 - d * 0.0015, cp[i] + n0 * 0.0032, outer[i] + n1 * 0.0026, outer[i] + n1 * 0.0006 + d * 0.0012])
 cverts, cfaces = [], []
 for i in range(N):
     cverts.extend(rows[i])
@@ -723,14 +868,20 @@ for poly in cme.polygons:
     for li in poly.loop_indices:
         vidx = cme.loops[li].vertex_index
         i, r = divmod(vidx, 4)
-        u = i / N
-        cuv.data[li].uv = (u, VS[r])
+        cuv.data[li].uv = (i / N, VS[r])
 fix_seams(cme, cuv)
 cme.shade_smooth()
 collar = bpy.data.objects.new('Collar', cme)
 bpy.context.collection.objects.link(collar)
 set_materials(collar, ['collar'])
 meta['collar'] = {'width': COLLAR_W, 'perimeter': round(perim, 4), 'v_point_u': round(vi / N, 4)}
+# the front of the neckline (outer edge of the collar) in torso UV space, for
+# graphics that radiate from the V (e.g. the Ravens' feathered collar)
+front_uv = []
+for k in range(-60, 61, 3):
+    p = outer[(vi + k) % N]
+    front_uv.append([round(0.5 + math.atan2(p.x, -(p.y - YC)) / TWO_PI, 4), round((p.z - Z0) / (Z1 - Z0), 4)])
+meta['collar']['front_uv'] = front_uv
 
 # Pants, both legs share one texture: lateral stripe at u = 0.5
 set_materials(pants, ['pants'])
@@ -774,7 +925,10 @@ for poly in me.polygons:
 fix_seams(me, uv)
 region_meta('socks', pts, S_BOT - S_TOP)
 
-set_materials(cleats, ['cleat'])
+set_materials(cleats, ['cleat', 'sole'])
+for poly in cleats.data.polygons:
+    # the sole plate: the band around the bottom of the shoe
+    poly.material_index = 1 if poly.center.z < CLEAT_SOLE_Z else 0
 cleats.data.uv_layers.new(name='UVMap')
 set_materials(gloves, ['glove'])
 set_materials(body, ['skin'])
@@ -793,6 +947,14 @@ for s in 'LR':
 # Solidify hems after UVs so the inner shell and rims inherit them
 solidify(jersey, 0.004)
 solidify(pants, 0.004)
+
+# The feet are hidden inside the shoes and socks: drop them from the body so
+# toes never poke through the uppers
+bm = bmesh.new(); bm.from_mesh(body.data)
+low = ANK['L'].z + SOCK_BOTTOM - 0.05
+bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(v.co.z < low for v in f.verts) and abs(f.calc_center_median().x) > 0.03], context='FACES')
+bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+bm.to_mesh(body.data); bm.free()
 
 # Stand on the ground
 ground = min((o.matrix_world @ v.co).z for o in (cleats,) for v in o.data.vertices)
