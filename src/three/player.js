@@ -129,7 +129,8 @@ export class Player {
       pants: fabric([14, 18], { roughness: 0.55, sheen: 0.7, normal: 0.25 }),
       socks: fabric([8, 10], { roughness: 0.9, sheen: 0.3 }),
       skin: new THREE.MeshPhysicalMaterial({ roughness: 0.48, sheen: 0.3, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.08, clearcoatRoughness: 0.5 }),
-      cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.25 }),
+      cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.3, normalMap: getFabricNormal(), normalScale: new THREE.Vector2(0.15, 0.15) }),
+      sole: new THREE.MeshPhysicalMaterial({ roughness: 0.55 }),
       glove: new THREE.MeshPhysicalMaterial({ roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5 }),
       eye: new THREE.MeshPhysicalMaterial({ roughness: 0.08, clearcoat: 1, map: tex(eyeCanvas(), this.aniso) }),
     };
@@ -198,6 +199,7 @@ export class Player {
       ? (luminance(socks.base) > 0.5 ? '#F2F2F2' : '#151515')
       : player.cleats === 'white' ? '#F2F2F2' : player.cleats === 'black' ? '#151515' : team.colors[0];
     m.cleat.color.set(cleat);
+    m.sole.color.set(luminance(cleat) > 0.5 ? '#D9DADB' : '#1E1F21');
 
     this.placeDecals(team, jersey, pants, player, logos, cleat);
     this.helmet.set(helmet, { ...player, font: helmet.numFont || jersey.font || team.font });
@@ -363,7 +365,7 @@ export class Player {
 
     // Pants: NFL shield on the player's right hip, swoosh on the left, team logos on the hip sides
     const hipL = this.J['upperleg01.L'], hipR = this.J['upperleg01.R'];
-    const hipY = hipL.y + 0.12;
+    const hipY = this.meta.constants.waist - 0.045;
     this.image(pantsM, this.raycast(pantsM, new THREE.Vector3(hipR.x - 0.02, hipY, 0.6), new THREE.Vector3(0, 0, -1)), 0.034, logos.NFL_shield);
     const sw = new THREE.CanvasTexture(swooshCanvas(pants.swoosh || shade(pants.base, luminance(pants.base) > 0.5 ? -0.75 : 0.8)));
     sw.colorSpace = THREE.SRGBColorSpace; this.textures.push(sw);

@@ -40,18 +40,32 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
 
 - **Player**: `tools/build_player.py` builds an athletic body in Blender from
   [MakeHuman](https://github.com/makehumancommunity/makehuman) assets (CC0),
-  proportioned after a modern NFL quarterback (6'5", 237 lb), with the
-  arms relaxed at the sides. The jersey, pants, socks, cleats and gloves are
-  cut from the body surface with clean hems and a compression fit over
-  low-profile pads, and given UV layouts the app paints uniforms onto.
-- **Helmet**: `tools/build_helmet.py` models a Riddell SpeedFlex-style shell
-  (jaw flaps, rear skirt, front flex panel, vents, ear holes, rubber trim)
-  with a SpeedFlex-style facemask, clips and chin strap.
-- **Uniforms**: stripes, collars and numbers are painted per team at real
-  sizes; logos, the NFL shield and swooshes are projected decals.
+  proportioned after a modern NFL quarterback (6'5", 237 lb). The shoulder
+  pads are a blended signed-distance shell (chest and back plates plus
+  epaulet arches) that the jersey is stretched over; the pants sit at the hip
+  bones with thigh, knee, hip and tailbone pads under them; the knit collar
+  follows the real neckline; the cleats are swept from slices of the foot
+  (toe box, laced instep, open mid-cut collar, sole plate with toe spring).
+  `tools/fix_skin.py` evens out the baked lighting in the photo skin.
+- **Helmet**: `tools/build_helmet.py` models a Riddell SpeedFlex from its
+  product photography: the raised Flex panel from brow to crown with the
+  forehead slits, chevron and rear vents, jaw extensions, flared rear edge,
+  Riddell nameplate bumper, rubber trim, a SpeedFlex facemask on four clear
+  quick-release clips, chin strap with cup and buckles, and inner padding.
+- **Numbers**: `src/three/numerals.js` draws jersey numbers as tackle-twill
+  shapes rather than typing them in a font. Each team has a style (pro block,
+  octagonal footed, round, Bears condensed, Steelers italic rounds, Vikings,
+  Chargers italic, Rams, ...) and numbers get real stacked outlines, drop
+  shadows and printed textures (Seahawks feathers, Lions carbon fibre,
+  perforated Rivalries numbers, Jaguars spots).
+- **Uniforms**: stripes, collars, panels (yokes, raglan panels, V-bands,
+  fins, sleeve text bands, knotwork, diamond plate) and numbers are painted
+  per team at real sizes; logos, the NFL shield and swooshes are projected
+  decals.
 - **Reference**: `research/uniforms/` holds each team's uniform sheet from
   Wikimedia Commons (CC0) that the data was built from, with notes in
-  `research/notes.md`. Team logos in `public/logos/` come from Wikimedia.
+  `research/notes.md`. Team logos in `public/logos/` come from Wikimedia;
+  throwback marks were cut from the same CC0 sheets.
 
 | File | What's in it |
 | --- | --- |
@@ -59,6 +73,7 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
 | `src/data/status.js` | Worn / announced / fantasy logic |
 | `tools/build_player.py`, `tools/build_helmet.py` | Blender scripts that generate `public/models/*.glb` (`npm run build:model`) |
 | `src/three/garments.js`, `src/three/paint.js` | Canvas painters for jerseys, sleeves, pants, socks, helmet shells and drawn marks |
+| `src/three/numerals.js` | Twill-style number shapes and per-team numeral styles |
 | `src/three/player.js` | Loads the player, paints the garments and places number/name/logo decals |
 | `src/three/helmet.js` | Loads the helmet and applies shell paint, finish and logo decals |
 | `src/three/stage.js` | Renderer, lighting, turf, camera and controls |

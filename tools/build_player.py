@@ -522,39 +522,121 @@ for s in 'LR':
 pants = make_garment('Pants',
     lambda c, i: (not i['arm']) and c.z < WAIST_Z + 0.05 and c.z > KNEE['L'].z - PANTS_HEM - 0.08,
     pants_cuts, pants_offset, smooth_iters=4,
-    tension=(lambda c: c.z > HIP['L'].z - 0.2 and abs(c.x) < 0.1 and c.y > 0, 30), min_off=0.006)
+    tension=(lambda c: c.z > HIP['L'].z - 0.22 and abs(c.x) < 0.11, 30), min_off=0.006)
 
 # ─── socks ───
 socks_cuts = []
 for s in 'LR':
     socks_cuts.append((KNEE[s] + SHIN_AXIS[s] * (PANTS_HEM - 0.05), -SHIN_AXIS[s], lambda c, i, s=s: i['side'] == s))
-    socks_cuts.append((ANK[s] + Vector((0, 0, SOCK_BOTTOM - 0.03)), Vector((0, 0, -1)), lambda c, i, s=s: i['side'] == s))
+    socks_cuts.append((ANK[s] + Vector((0, 0, SOCK_BOTTOM - 0.065)), Vector((0, 0, -1)), lambda c, i, s=s: i['side'] == s))
 socks = make_garment('Socks',
-    lambda c, i: (not i['arm']) and i['leg'] and c.z < KNEE[i['side']].z + 0.02 and c.z > ANK[i['side']].z + SOCK_BOTTOM - 0.06,
+    lambda c, i: (not i['arm']) and i['leg'] and c.z < KNEE[i['side']].z + 0.02 and c.z > ANK[i['side']].z + SOCK_BOTTOM - 0.1,
     socks_cuts, lambda co, c: 0.0045, smooth_iters=2)
 
 # ─── cleats ───
-CLEAT_TOP = ANK['L'].z + SOCK_BOTTOM
-cleat_cuts = [(Vector((0, 0, CLEAT_TOP + 0.02)), Vector((0, 0, 1)), lambda c, i: True)]
-cleats = make_garment('Cleats', lambda c, i: (not i['arm']) and c.z < CLEAT_TOP + 0.06,
-    cleat_cuts, lambda co, c: 0.012, smooth_iters=2)
-bm = bmesh.new(); bm.from_mesh(cleats.data)
-bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
-bm.to_mesh(cleats.data); bm.free()
-rm = cleats.modifiers.new('Remesh', 'REMESH'); rm.mode = 'VOXEL'; rm.voxel_size = 0.007
-bpy.context.view_layer.objects.active = cleats
-bpy.ops.object.modifier_apply(modifier='Remesh')
-sm = cleats.modifiers.new('Smooth', 'LAPLACIANSMOOTH'); sm.iterations = 12; sm.lambda_factor = 1.5
-bpy.ops.object.modifier_apply(modifier='Smooth')
-bm = bmesh.new(); bm.from_mesh(cleats.data)
-bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=Vector((0, 0, CLEAT_TOP)), plane_no=Vector((0, 0, 1)), clear_outer=True)
-# flat outsole
-zmin = min(v.co.z for v in bm.verts)
-for v in bm.verts:
-    if v.co.z < zmin + 0.012:
-        v.co.z = zmin + 0.004 * ((v.co.z - zmin) / 0.012)
-bm.to_mesh(cleats.data); bm.free()
-cleats.data.shade_smooth()
+# Built as a shoe last rather than cut from the foot: the foot is measured in
+# slices from heel to toe (width, centre line, instep height) and a smooth
+# rounded-box cross-section is swept along it, with a flat sole plate, toe
+# spring and an open mid-cut collar round the ankle.
+CLEAT_TOP = ANK['L'].z + SOCK_BOTTOM - 0.01
+
+def build_cleat(side):
+    sg = SIGN[side]
+    pts = [v.co.copy() for v, c in zip(bdata.vertices, cls) if c['side'] == side and c['leg'] and v.co.z < CLEAT_TOP + 0.01]
+    foot = [p for p in pts if p.z < ANK[side].z - 0.02]
+    heel = max(foot, key=lambda p: p.y)
+    toe = min(foot, key=lambda p: p.y)
+    ax = Vector((toe.x - heel.x, toe.y - heel.y, 0)).normalized()
+    lat = Vector((-ax.y, ax.x, 0)) * (1 if (-ax.y) * sg > 0 else -1)   # toward the outside of the foot
+    L = (toe - heel).dot(ax)
+    zsole = min(p.z for p in pts) - 0.012
+    NS, NR = 44, 36
+    ts = [i / (NS - 1) for i in range(NS)]
+    cen, wid, top = [], [], []
+    for t in ts:
+        sl = [p for p in pts if abs((p - heel).dot(ax) / L - t) < 0.035]
+        if not sl:
+            sl = pts
+        ls = [(p - heel).dot(lat) for p in sl]
+        cen.append((max(ls) + min(ls)) / 2)
+        wid.append((max(ls) - min(ls)) / 2 + 0.004)
+        top.append(min(CLEAT_TOP + 0.01, max(p.z for p in sl) + 0.009))
+    for arr in (cen, wid, top):
+        for _ in range(6):
+            arr[:] = [arr[0]] + [(arr[i - 1] + 2 * arr[i] + arr[i + 1]) / 4 for i in range(1, NS - 1)] + [arr[-1]]
+    # instep: the tongue slopes smoothly from the collar down to the toe box
+    toe_top = zsole + 0.043
+    for i, t in enumerate(ts):
+        if t > 0.22:
+            k = smooth01(0.22, 0.92, t) ** 0.75                 # convex ramp down the laces
+            top[i] = CLEAT_TOP - (CLEAT_TOP - toe_top) * k
+    rings = []
+    def ring(t, w, c, zt, scale=1.0, dz=0.0):
+        base = heel + ax * (t * L)
+        zb = zsole + dz
+        hz = (zt - zb) / 2 * scale
+        zm = zb + (zt - zb) / 2
+        r = []
+        for k in range(NR):
+            a = 2 * math.pi * k / NR
+            ca, sa = math.cos(a), math.sin(a)
+            n = 2.0 if sa > 0 else 5.0            # round on top, flat underneath
+            x = math.copysign(abs(ca) ** (2 / n), ca) * w * scale
+            z = math.copysign(abs(sa) ** (2 / n), sa)
+            z = zm + z * hz if sa > 0 else max(zb, zm + z * (zt - zb) / 2)
+            r.append(base + lat * (c + x) + Vector((0, 0, z - base.z)))
+        return r
+    # heel cap
+    for f, back in ((0.55, 0.016), (0.85, 0.009)):
+        rings.append(ring(-back / L, wid[0], cen[0], top[0], f))
+    for i, t in enumerate(ts):
+        rings.append(ring(t, wid[i], cen[i], top[i]))
+    # rounded toe box
+    for f, fwd in ((0.85, 0.01), (0.55, 0.018), (0.2, 0.022)):
+        rings.append(ring(1 + fwd / L, wid[-1] * (0.8 + 0.2 * f), cen[-1], zsole + (top[-1] - zsole) * (0.6 + 0.4 * f), f))
+    verts, faces = [], []
+    for r in rings:
+        verts.extend(r)
+    for i in range(len(rings) - 1):
+        for k in range(NR):
+            a, b = i * NR + k, i * NR + (k + 1) % NR
+            faces.append((a, b, b + NR, a + NR))
+    faces.append(tuple(range(NR))[::-1])
+    faces.append(tuple(range((len(rings) - 1) * NR, len(rings) * NR)))
+    me = bpy.data.meshes.new('Cleat' + side)
+    me.from_pydata(verts, [], faces)
+    ob = bpy.data.objects.new('Cleat' + side, me)
+    bpy.context.collection.objects.link(ob)
+    bm = bmesh.new(); bm.from_mesh(me)
+    # toe spring
+    for v in bm.verts:
+        t = (v.co - heel).dot(ax) / L
+        v.co.z += 0.014 * smooth01(0.72, 1.06, t) ** 1.5
+    # open the collar round the ankle
+    bm.normal_update()
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.calc_center_median().z > CLEAT_TOP - 0.012 and f.normal.z > 0.5], context='FACES')
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.to_mesh(me); bm.free()
+    sub = ob.modifiers.new('S', 'SUBSURF'); sub.levels = 1
+    so = ob.modifiers.new('T', 'SOLIDIFY'); so.thickness = 0.004; so.offset = -1
+    bpy.context.view_layer.objects.active = ob
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    bpy.ops.object.modifier_apply(modifier='S')
+    bpy.ops.object.modifier_apply(modifier='T')
+    me.shade_smooth()
+    return ob, zsole
+
+cl, zs = build_cleat('L')
+cr, _ = build_cleat('R')
+bpy.ops.object.select_all(action='DESELECT')
+cl.select_set(True); cr.select_set(True)
+bpy.context.view_layer.objects.active = cl
+bpy.ops.object.join()
+cleats = cl
+cleats.name = 'Cleats'
+CLEAT_SOLE_Z = zs + 0.018
 
 # ─── gloves ───
 glove_cuts = [(WR[s] - FORE_AXIS[s] * 0.035, -FORE_AXIS[s], lambda c, i, s=s: i['arm'] and i['side'] == s) for s in 'LR']
@@ -843,7 +925,10 @@ for poly in me.polygons:
 fix_seams(me, uv)
 region_meta('socks', pts, S_BOT - S_TOP)
 
-set_materials(cleats, ['cleat'])
+set_materials(cleats, ['cleat', 'sole'])
+for poly in cleats.data.polygons:
+    # the sole plate: the band around the bottom of the shoe
+    poly.material_index = 1 if poly.center.z < CLEAT_SOLE_Z else 0
 cleats.data.uv_layers.new(name='UVMap')
 set_materials(gloves, ['glove'])
 set_materials(body, ['skin'])
@@ -862,6 +947,14 @@ for s in 'LR':
 # Solidify hems after UVs so the inner shell and rims inherit them
 solidify(jersey, 0.004)
 solidify(pants, 0.004)
+
+# The feet are hidden inside the shoes and socks: drop them from the body so
+# toes never poke through the uppers
+bm = bmesh.new(); bm.from_mesh(body.data)
+low = ANK['L'].z + SOCK_BOTTOM - 0.05
+bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(v.co.z < low for v in f.verts) and abs(f.calc_center_median().x) > 0.03], context='FACES')
+bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+bm.to_mesh(body.data); bm.free()
 
 # Stand on the ground
 ground = min((o.matrix_world @ v.co).z for o in (cleats,) for v in o.data.vertices)
