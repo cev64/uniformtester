@@ -25,6 +25,7 @@ function skinTexture(kind, aniso) {
     const t = new THREE.TextureLoader().load(asset(`public/models/skin_${kind}.jpg`));
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = aniso;
+    t.flipY = false;   // glTF UVs have their origin at the top left
     skinTex[kind] = t;
   }
   return skinTex[kind];
