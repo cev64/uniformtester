@@ -793,6 +793,13 @@ collar = bpy.data.objects.new('Collar', cme)
 bpy.context.collection.objects.link(collar)
 set_materials(collar, ['collar'])
 meta['collar'] = {'width': COLLAR_W, 'perimeter': round(perim, 4), 'v_point_u': round(vi / N, 4)}
+# the front of the neckline (outer edge of the collar) in torso UV space, for
+# graphics that radiate from the V (e.g. the Ravens' feathered collar)
+front_uv = []
+for k in range(-60, 61, 3):
+    p = outer[(vi + k) % N]
+    front_uv.append([round(0.5 + math.atan2(p.x, -(p.y - YC)) / TWO_PI, 4), round((p.z - Z0) / (Z1 - Z0), 4)])
+meta['collar']['front_uv'] = front_uv
 
 # Pants, both legs share one texture: lateral stripe at u = 0.5
 set_materials(pants, ['pants'])

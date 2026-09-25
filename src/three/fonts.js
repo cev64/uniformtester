@@ -13,12 +13,13 @@ export const NUMBER_FONTS = {
   roundSans: { family: '"Barlow Condensed", "Arial Narrow", Impact, sans-serif', weight: 700 },
   geometric: { family: '"Jost", "Futura", "Century Gothic", sans-serif', weight: 700 },
   condensed: { family: '"Big Shoulders Display", "Arial Narrow", Impact, sans-serif', weight: 800 },
+  roman: { family: '"Cinzel", "Trajan Pro", Georgia, serif', weight: 800 },
 };
 
 // Letters that go with each numeral style (nameplates, TV-number fallbacks)
 const LETTERS = {
-  block: 'plate', blockRound: 'plate', square: 'squareSans', chamfer: 'squareSans', angular: 'squareSans',
-  round: 'roundSans', bears: 'condensed', futura: 'geometric', eagles: 'squareSans', ravens: 'plate', italic: 'italic',
+  block: 'plate', blockRound: 'plate', square: 'squareSans', chamfer: 'squareSans', titans: 'plate', angular: 'squareSans',
+  round: 'roundSans', bengals: 'roundSans', bears: 'condensed', futura: 'geometric', steelers: 'geometric', eagles: 'squareSans', ravens: 'plate', italic: 'italic',
 };
 export function letterFont(style) {
   return LETTERS[style] || (NUMBER_FONTS[style] ? style : 'plate');

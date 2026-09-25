@@ -5,6 +5,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintHelmet, paintLogo } from './paint.js';
 import { numeralCanvas, numeralStyle } from './numerals.js';
 import { asset, loadGLB } from '../assets.js';
+import { loadLogo } from './logos.js';
 
 // SpeedFlex-style helmet (tools/build_helmet.py → public/models/helmet.glb).
 // The shell is painted per team (base colour + stripe), the flex-panel groove
@@ -12,20 +13,9 @@ import { asset, loadGLB } from '../assets.js';
 
 const URL = 'public/models/helmet.glb';
 const DETAIL_URL = asset('public/models/helmet_detail.png');
-const LOGO_URL = (key) => asset(`public/logos/${key}.png`);
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 let modelPromise = null;
-const logoCache = new Map();
-function loadLogo(key) {
-  if (!logoCache.has(key)) {
-    logoCache.set(key, new Promise((resolve) => {
-      new THREE.TextureLoader().load(LOGO_URL(key), (t) => { t.colorSpace = THREE.SRGBColorSpace; resolve(t); }, undefined, () => resolve(null));
-    }));
-  }
-  return logoCache.get(key);
-}
-
 // The Riddell nameplate bumper above the brow: black plate, white wordmark
 function nameplateTexture() {
   const c = document.createElement('canvas');

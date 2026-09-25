@@ -33,18 +33,24 @@ export const NUMERAL_STYLES = {
   square: { ro: 0.035, ri: 0.015, rt: 0.01, W: 0.62, one: { flag: 0.14, base: false }, seven: 'stem' },
   // Chamfered block (Jets, Falcons, Commanders)
   chamfer: { cut: 'chamfer', ro: 0.13, ri: 0.05, rt: 0.03, one: { flag: 0.16, base: false } },
+  // Titans 2026 (Oilers lineage): octagonal block, based 1
+  titans: { cut: 'chamfer', ro: 0.12, ri: 0.05, rt: 0.02, one: { flag: 0.16, base: true } },
   // Round block: big round bowls, rounded terminals (Dolphins, Chargers, Bengals)
   round: { ro: 0.27, ri: 0.13, rt: 0.07, th: 0.2, tv: 0.21, one: { flag: 0.15, base: false } },
+  // Bengals: tall, narrow, oval bowls
+  bengals: { W: 0.52, th: 0.16, tv: 0.2, ro: 0.26, ri: 0.15, rt: 0.03, one: { flag: 0.16, base: false } },
   // Bears: condensed with round corners
   bears: { W: 0.5, th: 0.17, tv: 0.18, ro: 0.2, ri: 0.1, rt: 0.05, hook: 0.18, one: { flag: 0.13, base: false }, gap: 0.07 },
   // Steelers: Futura-like, fully round bowls
   futura: { W: 0.55, th: 0.19, tv: 0.21, ro: 0.275, ri: 0.18, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0 },
+  // Steelers: the same rounds, set italic and a touch narrower
+  steelers: { W: 0.52, th: 0.19, tv: 0.21, ro: 0.26, ri: 0.17, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0, slant: 0.16 },
   // Sharp, angular sets with notched waists (Vikings, Titans, Panthers, Broncos, Cardinals)
   angular: { cut: 'chamfer', ro: 0.17, ri: 0.03, rt: 0.02, notch: 0.6, one: { flag: 0.2, base: false }, slant: 0.04 },
   // Eagles: angular, slightly italic
   eagles: { cut: 'chamfer', ro: 0.12, ri: 0.03, rt: 0.02, slant: 0.1, one: { flag: 0.18, base: false } },
   // Ravens: tall, narrow, angular cuts
-  ravens: { cut: 'chamfer', W: 0.52, th: 0.17, tv: 0.19, ro: 0.1, ri: 0.03, notch: 0.5, one: { flag: 0.18, base: true } },
+  ravens: { W: 0.5, th: 0.16, tv: 0.2, ro: 0.25, ri: 0.14, rt: 0.02, notch: 0, one: { flag: 0.16, base: false } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
 };
@@ -232,6 +238,39 @@ function tint(mask, color) {
  * of the digit height; shadow: { color, dx, dy } (fractions of height).
  * Returns { canvas, aspect, inkHeight } like letteringCanvas.
  */
+// Textures printed into the face of the numbers on some sets
+export function numeralPattern(p) {
+  if (!p) return null;
+  return (ctx, W, H, px) => {
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.fillStyle = p.c;
+    if (p.t === 'dots') {
+      // perforated / dotted face (Patriots Nor'easter, Rams)
+      const step = px * (p.step || 0.035), r = step * (p.r || 0.22);
+      for (let y = step / 2; y < H; y += step) for (let x = ((y / step) % 2) * step / 2; x < W; x += step) {
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (p.t === 'lines') {
+      const step = px * (p.step || 0.05);
+      for (let y = 0; y < H; y += step) ctx.fillRect(0, y, W, step * (p.w || 0.35));
+    } else if (p.t === 'spots') {
+      let s = 7;
+      const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+      for (let i = 0; i < 260; i++) {
+        const x = rnd() * W, y = rnd() * H, r = px * (0.012 + rnd() * 0.03);
+        ctx.globalAlpha = 0.5 + rnd() * 0.5;
+        ctx.beginPath(); ctx.ellipse(x, y, r * 1.3, r, rnd() * 3, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (p.t === 'gradient') {
+      const g = ctx.createLinearGradient(0, H * 0.2, 0, H * 0.8);
+      g.addColorStop(0, p.c + '00'); g.addColorStop(1, p.c);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+  };
+}
+
 export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, shadow = null, fillPattern = null, px = 300 } = {}) {
   const S = numeralStyle(styleKey) || numeralStyle('block');
   const digits = [...String(text)].map((ch) => digit(ch, S)).filter(Boolean);

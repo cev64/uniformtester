@@ -78,7 +78,7 @@ function glyphMetrics(ctx, fontKey, text) {
  * sx squashes horizontally to undo the texture's aspect ratio.
  * colors: [fill, outline1?, outline2?]; outlines in px.
  */
-export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, o1px = 0, o2px = 0, tracking = 0) {
+export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, o1px = 0, o2px = 0, tracking = 0, skew = null) {
   if (!text) return;
   const f = NUMBER_FONTS[fontKey] || NUMBER_FONTS.block;
   const m = glyphMetrics(ctx, fontKey, text);
@@ -86,7 +86,8 @@ export function drawLettering(ctx, text, cx, cy, heightPx, sx, colors, fontKey, 
   ctx.save();
   ctx.translate(cx, cy);
   ctx.scale(sx, 1);
-  if (f.skew) ctx.transform(1, 0, f.skew, 1, 0, 0);
+  const k = skew ?? f.skew;
+  if (k) ctx.transform(1, 0, k, 1, 0, 0);
   ctx.font = fontCss(fontKey, px);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
@@ -200,7 +201,9 @@ export function paintHelmet(helmet) {
   if (helmet.stripe) {
     const total = stripeTotal(helmet.stripe);
     let y = H / 2 - (total * pxPerCmY) / 2;
-    const x0 = 0.1 * W, x1 = 0.725 * W;
+    // stripeSpan: [start, end] around the shell (0.25 back, 0.5 crown, 0.72 brow)
+    const [s0, s1] = helmet.stripeSpan || [0.1, 0.725];
+    const x0 = s0 * W, x1 = s1 * W;
     for (const [col, w] of helmet.stripe) {
       const h = w * pxPerCmY;
       if (col) {
@@ -255,6 +258,18 @@ export function paintLogo(logo, facing, size = 512) {
   const dirX = mirror ? -1 : 1; // +1 means front is to the right
 
   switch (logo.t) {
+    case 'football': {
+      // an American football with laces and lettering across it
+      ctx.save();
+      ctx.translate(cx, cy);
+      const fb = (g) => { g.ellipse(0, 0, S * 0.46, S * 0.27, 0, 0, Math.PI * 2); };
+      fillStroke(ctx, fb, logo.fill, logo.stroke || logo.text, S * 0.03);
+      ctx.fillStyle = logo.text;
+      for (const x of [-0.3, 0.3]) ctx.fillRect(x * S - S * 0.012, -S * 0.2, S * 0.024, S * 0.4);
+      ctx.restore();
+      drawLettering(ctx, logo.s, cx, cy, S * 0.2, 0.9, [logo.text], 'plate');
+      break;
+    }
     case 'star':
       fillStroke(ctx, (g) => starPath(g, cx, cy + S * 0.03, S * 0.44, S * 0.18), logo.fill, logo.stroke, S * 0.04, logo.stroke2, S * 0.02);
       break;

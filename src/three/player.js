@@ -5,7 +5,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
 import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, paintCollar, letteringCanvas, eyeCanvas, swooshCanvas } from './garments.js';
 import { Helmet } from './helmet.js';
-import { numeralCanvas, numeralStyle } from './numerals.js';
+import { loadLogo } from './logos.js';
+import { numeralCanvas, numeralStyle, numeralPattern } from './numerals.js';
 import { letterFont } from './fonts.js';
 import { asset, loadGLB, loadJSON } from '../assets.js';
 
@@ -34,7 +35,6 @@ function skinTexture(kind, aniso) {
 }
 const MODEL_URL = 'public/models/player.glb';
 const META_URL = 'public/models/player.json';
-const LOGO_URL = (key) => asset(`public/logos/${key}.png`);
 
 // Blender (z-up, facing -y) → three.js (y-up, facing +z)
 const B2T = ([x, y, z]) => new THREE.Vector3(x, z, -y);
@@ -77,33 +77,6 @@ function loadModel() {
     ]);
   }
   return modelPromise;
-}
-
-const logoCache = new Map();
-// 'KEY@white' gives a single-colour silhouette of a logo (e.g. a white "ny" on a blue jersey)
-function loadLogo(key) {
-  if (!logoCache.has(key)) {
-    const [file, tint] = key.split('@');
-    logoCache.set(key, new Promise((resolve) => {
-      new THREE.TextureLoader().load(LOGO_URL(file), (t) => {
-        if (tint) {
-          const img = t.image;
-          const c = document.createElement('canvas');
-          c.width = img.width; c.height = img.height;
-          const ctx = c.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          ctx.globalCompositeOperation = 'source-in';
-          ctx.fillStyle = tint === 'white' ? '#ffffff' : tint;
-          ctx.fillRect(0, 0, c.width, c.height);
-          t.dispose();
-          t = new THREE.CanvasTexture(c);
-        }
-        t.colorSpace = THREE.SRGBColorSpace;
-        resolve(t);
-      }, undefined, () => resolve(null));
-    }));
-  }
-  return logoCache.get(key);
 }
 
 // DecalGeometry keeps every triangle inside the projector box, including ones
@@ -297,20 +270,28 @@ export class Player {
     // Front: wordmark, number, NFL shield at the collar V
     const w = jersey.word;
     if (w) {
-      this.lettering(torso, front(neckY - 0.165), w.s, 0.034, [w.c, w.o].filter(Boolean), w.script ? 'script' : (w.font || font), { tracking: w.script ? 0 : 0.12, o1: 0.08 });
+      this.lettering(torso, front(neckY - 0.165), w.s, w.h || 0.034, [w.c, w.o].filter(Boolean), w.script ? 'script' : (w.font || font), { tracking: w.script ? 0 : (w.tracking ?? 0.12), o1: 0.08, skew: w.italic ? -0.2 : null });
     }
     const top = w || jersey.centerLogo;
-    const numOpts = { o1: jersey.numO?.[0] ?? 0.05, o2: jersey.numO?.[1] ?? 0.045, shadow: jersey.numShadow || null };
+    const numOpts = { o1: jersey.numO?.[0] ?? 0.05, o2: jersey.numO?.[1] ?? 0.045, shadow: jersey.numShadow || null, fillPattern: numeralPattern(jersey.numPattern) };
     this.lettering(torso, front(neckY - (top ? 0.31 : 0.29)), num, 0.2, colors, font, numOpts);
     if (jersey.centerLogo) this.image(torso, front(neckY - 0.17), 0.06, logos[jersey.centerLogo]);
     this.image(torso, front(neckY - 0.105), 0.036, logos.NFL_shield);
     // chest patch sits on the player's left chest (viewer's right)
     if (jersey.chestLogo) this.image(torso, front(neckY - 0.16, 0.11), 0.07, logos[jersey.chestLogo]);
+    if (jersey.chestPatch) {
+      // drawn patch on the player's left chest (e.g. the Browns' 1946 football)
+      const c = paintLogo(jersey.chestPatch, 'right');
+      if (c) {
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+        this.decal(torso, front(neckY - 0.16, 0.11), 0.075, 0.075, t);
+      }
+    }
 
     // Back collar tag just under the neckline
     if (jersey.neckTag) {
       const t = jersey.neckTag;
-      this.lettering(torso, back(neckY - 0.045), t.s, t.s.length > 12 ? 0.012 : 0.016, [t.c], 'block', { tracking: 0.08 });
+      this.lettering(torso, back(neckY - 0.045), t.s, t.s.length > 12 ? 0.012 : 0.016, [t.c], t.font || 'block', { tracking: 0.08, bg: t.bg || null });
     }
 
     // Back: nameplate and number
@@ -343,6 +324,13 @@ export class Player {
           if (c) { t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t); }
         }
         if (t) this.decal([...sleeves, ...torso], hit, sp.size || 0.1, sp.size || 0.1, t, { depth: 0.14 });
+      }
+      if (jersey.sleeveText) {
+        // letters on the outside of each sleeve (e.g. "N" and "E" on the Patriots Nor'easter)
+        const st = jersey.sleeveText;
+        const p = sh.clone().lerp(el, 0.2);
+        const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
+        this.lettering(sleeves, hit, sx > 0 ? st.L : st.R, 0.065, st.c, st.font || 'slab', { o1: 0.08 });
       }
       if (jersey.sleeveLogo) {
         const p = sh.clone().lerp(el, 0.18);
