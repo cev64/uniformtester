@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { paintHelmet, paintLogo, paintHelmetNumber } from './paint.js';
+import { paintHelmet, paintLogo } from './paint.js';
+import { numeralCanvas, numeralStyle } from './numerals.js';
 import { asset, loadGLB } from '../assets.js';
 
 // SpeedFlex-style helmet (tools/build_helmet.py → public/models/helmet.glb).
@@ -156,9 +157,12 @@ export class Helmet {
         }
       }
       if (helmet.numbers) {
-        const c = paintHelmetNumber(player.number ?? '', helmet.numbers);
-        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
-        this.decal(shell, this.hitSide(sx, [-0.2, -0.7]), 0.06, 0.06, t, finish, false);
+        const N = numeralCanvas(String(player.number ?? ''), [helmet.numbers], numeralStyle(player.font) ? player.font : 'block', { px: 160 });
+        if (N) {
+          const t = new THREE.CanvasTexture(N.canvas); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+          const h = 0.045 / N.inkHeight;
+          this.decal(shell, this.hitSide(sx, helmet.numAt || [-0.25, -0.75]), h * N.aspect, h, t, finish, false);
+        }
       }
     }
   }

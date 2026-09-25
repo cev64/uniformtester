@@ -5,6 +5,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
 import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, paintCollar, letteringCanvas, eyeCanvas, swooshCanvas } from './garments.js';
 import { Helmet } from './helmet.js';
+import { numeralCanvas, numeralStyle } from './numerals.js';
+import { letterFont } from './fonts.js';
 import { asset, loadGLB, loadJSON } from '../assets.js';
 
 // The player: a sculpted athlete (tools/build_player.py → public/models/player.glb)
@@ -225,7 +227,7 @@ export class Player {
     m.cleat.color.set(cleat);
 
     this.placeDecals(team, jersey, pants, player, logos, cleat);
-    this.helmet.set(helmet, player);
+    this.helmet.set(helmet, { ...player, font: helmet.numFont || jersey.font || team.font });
   }
 
   // ─── decals ─────────────────────────────────────────────────────────
@@ -262,7 +264,9 @@ export class Player {
 
   lettering(meshes, hit, text, heightM, colors, font, opts = {}) {
     if (!text || !hit) return;
-    const L = letteringCanvas(text, colors, font, opts);
+    // digits in a numeral style are drawn as twill shapes; everything else is set in a font
+    const L = (numeralStyle(font) && /^\d+$/.test(text) && numeralCanvas(text, colors, font, opts))
+      || letteringCanvas(text, colors, numeralStyle(font) ? letterFont(font) : font, opts);
     const t = new THREE.CanvasTexture(L.canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = this.aniso;
@@ -296,7 +300,8 @@ export class Player {
       this.lettering(torso, front(neckY - 0.165), w.s, 0.034, [w.c, w.o].filter(Boolean), w.script ? 'script' : (w.font || font), { tracking: w.script ? 0 : 0.12, o1: 0.08 });
     }
     const top = w || jersey.centerLogo;
-    this.lettering(torso, front(neckY - (top ? 0.3 : 0.28)), num, 0.18, colors, font);
+    const numOpts = { o1: jersey.numO?.[0] ?? 0.05, o2: jersey.numO?.[1] ?? 0.045, shadow: jersey.numShadow || null };
+    this.lettering(torso, front(neckY - (top ? 0.31 : 0.29)), num, 0.2, colors, font, numOpts);
     if (jersey.centerLogo) this.image(torso, front(neckY - 0.17), 0.06, logos[jersey.centerLogo]);
     this.image(torso, front(neckY - 0.105), 0.036, logos.NFL_shield);
     // chest patch sits on the player's left chest (viewer's right)
@@ -309,8 +314,9 @@ export class Player {
     }
 
     // Back: nameplate and number
-    if (player.name) this.lettering(torso, back(neckY - 0.1), player.name.toUpperCase(), 0.052, [colors[0]], font === 'script' ? 'block' : font, { tracking: 0.06 });
-    this.lettering(torso, back(neckY - 0.29), num, 0.23, colors, font);
+    const plate = jersey.plate || (font === 'script' ? 'plate' : letterFont(font));
+    if (player.name) this.lettering(torso, back(neckY - 0.1), player.name.toUpperCase(), 0.05, [jersey.plateColor || colors[0]], plate, { tracking: 0.05 });
+    this.lettering(torso, back(neckY - 0.3), num, 0.25, colors, font, numOpts);
 
     // TV numbers: on top of the shoulders, or on the outside of the sleeves
     for (const s of ['L', 'R']) {
@@ -319,11 +325,11 @@ export class Player {
       const sx = Math.sign(sh.x);
       if (jersey.tv === 'shoulder') {
         const hit = this.raycast([...sleeves, ...torso], new THREE.Vector3(sh.x - sx * 0.035, 2.3, sh.z), new THREE.Vector3(0, -1, 0));
-        this.lettering([...sleeves, ...torso], hit, num, 0.075, colors.slice(0, 2), font, { up: new THREE.Vector3(0, 0, -1) });
+        this.lettering([...sleeves, ...torso], hit, num, 0.085, colors.slice(0, 2), font, { ...numOpts, o1: 0.06, up: new THREE.Vector3(0, 0, -1) });
       } else if (jersey.tv === 'sleeve') {
         const p = sh.clone().lerp(el, 0.28);
         const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
-        this.lettering(sleeves, hit, num, 0.07, colors.slice(0, 2), font);
+        this.lettering(sleeves, hit, num, 0.08, colors.slice(0, 2), font, { ...numOpts, o1: 0.06 });
       }
       if (jersey.shoulder) {
         // shoulder graphic (bolts, stars, horns) on the front of each shoulder, aimed from above and in front

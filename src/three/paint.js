@@ -515,12 +515,6 @@ export function paintLogo(logo, facing, size = 512) {
   return c;
 }
 
-export function paintHelmetNumber(number, color, size = 256) {
-  const c = makeCanvas(size, size);
-  drawLettering(c.getContext('2d'), String(number), size / 2, size / 2, size * 0.7, 1, [color], 'modern');
-  return c;
-}
-
 // ─── ground ────────────────────────────────────────────────────────────
 
 export function paintTurf(size = 1024) {
