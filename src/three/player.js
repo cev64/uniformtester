@@ -276,6 +276,18 @@ export class Player {
     const numOpts = { o1: jersey.numO?.[0] ?? 0.05, o2: jersey.numO?.[1] ?? 0.045, shadow: jersey.numShadow || null, fillPattern: numeralPattern(jersey.numPattern) };
     this.lettering(torso, front(neckY - (top ? 0.31 : 0.29)), num, 0.2, colors, font, numOpts);
     if (jersey.centerLogo) this.image(torso, front(neckY - 0.17), 0.06, logos[jersey.centerLogo]);
+    if (jersey.numMarks) {
+      // small arrowhead triangles stacked either side of the front number (Broncos)
+      const { c, n = 3 } = jersey.numMarks;
+      const tri = document.createElement('canvas'); tri.width = tri.height = 64;
+      const tctx = tri.getContext('2d'); tctx.fillStyle = c;
+      tctx.beginPath(); tctx.moveTo(32, 6); tctx.lineTo(58, 56); tctx.lineTo(6, 56); tctx.fill();
+      const t = new THREE.CanvasTexture(tri); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+      const y0 = neckY - (top ? 0.31 : 0.29);
+      for (const sx of [-1, 1]) for (let k = 0; k < n; k++) {
+        this.decal(torso, front(y0 + 0.03 - k * 0.028, sx * 0.165), 0.016, 0.016, t);
+      }
+    }
     this.image(torso, front(neckY - 0.105), 0.036, logos.NFL_shield);
     // chest patch sits on the player's left chest (viewer's right)
     if (jersey.chestLogo) this.image(torso, front(neckY - 0.16, 0.11), 0.07, logos[jersey.chestLogo]);

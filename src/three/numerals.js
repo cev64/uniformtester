@@ -33,12 +33,20 @@ export const NUMERAL_STYLES = {
   square: { ro: 0.035, ri: 0.015, rt: 0.01, W: 0.62, one: { flag: 0.14, base: false }, seven: 'stem' },
   // Chamfered block (Jets, Falcons, Commanders)
   chamfer: { cut: 'chamfer', ro: 0.13, ri: 0.05, rt: 0.03, one: { flag: 0.16, base: false } },
+  // Chiefs: squared block with clipped corners and a footed 1
+  chiefs: { cut: 'chamfer', ro: 0.09, ri: 0.035, rt: 0.02, one: { flag: 0.17, base: true } },
+  // Cowboys road/Color Rush: square block with a footed 1
+  cowboys: { ro: 0.05, ri: 0.02, rt: 0.01, W: 0.56, one: { flag: 0.17, base: true } },
+  // Vikings: wide and heavy with square counters and a footed 1
+  vikings: { W: 0.64, th: 0.2, tv: 0.25, ro: 0.1, ri: 0.02, rt: 0.02, notch: 0.4, one: { flag: 0.18, base: true } },
   // Titans 2026 (Oilers lineage): octagonal block, based 1
   titans: { cut: 'chamfer', ro: 0.12, ri: 0.05, rt: 0.02, one: { flag: 0.16, base: true } },
   // Round block: big round bowls, rounded terminals (Dolphins, Chargers, Bengals)
   round: { ro: 0.27, ri: 0.13, rt: 0.07, th: 0.2, tv: 0.21, one: { flag: 0.15, base: false } },
   // Bengals: tall, narrow, oval bowls
   bengals: { W: 0.52, th: 0.16, tv: 0.2, ro: 0.26, ri: 0.15, rt: 0.03, one: { flag: 0.16, base: false } },
+  // Chargers: round block set italic
+  chargers: { ro: 0.2, ri: 0.1, rt: 0.05, th: 0.19, tv: 0.21, one: { flag: 0.17, base: false }, slant: 0.17 },
   // Bears: condensed with round corners
   bears: { W: 0.5, th: 0.17, tv: 0.18, ro: 0.2, ri: 0.1, rt: 0.05, hook: 0.18, one: { flag: 0.13, base: false }, gap: 0.07 },
   // Steelers: Futura-like, fully round bowls
@@ -48,7 +56,7 @@ export const NUMERAL_STYLES = {
   // Sharp, angular sets with notched waists (Vikings, Titans, Panthers, Broncos, Cardinals)
   angular: { cut: 'chamfer', ro: 0.17, ri: 0.03, rt: 0.02, notch: 0.6, one: { flag: 0.2, base: false }, slant: 0.04 },
   // Eagles: angular, slightly italic
-  eagles: { cut: 'chamfer', ro: 0.12, ri: 0.03, rt: 0.02, slant: 0.1, one: { flag: 0.18, base: false } },
+  eagles: { cut: 'chamfer', ro: 0.1, ri: 0.03, rt: 0.02, slant: 0.03, one: { flag: 0.18, base: true } },
   // Ravens: tall, narrow, angular cuts
   ravens: { W: 0.5, th: 0.16, tv: 0.2, ro: 0.25, ri: 0.14, rt: 0.02, notch: 0, one: { flag: 0.16, base: false } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)

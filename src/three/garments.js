@@ -66,6 +66,30 @@ export function paintTorso(jersey, meta) {
     ctx.lineTo(0, y);
     ctx.fill();
   }
+  if (p.raglan) {
+    // a band along each raglan seam, from the collar over the front (and back)
+    // of the shoulder down to the armpit (Panthers), with an optional edge line
+    const [col, wCm, edge] = p.raglan;
+    const gs = meta.ground_shift || 0, z0 = meta.jersey.z0 + gs, z1 = meta.jersey.z1 + gs;
+    const V = (z) => (z - z0) / (z1 - z0);
+    const sh = meta.joints['upperarm01.L'];
+    const top = V(meta.constants.neck_z - 0.03), bot = V(sh[2] - 0.09);
+    // [u at the collar, u at the armpit] for the front and back of the player's left side
+    const lines = [[0.572, 0.672], [0.885, 0.8]];
+    const wPx = (cm, v) => (cm / (circAt(R, v) * 100)) * W;
+    for (const [ua, ub] of lines) {
+      for (const mirror of [false, true]) {
+        const pts = [[ua, top], [(ua + ub) / 2 + (ub - ua) * 0.08, (top + bot) / 2], [ub, bot]]
+          .map(([u, v]) => [(mirror ? 1 - u : u) * W, (1 - v) * H]);
+        const draw = (width, color) => {
+          ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'butt';
+          ctx.beginPath(); ctx.moveTo(...pts[0]); ctx.quadraticCurveTo(...pts[1], ...pts[2]); ctx.stroke();
+        };
+        if (edge) draw(wPx(wCm + edge[1] * 2, 0.8), edge[0]);
+        draw(wPx(wCm, 0.8), col);
+      }
+    }
+  }
   if (p.sides) {
     // side panels running from the hem to the armpit
     const [col, wCm] = [].concat(p.sides, 8).slice(0, 2);
@@ -194,6 +218,34 @@ export function paintSleeveTex(jersey, meta) {
     }
   }
 
+  if (sl.knot) {
+    // Norse knotwork band on the outside of the sleeve (Vikings Rivalries)
+    const circ = circAt(R, 0.3) * 100, pxPerCmX = W / circ;
+    const bw = 12 * pxPerCmX, bh = 6 * pxPerCmY, x0 = W / 2 - bw / 2, y0 = H - 4 * pxPerCmY - bh;
+    ctx.save();
+    ctx.strokeStyle = sl.knot.c; ctx.lineWidth = 0.55 * pxPerCmY; ctx.lineCap = 'round';
+    ctx.strokeRect(x0, y0, bw, bh);
+    const n = 4, step = bw / n;
+    for (let i = 0; i < n; i++) {
+      const cx = x0 + step * (i + 0.5), cy = y0 + bh / 2, r = Math.min(step, bh) * 0.36;
+      ctx.beginPath();
+      ctx.moveTo(cx - r, cy - r); ctx.bezierCurveTo(cx + r * 1.6, cy - r * 0.2, cx - r * 1.6, cy + r * 0.2, cx + r, cy + r);
+      ctx.moveTo(cx + r, cy - r); ctx.bezierCurveTo(cx - r * 1.6, cy - r * 0.2, cx + r * 1.6, cy + r * 0.2, cx - r, cy + r);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if (sl.vbars) {
+    // vertical bars on the outside of the sleeve rising from the hem (Bears Rivalries)
+    const { stripes: vb, len = 9 } = sl.vbars;
+    const circ = circAt(R, 0.2) * 100, pxPerCmX = W / circ;
+    let x = W / 2 - (stripeTotal(vb) / 2) * pxPerCmX;
+    for (const [col, w] of vb) {
+      if (col) { ctx.fillStyle = col; ctx.fillRect(x, H - len * pxPerCmY, w * pxPerCmX, len * pxPerCmY); }
+      x += w * pxPerCmX;
+    }
+  }
+
   // Stripes at the hem
   const from = sl.from ?? 2.5;
   if (sl.stripes) {
@@ -287,13 +339,20 @@ export function paintPantsTex(pants, meta) {
       wedge(ctx, cx + 3 * pxPerCmX, y + 3 * pxPerCmY, len * 0.9, 2.6 * pxPerCmY, -0.35, -10);
     }
   } else if (pat === 'bolt') {
-    const stripes = pants.stripe || [[pants.pattern.c, 3]];
-    const pxPerCmX = W / (circAt(R, 0.5) * 100);
-    const amp = 1.8 * pxPerCmX;
-    strokeStripes(ctx, (g) => {
-      g.moveTo(cx, -10); g.lineTo(cx, H * 0.12); g.lineTo(cx + amp, H * 0.34); g.lineTo(cx - amp, H * 0.5);
-      g.lineTo(cx + amp, H * 0.68); g.lineTo(cx - amp * 0.4, H * 0.88); g.lineTo(cx - amp * 0.4, H + 10);
-    }, stripes, pxPerCmX, pants.base, 'butt', 'miter');
+    // Chargers: a lightning bolt on the outside of the thigh, from mid-thigh
+    // down to the knee, outlined, pointing toward the back
+    const { c: fill, o: outline } = pants.pattern;
+    const pxPerCmX = W / (circAt(R, 0.35) * 100);
+    // [cm across (+ = toward the back), v] from the top of the bolt
+    const pts = [[-3.2, 0.6], [2.8, 0.6], [0.4, 0.4], [2.6, 0.41], [-1.2, 0.06], [0.2, 0.3], [-2.2, 0.29]];
+    const path = (g) => pts.forEach(([x, v], i) => { const X = cx + x * pxPerCmX, Y = (1 - v) * H; i ? g.lineTo(X, Y) : g.moveTo(X, Y); });
+    ctx.lineJoin = 'miter';
+    if (outline) {
+      ctx.beginPath(); path(ctx); ctx.closePath();
+      ctx.strokeStyle = outline; ctx.lineWidth = 1.0 * pxPerCmX; ctx.stroke();
+    }
+    ctx.beginPath(); path(ctx); ctx.closePath();
+    ctx.fillStyle = fill; ctx.fill();
   }
   if (pat !== 'tiger' && pat !== 'bolt' && pants.stripe) {
     // stripes run from the waistband down to the hem, drawn row by row so the
@@ -308,6 +367,27 @@ export function paintPantsTex(pants, meta) {
       if (v > startV) continue;
       const k = t1 + (t0 - t1) * v;
       stripeRow(k === 1 ? pants.stripe : pants.stripe.map(([c, w]) => [c, w * k]), y, 3, v);
+    }
+  }
+  if (pants.band) {
+    // a wide accent band down the side seam over the upper leg only, cut off
+    // at an angle (Broncos 2024)
+    const { stripe, stop = 0.6 } = pants.band;
+    for (let y = 0; y < H; y += 3) {
+      const v = 1 - y / H;
+      const pxPerCmX = W / (circAt(R, v) * 100);
+      const edge = stop + (v - stop) * 0;
+      if (v < stop - 0.06) break;
+      // diagonal cut: the front edge ends higher than the back edge
+      const total = stripeTotal(stripe) * pxPerCmX;
+      const cut = Math.max(0, Math.min(1, (v - (stop - 0.06)) / 0.06));
+      let x = cx - total / 2;
+      for (const [col, w] of stripe) {
+        const ww = w * pxPerCmX;
+        if (col) { ctx.fillStyle = col; ctx.fillRect(x, y, ww * (v > stop ? 1 : cut) + 0.5, 3); }
+        x += ww;
+      }
+      void edge;
     }
   }
   if (pants.fade) {
