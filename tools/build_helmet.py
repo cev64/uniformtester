@@ -513,8 +513,8 @@ straps = []
 up_out = lambda p: (p - P(0, -0.03, -0.05)).normalized()
 for s in (1, -1):
     # upper strap: from the cup, up under the temple clip, back to a buckle high on the side
-    hb, hn = on_shell(P(s * 0.12, -0.028, -0.02), 0.003)
-    path = [CUP_C + P(s * 0.026, 0.004, 0.008), P(s * 0.076, -0.1, -0.085), P(s * 0.106, -0.078, -0.05), on_shell(P(s * 0.12, -0.056, -0.034), 0.003)[0], hb]
+    hb, hn = on_shell(P(s * 0.12, -0.05, -0.058), 0.003)
+    path = [CUP_C + P(s * 0.026, 0.004, 0.008), P(s * 0.076, -0.1, -0.09), on_shell(P(s * 0.12, -0.075, -0.07), 0.003)[0], hb]
     straps.append(ribbon(f'StrapHi{s}', catmull(path, 6), 0.017, 0.0022, 'strap', up_out))
     straps.append(oriented_box(f'BuckleHi{s}', hb + hn * 0.002, hn, hb - path[-2], (0.034, 0.014, 0.007), 'buckle', bevel=0.3))
     # lower strap: from the cup back along the jaw to a buckle low at the back

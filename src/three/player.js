@@ -270,9 +270,9 @@ export class Player {
     // Front: wordmark, number, NFL shield at the collar V
     const w = jersey.word;
     if (w) {
-      this.lettering(torso, front(neckY - 0.165), w.s, w.h || 0.034, [w.c, w.o].filter(Boolean), w.script ? 'script' : (w.font || font), { tracking: w.script ? 0 : (w.tracking ?? 0.12), o1: 0.08, skew: w.italic ? -0.2 : null });
+      this.lettering(torso, w.at === 'left' ? front(neckY - 0.14, 0.12) : front(neckY - 0.165), w.s, w.h || 0.034, [w.c, w.o].filter(Boolean), w.script ? 'script' : (w.font || font), { tracking: w.script ? 0 : (w.tracking ?? 0.12), o1: 0.08, skew: w.italic ? -0.2 : null });
     }
-    const top = w || jersey.centerLogo;
+    const top = (w && w.at !== 'left') || jersey.centerLogo;
     const numOpts = { o1: jersey.numO?.[0] ?? 0.05, o2: jersey.numO?.[1] ?? 0.045, shadow: jersey.numShadow || null, fillPattern: numeralPattern(jersey.numPattern) };
     this.lettering(torso, front(neckY - (top ? 0.31 : 0.29)), num, 0.2, colors, font, numOpts);
     if (jersey.centerLogo) this.image(torso, front(neckY - 0.17), 0.06, logos[jersey.centerLogo]);
@@ -343,6 +343,16 @@ export class Player {
         const p = sh.clone().lerp(el, 0.2);
         const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
         this.lettering(sleeves, hit, sx > 0 ? st.L : st.R, 0.065, st.c, st.font || 'slab', { o1: 0.08 });
+      }
+      if (jersey.sleevePatch) {
+        // drawn patch on the outside of each sleeve (state flags, shields)
+        const c = paintLogo(jersey.sleevePatch, sx > 0 ? 'left' : 'right');
+        if (c) {
+          const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+          const p = sh.clone().lerp(el, 0.18);
+          const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
+          this.decal(sleeves, hit, 0.075, 0.075, t);
+        }
       }
       if (jersey.sleeveLogo) {
         const p = sh.clone().lerp(el, 0.18);

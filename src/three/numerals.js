@@ -39,6 +39,8 @@ export const NUMERAL_STYLES = {
   cowboys: { ro: 0.05, ri: 0.02, rt: 0.01, W: 0.56, one: { flag: 0.17, base: true } },
   // Vikings: wide and heavy with square counters and a footed 1
   vikings: { W: 0.64, th: 0.2, tv: 0.25, ro: 0.1, ri: 0.02, rt: 0.02, notch: 0.4, one: { flag: 0.18, base: true } },
+  // Rams 2020s: heavy rounded set with a slight lean
+  rams: { W: 0.56, th: 0.2, tv: 0.23, ro: 0.22, ri: 0.1, rt: 0.06, slant: 0.07, one: { flag: 0.17, base: false } },
   // Titans 2026 (Oilers lineage): octagonal block, based 1
   titans: { cut: 'chamfer', ro: 0.12, ri: 0.05, rt: 0.02, one: { flag: 0.16, base: true } },
   // Round block: big round bowls, rounded terminals (Dolphins, Chargers, Bengals)
@@ -258,6 +260,17 @@ export function numeralPattern(p) {
       const step = px * (p.step || 0.035), r = step * (p.r || 0.22);
       for (let y = step / 2; y < H; y += step) for (let x = ((y / step) % 2) * step / 2; x < W; x += step) {
         ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (p.t === 'feathers') {
+      // rows of small feather chevrons (Seahawks)
+      const step = px * (p.step || 0.07);
+      ctx.strokeStyle = p.c; ctx.lineWidth = step * 0.18;
+      for (let y = 0, r = 0; y < H + step; y += step * 0.55, r++) {
+        for (let x = (r % 2) * step / 2; x < W + step; x += step) {
+          ctx.beginPath();
+          ctx.moveTo(x - step * 0.3, y - step * 0.18); ctx.lineTo(x, y + step * 0.1); ctx.lineTo(x + step * 0.3, y - step * 0.18);
+          ctx.stroke();
+        }
       }
     } else if (p.t === 'lines') {
       const step = px * (p.step || 0.05);

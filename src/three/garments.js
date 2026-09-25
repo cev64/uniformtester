@@ -109,7 +109,7 @@ export function paintTorso(jersey, meta) {
     const pts = meta.collar.front_uv.map(([u, v]) => [u * W, (1 - v) * H]);
     const n = pts.length, mid = (n - 1) / 2;
     ctx.fillStyle = jersey.feathers;
-    const lenPx = 9 * pxPerCmY, wPx = 1.5 * pxPerCmY;
+    const lenPx = 6 * pxPerCmY, wPx = 1.0 * pxPerCmY;
     for (let i = 1; i < n - 1; i += 1) {
       const k = Math.abs(i - mid) / mid;          // 0 at the V point, 1 at the shoulders
       if (k < 0.04 || k > 0.62) continue;
@@ -170,6 +170,16 @@ export function paintSleeveTex(jersey, meta) {
     ctx.fillRect(0, 0, W, rowCm(sl.top[1]));
   }
 
+  if (sl.pattern?.t === 'feathers') {
+    // feather chevrons over the shoulder cap (Seahawks Rivalries)
+    ctx.strokeStyle = sl.pattern.c; ctx.lineWidth = 0.45 * pxPerCmY;
+    const step = 2.6 * pxPerCmY;
+    for (let y = 0; y < H * 0.55; y += step * 0.7) {
+      for (let x = ((y / step) % 2) * step / 2; x < W; x += step) {
+        ctx.beginPath(); ctx.moveTo(x - step * 0.35, y); ctx.lineTo(x, y + step * 0.35); ctx.lineTo(x + step * 0.35, y); ctx.stroke();
+      }
+    }
+  }
   if (sl.pattern?.t === 'diamondplate') {
     // raised diamond-plate steel texture (Jets Gotham City FC sleeves)
     ctx.strokeStyle = sl.pattern.c;
@@ -221,11 +231,11 @@ export function paintSleeveTex(jersey, meta) {
   if (sl.knot) {
     // Norse knotwork band on the outside of the sleeve (Vikings Rivalries)
     const circ = circAt(R, 0.3) * 100, pxPerCmX = W / circ;
-    const bw = 12 * pxPerCmX, bh = 6 * pxPerCmY, x0 = W / 2 - bw / 2, y0 = H - 4 * pxPerCmY - bh;
+    const bw = 9 * pxPerCmX, bh = 3.6 * pxPerCmY, x0 = W / 2 - bw / 2, y0 = H - 3 * pxPerCmY - bh;
     ctx.save();
-    ctx.strokeStyle = sl.knot.c; ctx.lineWidth = 0.55 * pxPerCmY; ctx.lineCap = 'round';
+    ctx.strokeStyle = sl.knot.c; ctx.lineWidth = 0.3 * pxPerCmY; ctx.lineCap = 'round';
     ctx.strokeRect(x0, y0, bw, bh);
-    const n = 4, step = bw / n;
+    const n = 5, step = bw / n;
     for (let i = 0; i < n; i++) {
       const cx = x0 + step * (i + 0.5), cy = y0 + bh / 2, r = Math.min(step, bh) * 0.36;
       ctx.beginPath();
@@ -295,6 +305,13 @@ export function paintSleeveTex(jersey, meta) {
     }
   }
 
+  if (sl.textBand) {
+    // lettering wrapped round the sleeve inside the stripes (Cardinals)
+    const { s: text, c: col, at = 4.8, h = 2.4 } = sl.textBand;
+    const circ = circAt(R, 0.15) * 100, pxPerCmX = W / circ;
+    drawLettering(ctx, text, W / 2, rowCm(at), h * pxPerCmY, pxPerCmX / pxPerCmY, [col], 'squareSans', 0, 0, 0.12);
+  }
+
   // hem binding
   ctx.fillStyle = shade(base, -0.12);
   ctx.fillRect(0, H - 0.8 * pxPerCmY, W, 0.8 * pxPerCmY);
@@ -353,6 +370,20 @@ export function paintPantsTex(pants, meta) {
     }
     ctx.beginPath(); path(ctx); ctx.closePath();
     ctx.fillStyle = fill; ctx.fill();
+  }
+  if (pat === 'feather') {
+    // a column of feather chevrons down the side seam (Seahawks)
+    const { c: col, w = 2.2, gap = 3 } = pants.pattern;
+    for (let yCm = 3; yCm < Lcm - 1; yCm += gap) {
+      const v = 1 - yCm / Lcm, y = yCm * pxPerCmY;
+      const pxPerCmX = W / (circAt(R, v) * 100);
+      const hw = (w / 2) * pxPerCmX, d = 1.3 * pxPerCmY, t = 0.7 * pxPerCmY;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(cx - hw, y); ctx.lineTo(cx, y + d); ctx.lineTo(cx + hw, y);
+      ctx.lineTo(cx + hw, y + t); ctx.lineTo(cx, y + d + t); ctx.lineTo(cx - hw, y + t);
+      ctx.closePath(); ctx.fill();
+    }
   }
   if (pat !== 'tiger' && pat !== 'bolt' && pants.stripe) {
     // stripes run from the waistband down to the hem, drawn row by row so the

@@ -171,6 +171,19 @@ export function paintHelmet(helmet) {
       ctx.fill();
     }
   }
+  if (helmet.pattern?.t === 'halftone') {
+    // dots that grow toward the back of the shell (Saints black alternate)
+    ctx.fillStyle = helmet.pattern.c;
+    const step = 1.1 * pxPerCmX;
+    for (let x = 0.12 * W; x < 0.5 * W; x += step) {
+      const k = 1 - (x - 0.12 * W) / (0.38 * W);           // 1 at the back, 0 at the crown
+      const r = step * 0.42 * Math.max(0, k) ** 0.8;
+      if (r < 0.6) continue;
+      for (let y = step / 2 + ((x / step) % 2) * step / 2; y < H; y += step) {
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
   if (helmet.pattern?.t === 'leather') {
     // 1920s leather: panel seams running front to back, with stitching
     ctx.strokeStyle = 'rgba(40,22,10,0.8)';
@@ -268,6 +281,52 @@ export function paintLogo(logo, facing, size = 512) {
       for (const x of [-0.3, 0.3]) ctx.fillRect(x * S - S * 0.012, -S * 0.2, S * 0.024, S * 0.4);
       ctx.restore();
       drawLettering(ctx, logo.s, cx, cy, S * 0.2, 0.9, [logo.text], 'plate');
+      break;
+    }
+    case 'azflag': {
+      // Arizona state flag: 13 red and gold rays over blue, copper star
+      const w = S * 0.9, h = w * 2 / 3, x0 = cx - w / 2, y0 = cy - h / 2;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+      ctx.fillStyle = '#002868'; ctx.fillRect(x0, y0 + h / 2, w, h / 2);
+      for (let i = 0; i < 13; i++) {
+        const a0 = Math.PI + (i / 13) * Math.PI, a1 = Math.PI + ((i + 1) / 13) * Math.PI;
+        ctx.fillStyle = i % 2 ? '#FED700' : '#BF0A30';
+        ctx.beginPath(); ctx.moveTo(cx, y0 + h / 2);
+        ctx.lineTo(cx + Math.cos(a0) * w, y0 + h / 2 + Math.sin(a0) * w);
+        ctx.lineTo(cx + Math.cos(a1) * w, y0 + h / 2 + Math.sin(a1) * w);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#CE5C17';
+      ctx.beginPath(); starPath(ctx, cx, y0 + h / 2, h * 0.3, h * 0.12); ctx.fill();
+      ctx.restore();
+      break;
+    }
+    case 'mdshield': {
+      // Ravens sleeve shield: Maryland flag quarters under a purple band
+      ctx.save();
+      ctx.translate(cx, cy);
+      const shield = (g) => {
+        g.moveTo(-0.34 * S, -0.42 * S); g.lineTo(0.34 * S, -0.42 * S); g.lineTo(0.34 * S, 0.02 * S);
+        g.quadraticCurveTo(0.32 * S, 0.3 * S, 0, 0.46 * S); g.quadraticCurveTo(-0.32 * S, 0.3 * S, -0.34 * S, 0.02 * S); g.closePath();
+      };
+      fillStroke(ctx, shield, '#241773', '#FFFFFF', S * 0.05);
+      ctx.save(); ctx.beginPath(); shield(ctx); ctx.clip();
+      const cal = (x, y, w, h) => {
+        // Calvert: gold and black vertical bars with a counterchanged diagonal
+        for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? '#000' : '#FFC72C'; ctx.fillRect(x + (i * w) / 6, y, w / 6 + 1, h); }
+        ctx.save(); ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#FFC72C';
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y); ctx.fill(); ctx.restore();
+      };
+      const cro = (x, y, w, h) => {
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = '#C8102E'; ctx.fillRect(x, y + h * 0.4, w, h * 0.2); ctx.fillRect(x + w * 0.4, y, w * 0.2, h);
+      };
+      const top = -0.12 * S, q = 0.34 * S;
+      cal(-q, top, q, 0.3 * S); cro(0, top, q, 0.3 * S); cro(-q, top + 0.3 * S, q, 0.3 * S); cal(0, top + 0.3 * S, q, 0.3 * S);
+      ctx.restore();
+      drawLettering(ctx, 'RAVENS', 0, -0.27 * S, S * 0.1, 1, ['#FFFFFF'], 'roman', 0, 0, 0.05);
+      ctx.restore();
       break;
     }
     case 'star':
