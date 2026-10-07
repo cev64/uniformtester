@@ -5,3 +5,5 @@ dist-single
 research/*.log
 shots/
 .claude/worktrees/
+__pycache__/
+*.pyc
