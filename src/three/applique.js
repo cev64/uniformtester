@@ -206,14 +206,34 @@ export function buildApplique(layers, { style = 'twill', pxPerMm = 2, halo = tru
   const occl = new Float32Array(N);
   const bevelPx = Math.max(0.75, S.bevel * pxPerMm), pillowPx = Math.max(1, S.pillowMm * pxPerMm);
   const aoPx = Math.max(0.75, S.aoMm * pxPerMm), dy = Math.round(S.drop * pxPerMm);
+  // how much of each piece is hidden under the pieces above it: a piece only
+  // shades what is actually visible next to it
+  const above = alphas.map(() => null);
+  if (S.ao) {
+    let acc = new Float32Array(N);
+    for (let i = alphas.length - 1; i >= 0; i--) {
+      above[i] = acc;
+      const next = new Float32Array(N), a = alphas[i];
+      for (let p = 0; p < N; p++) next[p] = acc[p] > a[p] ? acc[p] : a[p];
+      acc = next;
+    }
+  }
   sds.forEach((sd, i) => {
     const a = alphas[i];
     if (S.thick) {
+      // a piece lies over the stack below it: it sits on top of what's there
+      // (the layers under it, which it hides apart from a faint show-through
+      // of their edges) and adds its own cut edge and doming
+      const t = S.thick * (layers[i].thick ?? 1);
+      const floor = S.thick * i * 0.9;
       for (let p = 0; p < N; p++) {
-        if (a[p] <= 0) continue;
+        const ap = a[p];
+        if (ap <= 0) continue;
         const d = Math.max(0, -sd[p]);
         const edge = S.edge ? Math.sqrt(sstep(-0.5, bevelPx, d)) : sstep(-0.5, bevelPx, d);
-        h[p] += S.thick * (layers[i].thick ?? 1) * a[p] * (0.75 * edge + 0.25 + S.pillow * sstep(0, pillowPx, d));
+        const top = Math.max(floor, h[p]) * 0.9 + h[p] * 0.1 + t * (0.75 * edge + 0.25 + S.pillow * sstep(0, pillowPx, d));
+        const covered = floor + t * (0.75 * edge + 0.25 + S.pillow * sstep(0, pillowPx, d)) + (h[p] - floor) * 0.12;
+        h[p] = h[p] * (1 - ap) + ap * (i ? covered : top);
       }
     }
     if (S.ao) {
@@ -224,7 +244,7 @@ export function buildApplique(layers, { style = 'twill', pxPerMm = 2, halo = tru
           const p = y * W + x;
           if (a[p] >= 1) continue;
           const d = Math.max(0, sd[ys + x]);
-          const o = k * Math.exp(-d / aoPx) * (1 - a[p]);
+          const o = k * Math.exp(-d / aoPx) * (1 - a[p]) * (1 - above[i][p]);
           if (o > occl[p]) occl[p] = o;
         }
       }
