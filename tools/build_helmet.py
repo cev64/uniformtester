@@ -128,7 +128,7 @@ NP_TOP = BROW_Z + 0.046                # nameplate top edge
 _pb = centre_point(NP_TOP + 0.023)
 PANEL_BOT_S = math.atan2(-_pb.y, _pb.z)
 PANEL_R = 0.15                          # arc-length scale for s
-PANEL_GAP = 0.0032
+PANEL_GAP = 0.0042
 GAP_FROM_S = 0.47                       # the gap runs from here down; above it the hinge is a step
 
 
@@ -1054,13 +1054,13 @@ clips = []
 
 def qr_clip(name, at, n, along):
     M = frame(at, n, along)
-    housing = blob(name, (0, 0, 0.0058), (0.0215, 0.0135, 0.0066), 'clip', n=2.4, seg=28, rings=14,
+    housing = blob(name, (0, 0, 0.0062), (0.0235, 0.0140, 0.0072), 'clip', n=2.4, seg=28, rings=14,
                    keep=lambda c: c.z > 0.0005)
     place(housing, M)
-    btn = cylinder(name + '_btn', 0.0056, 0.0024, 'button', verts=28, bevel=0.0007)
-    place(btn, M @ Matrix.Translation((0, 0, 0.0118)))
+    btn = cylinder(name + '_btn', 0.0062, 0.0026, 'button', verts=28, bevel=0.0008)
+    place(btn, M @ Matrix.Translation((0, 0, 0.0126)))
     pin = cylinder(name + '_pin', 0.0018, 0.0012, 'clipscrew', verts=16)
-    place(pin, M @ Matrix.Translation((0, 0, 0.0141)))
+    place(pin, M @ Matrix.Translation((0, 0, 0.0151)))
     base = cylinder(name + '_base', 0.0075, 0.0012, 'clipscrew', verts=24)
     place(base, M @ Matrix.Translation((0, 0, 0.0002)))
     return [housing, btn, pin, base]
@@ -1074,15 +1074,15 @@ for s in (1, -1):
 
 
 # ─── chin strap ────────────────────────────────────────────────────────
-CUP_C = P(0, -0.086, -0.129)            # centre of the cup's curvature
+CUP_C = P(0, -0.080, -0.128)            # centre of the cup's curvature
 
 
-CUP_A, CUP_ZH, CUP_N = 1.2, 0.0225, 2.6          # angular half-width, half-height, outline roundness
-CUP_HOLES = ((-0.34, -0.006, 0.21, 0.0072), (0.34, -0.006, 0.21, 0.0072))   # (a, z, ra, rz)
+CUP_A, CUP_ZH, CUP_N = 1.38, 0.026, 2.8          # angular half-width, half-height, outline roundness
+CUP_HOLES = ((-0.36, -0.008, 0.24, 0.0075), (0.36, -0.008, 0.24, 0.0075))   # (a, z, ra, rz)
 
 
 def cup_point(a, z, inset):
-    rx, ry = 0.064 - inset, 0.031 - inset
+    rx, ry = 0.047 - inset, 0.040 - inset
     # the lower edge tucks under the chin, the upper edge leans back a little
     curl = 0.32 * (min(z, 0) ** 2) / 0.03 + 0.10 * (max(z, 0) ** 2) / 0.03
     return P(math.sin(a) * rx, -math.cos(a) * ry + curl, z) + CUP_C
@@ -1169,15 +1169,15 @@ hw_parts = []
 for s in (1, -1):
     sm = (lambda q: q) if s > 0 else (lambda q: P(-q.x, q.y, q.z))
     # upper strap: cup → up the front of the jaw flap, under the temple clip → rocker → tail
-    rk_top, _ = on_shell(sm(P(0.126, -0.013, 0.029)), 0.0)
-    rk_bot, _ = on_shell(sm(P(0.126, -0.002, -0.015)), 0.0)
+    rk_top, _ = on_shell(sm(P(0.126, -0.018, 0.020)), 0.0)
+    rk_bot, _ = on_shell(sm(P(0.126, -0.008, -0.022)), 0.0)
     rk_c, rk_n = on_shell((rk_top + rk_bot) / 2, 0.0)
-    path = [CUP_C + sm(P(0.047, -0.020, 0.018)), sm(P(0.088, -0.118, -0.098)),
-            on_shell(sm(P(0.125, -0.092, -0.050)), 0.004)[0], on_shell(sm(P(0.128, -0.050, -0.016)), 0.004)[0],
-            rk_c + rk_n * 0.0045, on_shell(sm(P(0.125, 0.045, 0.022)), 0.0025)[0]]
+    path = [CUP_C + sm(P(0.043, -0.017, 0.016)), sm(P(0.080, -0.112, -0.104)),
+            on_shell(sm(P(0.125, -0.090, -0.062)), 0.004)[0], on_shell(sm(P(0.128, -0.048, -0.025)), 0.004)[0],
+            rk_c + rk_n * 0.0045, on_shell(sm(P(0.126, 0.012, 0.004)), 0.0025)[0]]
     path = catmull(path, 8)
-    path = [on_shell(q, 0.0035)[0] if q.y > -0.09 and q.z > -0.08 else q for q in path]
-    straps.append(ribbon(f'StrapHi{s}', path, 0.019, 0.0018, 'strap', lambda p: on_shell(p)[1] if p.y > -0.1 else up_out(p)))
+    path = [on_shell(q, 0.0035)[0] if q.y > -0.09 and q.z > -0.09 else q for q in path]
+    straps.append(ribbon(f'StrapHi{s}', path, 0.017, 0.0018, 'strap', lambda p: on_shell(p)[1] if p.y > -0.1 else up_out(p)))
     # rocker the upper strap threads through
     rocker = rbox(f'Rocker{s}', (0.046, 0.0125, 0.0055), 'buckle', bevel=0.45)
     place(rocker, frame(rk_c + rk_n * 0.0035, rk_n, rk_top - rk_bot))
@@ -1190,10 +1190,10 @@ for s in (1, -1):
     cb, cbn = on_shell(sm(P(0.122, -0.030, -0.132)), 0.0)
     an, ann = on_shell(sm(P(0.125, 0.072, -0.074)), 0.0)
     rs, rsn = on_shell(sm(P(0.125, 0.0, -0.106)), 0.0)
-    path = [CUP_C + sm(P(0.046, -0.018, -0.022)), sm(P(0.086, -0.104, -0.156)), sm(P(0.112, -0.062, -0.152)),
+    path = [CUP_C + sm(P(0.044, -0.017, -0.020)), sm(P(0.084, -0.102, -0.154)), sm(P(0.112, -0.062, -0.152)),
             cb + cbn * 0.006]
     path = catmull(path, 8)
-    straps.append(ribbon(f'StrapLo{s}', path, 0.019, 0.0018, 'strap', lambda p: up_out(p)))
+    straps.append(ribbon(f'StrapLo{s}', path, 0.017, 0.0018, 'strap', lambda p: up_out(p)))
     cam = rbox(f'CamBuckle{s}', (0.030, 0.021, 0.008), 'buckle', bevel=0.3)
     place(cam, frame(cb + cbn * 0.0055, cbn, an - cb))
     hw_parts.append(cam)

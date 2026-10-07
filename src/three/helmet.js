@@ -14,7 +14,8 @@ import { loadLogo } from './logos.js';
 //
 // Helmet data used here (src/data/teams.js):
 //   shell, finish ('gloss' | 'matte' | 'metallic' | 'chrome'), stripe, pattern,
-//   mask (facemask colour, null = no mask), chinstrap (strap colour),
+//   mask (facemask colour, null = no mask), maskStyle ('2BD' | '2EG' | '3BD'),
+//   chinstrap (strap colour),
 //   logo, numbers, numAt, nameplate: { bg, fg } (Riddell bumper colours,
 //   default black plate with a white wordmark), cup (chin cup colour).
 
@@ -22,6 +23,8 @@ const URL = 'public/models/helmet.glb';
 const DETAIL_URL = asset('public/models/helmet_detail.png');
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+// SF-2BD-SW (skill players, the default), SF-2EG-SW (eye guards), SF-3BD (lineman cage)
+const MASK_STYLES = ['2BD', '2EG', '3BD'];
 let modelPromise = null;
 
 // glTF UVs have v down, so canvases map unflipped
@@ -144,8 +147,8 @@ export class Helmet {
       mask: new THREE.MeshPhysicalMaterial({ roughness: 0.38, metalness: 0.0, clearcoat: 0.55, clearcoatRoughness: 0.28 }),
       // SpeedFlex quick-release clips: clear polycarbonate, chrome release buttons
       clip: new THREE.MeshPhysicalMaterial({
-        color: '#eef3f6', roughness: 0.06, metalness: 0, transmission: 0.85, thickness: 0.004, ior: 1.58,
-        clearcoat: 1, transparent: true, opacity: 0.6, depthWrite: false,
+        color: '#e4ecf0', roughness: 0.08, metalness: 0, transmission: 0.6, thickness: 0.006, ior: 1.58,
+        clearcoat: 1, transparent: true, opacity: 0.78, depthWrite: false,
       }),
       button: new THREE.MeshStandardMaterial({ color: '#d9dcdf', roughness: 0.16, metalness: 1 }),
       clipscrew: new THREE.MeshStandardMaterial({ color: '#a7abb0', roughness: 0.3, metalness: 1 }),
@@ -175,6 +178,10 @@ export class Helmet {
         o.castShadow = !['clip', 'ratchet', 'liner', 'pad', 'browpad'].includes(key);
         o.receiveShadow = true;
         if (key === 'clip' || key === 'ratchet') o.renderOrder = 3;
+        // facemask meshes are named after their style (M2BD_, M2EG_, M3BD_)
+        let n = o; let style = null;
+        while (n && !style) { style = /^M(2BD|2EG|3BD)_/.exec(n.name || '')?.[1]; n = n.parent; }
+        if (style) o.userData.maskStyle = style;
         (this.parts[key] ||= []).push(o);
       });
       this.mats.browpad.map = browTexture();
@@ -227,7 +234,9 @@ export class Helmet {
     m.needsUpdate = true;
 
     const hasMask = Boolean(helmet.mask);
-    for (const k of ['mask', 'clip', 'button', 'clipscrew']) for (const o of this.parts[k] || []) o.visible = hasMask;
+    const style = MASK_STYLES.includes(helmet.maskStyle) ? helmet.maskStyle : '2BD';
+    for (const k of ['clip', 'button', 'clipscrew']) for (const o of this.parts[k] || []) o.visible = hasMask;
+    for (const o of this.parts.mask || []) o.visible = hasMask && o.userData.maskStyle === style;
     if (hasMask) this.mats.mask.color.set(helmet.mask);
     this.mats.cup.color.set(helmet.cup || '#f2f2f2');
     this.mats.strap.color.set(helmet.chinstrap || '#18191b');
