@@ -886,73 +886,166 @@ np_outline = rounded_trapezoid(0.057, 0.050, BROW_Z + 0.0015, NP_TOP, 0.011, 0.0
 nameplate = plate_on_shell('Nameplate', np_outline, 'bumper', lambda v: lerp(0.0068, 0.0048, v))
 
 
-# ─── SpeedFlex facemask ────────────────────────────────────────────────
-MR = 0.0034            # 6.8 mm bar
-CLIP_LIFT = 0.0068     # bar centre above the shell under the clips
-hi_at, hi_n = on_shell(P(0.118, -0.068, 0.008))
-lo_at, lo_n = on_shell(P(0.112, -0.100, -0.096))
+# ─── SpeedFlex facemasks ───────────────────────────────────────────────
+# Traced from Riddell's product renders of the SF-2BD-SW (front, side and 3/4),
+# with the SF-2EG-SW (eye guards) and SF-3BD (lineman cage) as variants. Every
+# mask is built for the SpeedFlex mounting: the top bar runs back along the
+# brim and hooks down into the upper quick-release clip at the temple, the
+# side bar runs from that clip down the jaw extension through the lower clip
+# and turns into the chin bar. Front view x and heights come from the front
+# render; depth from the side render, slightly compressed so the nose bar
+# stands ~6 cm off the nose.
+MR = 0.0034            # 6.8 mm bar (1/4" + powder coat)
+CLIP_LIFT = 0.0072     # bar centre above the shell under the clips
+hi_at, hi_n = on_shell(P(0.118, -0.072, 0.012))
+lo_at, lo_n = on_shell(P(0.112, -0.082, -0.096))
 HI = hi_at + hi_n * CLIP_LIFT
 LO = lo_at + lo_n * CLIP_LIFT
+REF_HI, REF_LO = P(0.1195, -0.0717, 0.0119), P(0.117, -0.0822, -0.0972)   # where the trace below expects them
+
+
+def to_clips(q):
+    """warp a traced point so the traced clip positions land on the real clips"""
+    wh = 1 - smooth(0.0, 0.08, (q - REF_HI).length)
+    wl = 1 - smooth(0.0, 0.08, (q - REF_LO).length)
+    return q + (HI - REF_HI) * wh + (LO - REF_LO) * wl
+
+
+def clear_shell(q, gap=0.0028):
+    """keep a bar point off the shell (and its hardware) by at least gap"""
+    hit, n, _, d = shell_bvh.find_nearest(q)
+    if hit is None:
+        return q
+    out = (q - hit).dot(n)
+    need = MR + gap
+    return q + n * (need - out) if out < need else q
+
+
+def clear_path(path, gap=0.0028):
+    """push a bar off the shell, then fair the push along the bar so it bends
+    smoothly instead of following every bump"""
+    pushed = [clear_shell(q, gap) for q in path]
+    off = [b - a for a, b in zip(path, pushed)]
+    for _ in range(6):
+        off = [off[0]] + [(off[i - 1] + off[i] * 2 + off[i + 1]) / 4 for i in range(1, len(off) - 1)] + [off[-1]]
+    # never less than the raw push at any sample
+    out = []
+    for q, o, pq in zip(path, off, pushed):
+        r = q + o
+        out.append(clear_shell(r, gap * 0.6))
+    return out
 
 
 def mirror(pts):
     return [P(-q.x, q.y, q.z) for q in pts]
 
 
-def across(half):
-    """half path from the +x side end to the centre → full path side to side"""
-    full = catmull(half, 6)
-    return full[:-1] + [full[-1]] + mirror(list(reversed(full[:-1])))
+def across(half, n=8):
+    """half path from the +x side to the centre line → full smooth path"""
+    full = catmull(half + [P(-half[-2].x, half[-2].y, half[-2].z)], n)
+    full = full[:len(full) - n]          # drop the mirrored overshoot
+    return full[:-1] + mirror(list(reversed(full)))
 
 
+def build_mask(style):
+    parts, welds, paths = [], [], []
+    tag = f'M{style}_'
+
+    def tb(name, path):
+        paths.append(path)
+        parts.append(tube(name, path, MR, 'mask', res=4))
+
+    def bar(name, pts, n=8, sym=False, already=False):
+        path = pts if already else (catmull([to_clips(q) for q in pts], n) if len(pts) > 2 else [to_clips(q) for q in pts])
+        path = clear_path(path)
+        for k, qq in enumerate([path] + ([mirror(path)] if sym else [])):
+            tb(f'{tag}{name}{k}', qq)
+        return path
+
+    def wl(*qs, sym=True):
+        for q in qs:
+            q = clear_shell(to_clips(q))
+            welds.append(q)
+            if sym:
+                welds.append(P(-q.x, q.y, q.z))
+
+    # top bar: straight across the brim, dips at the corners, kicks up and
+    # back along the shell, then hooks down into the upper clip
+    top_half = [REF_HI + P(-0.001, -0.003, 0.006), P(0.122, -0.084, 0.040), P(0.110, -0.112, 0.037),
+                P(0.098, -0.133, 0.031), P(0.080, -0.158, 0.040), P(0.045, -0.172, 0.042), P(0.0, -0.177, 0.042)]
+    top = across([to_clips(q) for q in top_half])
+    top = clear_path(top)
+    tb(f'{tag}top', top)
+    # eye bar, arched, ending on the corner posts; centre bridge to the top bar
+    eye_half = [P(0.108, -0.127, 0.018), P(0.096, -0.146, 0.021), P(0.060, -0.168, 0.026), P(0.0, -0.177, 0.029)]
+    eye = across([to_clips(q) for q in eye_half])
+    tb(f'{tag}eye', clear_path(eye))
+    bar('bridge', [P(0, -0.177, 0.042), P(0, -0.1772, 0.035), P(0, -0.177, 0.029)])
+    welds += [P(0, -0.177, 0.042), P(0, -0.177, 0.029)]
+    # corner posts: from the top bar's dip, slanting in, down to the chin bar
+    post = [P(0.100, -0.131, 0.032), P(0.108, -0.127, 0.017), P(0.100, -0.126, -0.020), P(0.092, -0.126, -0.056),
+            P(0.081, -0.124, -0.095), P(0.068, -0.121, -0.127)]
+    bar('post', post, sym=True)
+    wl(P(0.100, -0.131, 0.032), P(0.108, -0.127, 0.017))
+    # side bar: upper clip → forward along the temple → nose-bar junction →
+    # back down the jaw extension through the lower clip → into the chin bar
+    side = [REF_HI, P(0.120, -0.078, 0.005), P(0.119, -0.093, -0.011), P(0.119, -0.102, -0.030),
+            P(0.119, -0.104, -0.050), P(0.118, -0.096, -0.074), REF_LO, P(0.112, -0.094, -0.108),
+            P(0.104, -0.108, -0.118)]
+    bar('side', side, sym=True)
+    # chin bar: a U under the chin from one side bar to the other
+    chin_half = [P(0.104, -0.108, -0.118), P(0.087, -0.122, -0.126), P(0.067, -0.136, -0.135),
+                 P(0.033, -0.157, -0.146), P(0.0, -0.164, -0.150)]
+    chin = across([to_clips(q) for q in chin_half])
+    chin = clear_path(chin)
+    tb(f'{tag}chin', chin)
+    wl(P(0.104, -0.108, -0.118), P(0.068, -0.121, -0.127))
+    # nose bar: across the front at the upper lip, wrapping back to the side bars
+    nose_half = [P(0.119, -0.104, -0.053), P(0.104, -0.118, -0.055), P(0.092, -0.127, -0.056),
+                 P(0.070, -0.158, -0.060), P(0.047, -0.176, -0.063), P(0.0, -0.186, -0.066)]
+    nose = across([to_clips(q) for q in nose_half])
+    tb(f'{tag}nose', clear_path(nose))
+    wl(P(0.119, -0.104, -0.053), P(0.092, -0.126, -0.056))
+    # "SW" stub from the corner post out to the side bar under the nose bar
+    bar('stub', [P(0.090, -0.126, -0.078), P(0.106, -0.111, -0.076), P(0.118, -0.099, -0.073)], sym=True)
+    wl(P(0.090, -0.126, -0.078), P(0.118, -0.099, -0.073))
+
+    if style in ('2BD', '2EG'):
+        # two lower verticals converging from the nose bar to the chin bar
+        lv = [P(0.047, -0.176, -0.063), P(0.042, -0.170, -0.100), P(0.033, -0.158, -0.146)]
+        bar('lowv', lv, sym=True)
+        wl(lv[0], lv[-1])
+    if style == '2EG':
+        # eye guards: short verticals from the eye bar to the nose bar
+        eg = [P(0.072, -0.161, 0.024), P(0.071, -0.162, -0.018), P(0.070, -0.158, -0.060)]
+        bar('eyeguard', eg, sym=True)
+        wl(eg[0], eg[-1])
+    if style == '3BD':
+        # lineman cage: two more bars under the nose bar, centre bar to the chin,
+        # inner verticals between the bars
+        for k, dz in enumerate((0.019, 0.038)):
+            half = [P(0.118, -0.100, -0.053 - dz * 0.9), P(0.092, -0.124, -0.056 - dz), P(0.070, -0.155, -0.060 - dz),
+                    P(0.047, -0.173, -0.063 - dz), P(0.0, -0.183 + dz * 0.15, -0.066 - dz)]
+            hb = across([to_clips(q) for q in half])
+            tb(f'{tag}lbar{k}', clear_path(hb))
+        bar('centre', [P(0, -0.186, -0.066), P(0, -0.178, -0.110), P(0, -0.164, -0.150)])
+        welds += [P(0, -0.186, -0.066), P(0, -0.164, -0.150)]
+        iv = [P(0.040, -0.180, -0.063), P(0.038, -0.172, -0.105)]
+        bar('innerv', iv, sym=True)
+        wl(*iv)
+
+    # weld beads sit on the bars where they meet (nearest point of the built bars)
+    pts_all = [q for pth in paths for q in pth]
+    welds = [min(pts_all, key=lambda q: (q - w).length) for w in welds]
+    for i, w in enumerate(welds):
+        parts.append(blob(f'{tag}weld{i}', w, (MR * 1.3, MR * 1.3, MR * 1.3), 'mask', n=2.0, seg=12, rings=8))
+    return parts
+
+
+MASK_STYLES = ('2BD', '2EG', '3BD')
 mask_parts = []
-welds = []
-
-
-def bar(name, pts, n=6):
-    path = catmull(pts, n) if len(pts) > 2 else pts
-    mask_parts.append(tube(name, path, MR, 'mask', res=3))
-    return path
-
-
-# top bar and eye bar, both running back to the temple clips, bridged at the centre
-top = bar('Mask_top', across([HI + P(-0.002, -0.004, 0.003), P(0.112, -0.103, 0.024), P(0.088, -0.146, 0.037),
-                               P(0.045, -0.166, 0.041), P(0.0, -0.170, 0.041)]), 1)
-eye = bar('Mask_eye', across([HI + P(-0.003, -0.006, -0.002), P(0.111, -0.106, 0.008), P(0.090, -0.150, 0.016),
-                               P(0.046, -0.170, 0.019), P(0.0, -0.173, 0.019)]), 1)
-bar('Mask_bridge', [P(0, -0.170, 0.041), P(0, -0.1725, 0.030), P(0, -0.173, 0.019)])
-welds += [P(0, -0.170, 0.041), P(0, -0.173, 0.019)]
-
-NOSE_C = P(0.0, -0.191, -0.047)
-CHIN_C = P(0.0, -0.170, -0.152)
-J1 = P(0.121, -0.111, -0.044)              # side bar meets nose bar
-nose = bar('Mask_nose', across([J1, P(0.104, -0.152, -0.040), P(0.064, -0.183, -0.044), P(0.0, -0.191, -0.047)]), 1)
-chin = bar('Mask_chin', across([LO + P(-0.002, -0.006, -0.004), P(0.092, -0.130, -0.128), P(0.060, -0.160, -0.149),
-                                 P(0.032, -0.168, -0.152), CHIN_C]), 1)
-
-
-def nearest(path, x, sign=1):
-    return min((q for q in path if q.x * sign >= 0), key=lambda q: abs(q.x - x))
-
-
-for s in (1, -1):
-    sm = (lambda q: q) if s > 0 else (lambda q: P(-q.x, q.y, q.z))
-    # side bar: temple clip → nose-bar junction → jaw clip, bowed forward
-    side = [HI + P(0.0, -0.002, -0.004), P(0.124, -0.093, -0.018), J1, P(0.120, -0.114, -0.070),
-            LO + P(0.0, -0.004, 0.004)]
-    bar(f'Mask_side{s}', [sm(q) for q in side])
-    # posts: nose bar down to the chin bar
-    a = nearest(nose, s * 0.050, s); c = nearest(chin, s * 0.043, s)
-    b = (a + c) / 2 + P(0, -0.003, 0)
-    bar(f'Mask_post{s}', [a, b, c])
-    # lower side bar: from the side bar under the nose bar forward to the post
-    q0 = sm(P(0.119, -0.114, -0.064))
-    q2 = b.lerp(a, 0.25)
-    bar(f'Mask_low{s}', [q0, sm(P(0.098, -0.150, -0.070)), q2])
-    welds += [a, c, q0, q2, sm(J1)]
-
-for i, w in enumerate(welds):
-    mask_parts.append(blob(f'Weld{i}', w, (MR * 1.32, MR * 1.32, MR * 1.32), 'mask', n=2.0, seg=12, rings=8))
+for st in MASK_STYLES:
+    mask_parts += build_mask(st)
 
 
 # ─── quick-release clips ───────────────────────────────────────────────
