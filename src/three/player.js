@@ -150,7 +150,7 @@ export class Player {
     this.mats = {
       // Vapor body knit, perforated vent panels, smooth stretch shoulders
       jersey: fabric({ micro: ['knit', 'perf'], cm: cm(reg.jersey), macro: torsoDetail(meta, A), zone: torsoZones(meta, A),
-        microStrength: 0.65, cavity: 0.6, roughness: 0.78, sheen: 0.45, aniso: A }),
+        microStrength: 0.45, cavity: 0.6, roughness: 0.78, sheen: 0.45, aniso: A }),
       collar: fabric({ micro: ['collarRib'], cm: [(meta.collar?.perimeter || 0.67) * 100, (meta.collar?.width || 0.03) * 100], macro: collarDetail(meta, A),
         microStrength: 0.9, roughness: 0.85, sheen: 0.35, aniso: A }),
       sleeve: fabric({ micro: ['stretch'], cm: cm(reg.sleeve, 1.4), macro: sleeveDetail(meta, A), zone: sleeveZones(meta, A),
@@ -428,7 +428,7 @@ export class Player {
       this.lettering(torso, back(neckY - 0.1), player.name.toUpperCase(), jersey.plateH || 0.05,
         [jersey.plateColor || colors[0], ...(jersey.plateOutline || [])], plate,
         { tracking: jersey.plateTracking ?? 0.05, arch: jersey.plateArch || 0, scaleX: jersey.plateScaleX || 1, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
-          bg: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
+          bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
     }
     this.lettering(torso, back(neckY - 0.3), num, 0.25, colors, font, numOpts);
 

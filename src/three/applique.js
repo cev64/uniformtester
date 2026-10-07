@@ -15,13 +15,13 @@
 // default for decals), so canvas row 0 is the top of the decal.
 
 import { heightToNormal } from './fabric.js';
-import { signedDistance, alphaOf, cpuCanvas } from './sdf.js';
+import { signedDistance, alphaOf, cpuCanvas, grow } from './sdf.js';
 
 const STYLE = {
   // thick: relief per layer; bevel: cut-edge width (mm); pillow: the cloth's
   // gentle doming over `pillowMm`; ao/halo: shading cast on the layer below /
   // on the jersey within aoMm, dropped by `drop` mm (light from above).
-  twill: { thick: 1, bevel: 0.6, pillow: 0.6, pillowMm: 3, stitch: true, ao: 0.45, aoMm: 1.0, halo: 0.45, drop: 0.5 },
+  twill: { thick: 1, bevel: 0.6, pillow: 0.6, pillowMm: 3, stitch: true, ao: 0.4, aoMm: 0.8, halo: 0.32, drop: 0.45 },
   pressed: { thick: 0.22, bevel: 0.2, pillow: 0, pillowMm: 0, stitch: false, ao: 0.25, aoMm: 0.5, halo: 0.22, drop: 0.15 },
   embroidered: { thick: 1, bevel: 1.0, pillow: 0.5, pillowMm: 1.5, stitch: false, ao: 0.35, aoMm: 0.9, halo: 0.45, drop: 0.3, edge: true },
   print: { thick: 0, bevel: 0, pillow: 0, pillowMm: 0, stitch: false, ao: 0, aoMm: 0, halo: 0, drop: 0 },
@@ -161,7 +161,20 @@ export function buildApplique(layers, { style = 'twill', pxPerMm = 2, halo = tru
   // composite colours, with each layer's stitching drawn on top of it
   layers.forEach((l, i) => {
     ctx.drawImage(l.face || tintMask(l.mask, l.color || '#fff'), 0, 0);
-    if (S.stitch) {
+    if (S.stitch && l.stitch === 'straight' && sds[i]) {
+      // a straight lock stitch a few mm inside the edge (nameplate strips)
+      const inset = 3 * pxPerMm, lw = Math.max(0.6, 0.3 * pxPerMm);
+      const lines = contours(grow(sds[i], -inset), W, H, Math.max(1, Math.round(pxPerMm * 0.6)));
+      for (const g of [ctx, tctx]) {
+        g.save();
+        g.setLineDash([2.2 * pxPerMm, 0.9 * pxPerMm]);
+        g.strokeStyle = g === ctx ? (l.thread || l.color || '#fff') : '#fff';
+        g.lineWidth = lw;
+        if (g === ctx) g.filter = 'brightness(1.08)';
+        for (const ln of lines) { g.beginPath(); ln.forEach((q, k) => (k ? g.lineTo(...q) : g.moveTo(...q))); g.closePath(); g.stroke(); }
+        g.restore();
+      }
+    } else if (S.stitch && l.stitch !== false) {
       const amp = Math.max(1, 0.85 * pxPerMm), pitch = Math.max(2, 0.95 * pxPerMm);
       const lw = Math.max(0.6, 0.26 * pxPerMm);
       const lines = contours(alphas[i], W, H, Math.max(1, Math.round(pxPerMm * 0.6)));
@@ -200,11 +213,11 @@ export function buildApplique(layers, { style = 'twill', pxPerMm = 2, halo = tru
         if (a[p] <= 0) continue;
         const d = Math.max(0, -sd[p]);
         const edge = S.edge ? Math.sqrt(sstep(-0.5, bevelPx, d)) : sstep(-0.5, bevelPx, d);
-        h[p] += S.thick * a[p] * (0.75 * edge + 0.25 + S.pillow * sstep(0, pillowPx, d));
+        h[p] += S.thick * (layers[i].thick ?? 1) * a[p] * (0.75 * edge + 0.25 + S.pillow * sstep(0, pillowPx, d));
       }
     }
     if (S.ao) {
-      const k = i === 0 ? S.halo : S.ao;
+      const k = (i === 0 ? S.halo : S.ao) * (layers[i].halo ?? 1);
       for (let y = 0; y < H; y++) {
         const ys = Math.max(0, y - dy) * W;
         for (let x = 0; x < W; x++) {

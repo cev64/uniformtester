@@ -489,7 +489,7 @@ export function paintSocksTex(socks, meta) {
 //   scaleX: horizontal scale of the letters (condense / extend a font)
 //   skew: shear for italics (x per y)
 //   bg: a rounded patch behind the lettering (neck-tag labels)
-export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tracking = 0.02, px = 256, skew = null, bg = null, arch = 0, scaleX = 1 } = {}) {
+export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tracking = 0.02, px = 256, skew = null, bg = null, bar = null, arch = 0, scaleX = 1 } = {}) {
   const f = NUMBER_FONTS[font] || NUMBER_FONTS.block;
   const [fill, c1, c2] = colors;
   const w1 = c1 ? o1 * px : 0, w2 = c2 ? o2 * px : 0;
@@ -508,7 +508,8 @@ export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tr
   const whole = probe.measureText(text).width + track * chars.length;
   const totalW = (arch ? adv.reduce((s, x) => s + x, 0) : whole) * sx;
   const rise = Math.abs(arch) * px;
-  const pad = Math.ceil(w1 + w2 + px * 0.12 + Math.abs(k) * px * 0.5);
+  // a nameplate bar needs room round the letters
+  const pad = Math.ceil(Math.max(w1 + w2 + px * 0.12 + Math.abs(k) * px * 0.5, bar ? px * 0.8 : 0));
   const W = Math.ceil(totalW + Math.abs(k) * px + pad * 2), H = Math.ceil(px + rise + pad * 2);
   const asc = (m.actualBoundingBoxAscent / capH) * px;
   const baseY = pad + (arch > 0 ? rise : 0) + asc;
@@ -560,6 +561,18 @@ export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tr
     g.roundRect ? g.roundRect(pad * 0.4, H * 0.1, W - pad * 0.8, H * 0.8, r) : g.rect(pad * 0.4, H * 0.1, W - pad * 0.8, H * 0.8);
     g.fill();
     layers.push({ mask: c, color: bg });
+  }
+  if (bar) {
+    // a separate nameplate strip sewn on behind the letters: thin, square-ish
+    // corners, barely any shadow (it's the same cloth as the jersey)
+    const c = cpuCanvas(W, H);
+    const g = c.getContext('2d');
+    g.fillStyle = '#000';
+    const x0 = pad * 0.2, y0 = pad * 0.42, r = px * 0.05;
+    g.beginPath();
+    g.roundRect ? g.roundRect(x0, y0, W - 2 * x0, H - 2 * y0, r) : g.rect(x0, y0, W - 2 * x0, H - 2 * y0);
+    g.fill();
+    layers.push({ mask: c, color: bar, thick: 0.35, halo: 0.3, stitch: 'straight', thread: shade(bar, luminance(bar) > 0.55 ? -0.18 : 0.25) });
   }
   const offset = (r) => { const o = new Float32Array(W * H); for (let i = 0; i < W * H; i++) o[i] = sd[i] - r; return o; };
   if (w2) { const a = grow(sd, w1 + w2); layers.push({ alpha: a, sd: offset(w1 + w2), mask: maskCanvas(a, W, H), color: c2 }); }
