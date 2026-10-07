@@ -4,3 +4,5 @@ dist-single
 .DS_Store
 research/*.log
 shots/
+__pycache__/
+*.pyc
