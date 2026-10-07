@@ -9,6 +9,16 @@
   "w": 133,
   "wiki": "en"
  },
+ "File:Arizona Cardinals logo.svg": {
+  "h": 161,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Arizona_Cardinals_logo.svg",
+  "title": "File:Arizona Cardinals logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/7/72/Arizona_Cardinals_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 179,
+  "wiki": "en"
+ },
  "File:Arizona Cardinals wordmark.svg": {
   "h": 39,
   "license": "Public domain [trademarked]",
@@ -19,6 +29,16 @@
   "w": 193,
   "wiki": "en"
  },
+ "File:Atlanta Falcons logo.svg": {
+  "h": 235,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Atlanta_Falcons_logo.svg",
+  "title": "File:Atlanta Falcons logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/c/c5/Atlanta_Falcons_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 248,
+  "wiki": "en"
+ },
  "File:Atlanta Falcons wordmark.svg": {
   "h": 94,
   "license": "Public domain [trademarked]",
@@ -27,6 +47,16 @@
   "title": "File:Atlanta Falcons wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Atlanta_Falcons_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 448,
+  "wiki": "en"
+ },
+ "File:Baltimore Ravens logo.svg": {
+  "h": 143,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Baltimore_Ravens_logo.svg",
+  "title": "File:Baltimore Ravens logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/1/16/Baltimore_Ravens_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 296,
   "wiki": "en"
  },
  "File:Baltimore Ravens wordmark.svg": {
@@ -79,6 +109,16 @@
   "w": 3840,
   "wiki": "en"
  },
+ "File:Buffalo Bills logo.svg": {
+  "h": 126,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Buffalo_Bills_logo.svg",
+  "title": "File:Buffalo Bills logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/7/77/Buffalo_Bills_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 189,
+  "wiki": "en"
+ },
  "File:Buffalo Bills wordmark.svg": {
   "h": 49,
   "license": "Public domain [trademarked]",
@@ -87,6 +127,16 @@
   "title": "File:Buffalo Bills wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Buffalo_Bills_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 189,
+  "wiki": "en"
+ },
+ "File:Carolina Panthers logo.svg": {
+  "h": 104,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Carolina_Panthers_logo.svg",
+  "title": "File:Carolina Panthers logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/1/1c/Carolina_Panthers_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 191,
   "wiki": "en"
  },
  "File:Carolina Panthers wordmark.svg": {
@@ -109,6 +159,26 @@
   "w": 318,
   "wiki": "en"
  },
+ "File:Chicago Bears logo.svg": {
+  "h": 248,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Chicago_Bears_logo.svg",
+  "title": "File:Chicago Bears logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Chicago_Bears_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 373,
+  "wiki": "en"
+ },
+ "File:Chicago Bears white logo.png": {
+  "h": 133,
+  "license": "Public domain [trademarked]",
+  "mime": "image/png",
+  "page": "https://commons.wikimedia.org/wiki/File:Chicago_Bears_white_logo.png",
+  "title": "File:Chicago Bears white logo.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Chicago_Bears_white_logo.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 200,
+  "wiki": "en"
+ },
  "File:Chicago Bears wordmark.svg": {
   "h": 29,
   "license": "Public domain [trademarked]",
@@ -117,6 +187,26 @@
   "title": "File:Chicago Bears wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Chicago_Bears_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 192,
+  "wiki": "en"
+ },
+ "File:Cincinnati Bengals logo.svg": {
+  "h": 360,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Cincinnati_Bengals_logo.svg",
+  "title": "File:Cincinnati Bengals logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/8/81/Cincinnati_Bengals_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 512,
+  "wiki": "en"
+ },
+ "File:Cincinnati Bengals wordmark (c. 2004).png": {
+  "h": 95,
+  "license": "Public domain [trademarked]",
+  "mime": "image/png",
+  "page": "https://commons.wikimedia.org/wiki/File:Cincinnati_Bengals_wordmark_(c._2004).png",
+  "title": "File:Cincinnati Bengals wordmark (c. 2004).png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/7/76/Cincinnati_Bengals_wordmark_%28c._2004%29.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 551,
   "wiki": "en"
  },
  "File:Cincinnati Bengals wordmark.svg": {
@@ -137,6 +227,16 @@
   "title": "File:Cleveland Browns B.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cleveland_Browns_B.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 324,
+  "wiki": "en"
+ },
+ "File:Cleveland Browns logo.svg": {
+  "h": 276,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Cleveland_Browns_logo.svg",
+  "title": "File:Cleveland Browns logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/d/d9/Cleveland_Browns_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 363,
   "wiki": "en"
  },
  "File:Cleveland Browns wordmark.svg": {
@@ -169,6 +269,26 @@
   "w": 512,
   "wiki": "en"
  },
+ "File:Dallas Cowboys.svg": {
+  "h": 411,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Dallas_Cowboys.svg",
+  "title": "File:Dallas Cowboys.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/1/15/Dallas_Cowboys.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 432,
+  "wiki": "en"
+ },
+ "File:Denver Broncos logo.svg": {
+  "h": 174,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Denver_Broncos_logo.svg",
+  "title": "File:Denver Broncos logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/4/44/Denver_Broncos_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 296,
+  "wiki": "en"
+ },
  "File:Denver Broncos wordmark.svg": {
   "h": 33,
   "license": "Public domain [trademarked]",
@@ -177,6 +297,16 @@
   "title": "File:Denver Broncos wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/Denver_Broncos_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 191,
+  "wiki": "en"
+ },
+ "File:Detroit Lions logo.svg": {
+  "h": 148,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Detroit_Lions_logo.svg",
+  "title": "File:Detroit Lions logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/7/71/Detroit_Lions_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 194,
   "wiki": "en"
  },
  "File:Detroit Lions wordmark.svg": {
@@ -189,6 +319,26 @@
   "w": 193,
   "wiki": "en"
  },
+ "File:Detroit Lions.svg": {
+  "h": 187,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Detroit_Lions.svg",
+  "title": "File:Detroit Lions.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/2/28/Detroit_Lions.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 250,
+  "wiki": "en"
+ },
+ "File:Green Bay Packers logo.svg": {
+  "h": 114,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Green_Bay_Packers_logo.svg",
+  "title": "File:Green Bay Packers logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/5/50/Green_Bay_Packers_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 173,
+  "wiki": "en"
+ },
  "File:Green Bay Packers wordmark.svg": {
   "h": 58,
   "license": "Public domain [trademarked]",
@@ -197,6 +347,16 @@
   "title": "File:Green Bay Packers wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/1/17/Green_Bay_Packers_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 193,
+  "wiki": "en"
+ },
+ "File:Houston Texans logo.svg": {
+  "h": 302,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Houston_Texans_logo.svg",
+  "title": "File:Houston Texans logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/2/28/Houston_Texans_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 331,
   "wiki": "en"
  },
  "File:Houston Texans wordmark logo 2024.svg": {
@@ -229,6 +389,16 @@
   "w": 191,
   "wiki": "en"
  },
+ "File:Indianapolis Colts logo.svg": {
+  "h": 203,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Indianapolis_Colts_logo.svg",
+  "title": "File:Indianapolis Colts logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/0/00/Indianapolis_Colts_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 193,
+  "wiki": "en"
+ },
  "File:Indianapolis Colts new wordmark.svg": {
   "h": 123,
   "license": "Public domain [trademarked]",
@@ -247,6 +417,16 @@
   "title": "File:Indianapolis Colts wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Indianapolis_Colts_2002-2020_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 191,
+  "wiki": "en"
+ },
+ "File:Jacksonville Jaguars logo.svg": {
+  "h": 145,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Jacksonville_Jaguars_logo.svg",
+  "title": "File:Jacksonville Jaguars logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/7/74/Jacksonville_Jaguars_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 193,
   "wiki": "en"
  },
  "File:Jacksonville Jaguars wordmark.svg": {
@@ -269,6 +449,16 @@
   "w": 1289,
   "wiki": "en"
  },
+ "File:Kansas City Chiefs logo.svg": {
+  "h": 253,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Kansas_City_Chiefs_logo.svg",
+  "title": "File:Kansas City Chiefs logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/e/e1/Kansas_City_Chiefs_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 396,
+  "wiki": "en"
+ },
  "File:Kansas City Chiefs wordmark.svg": {
   "h": 56,
   "license": "Public domain [trademarked]",
@@ -277,6 +467,16 @@
   "title": "File:Kansas City Chiefs wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Kansas_City_Chiefs_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 250,
+  "wiki": "en"
+ },
+ "File:LA Rams Logo.png": {
+  "h": 541,
+  "license": "CC0",
+  "mime": "image/png",
+  "page": "https://commons.wikimedia.org/wiki/File:LA_Rams_Logo.png",
+  "title": "File:LA Rams Logo.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/9/92/LA_Rams_Logo.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 750,
   "wiki": "en"
  },
  "File:LA Rams logo.svg": {
@@ -299,6 +499,26 @@
   "w": 1801,
   "wiki": "en"
  },
+ "File:LA Rams wordmark.svg": {
+  "h": 138,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:LA_Rams_wordmark.svg",
+  "title": "File:LA Rams wordmark.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/LA_Rams_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 387,
+  "wiki": "en"
+ },
+ "File:Las Vegas Raiders logo.svg": {
+  "h": 326,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Las_Vegas_Raiders_logo.svg",
+  "title": "File:Las Vegas Raiders logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/4/48/Las_Vegas_Raiders_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 307,
+  "wiki": "en"
+ },
  "File:Las Vegas Raiders wordmark.svg": {
   "h": 35,
   "license": "Public domain [trademarked]",
@@ -307,6 +527,26 @@
   "title": "File:Las Vegas Raiders wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/5/51/Las_Vegas_Raiders_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 190,
+  "wiki": "en"
+ },
+ "File:Logo NIKE.svg": {
+  "h": 356,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Logo_NIKE.svg",
+  "title": "File:Logo NIKE.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 1000,
+  "wiki": "en"
+ },
+ "File:Los Angeles Chargers logo.svg": {
+  "h": 180,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Chargers_logo.svg",
+  "title": "File:Los Angeles Chargers logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Los_Angeles_Chargers_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 408,
   "wiki": "en"
  },
  "File:Los Angeles Chargers wordmark.svg": {
@@ -329,6 +569,26 @@
   "w": 264,
   "wiki": "en"
  },
+ "File:Los Angeles Rams Logo.png": {
+  "h": 1379,
+  "license": "Public domain [trademarked]",
+  "mime": "image/png",
+  "page": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Rams_Logo.png",
+  "title": "File:Los Angeles Rams Logo.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Los_Angeles_Rams_Logo.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 1920,
+  "wiki": "en"
+ },
+ "File:Los Angeles Rams textlogo.png": {
+  "h": 437,
+  "license": "Public domain [trademarked]",
+  "mime": "image/png",
+  "page": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Rams_textlogo.png",
+  "title": "File:Los Angeles Rams textlogo.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Los_Angeles_Rams_textlogo.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 1079,
+  "wiki": "en"
+ },
  "File:Los Angeles Rams wordmark.svg": {
   "h": 80,
   "license": "Public domain [trademarked]",
@@ -337,6 +597,16 @@
   "title": "File:Los Angeles Rams wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Los_Angeles_Rams_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 193,
+  "wiki": "en"
+ },
+ "File:Miami Dolphins logo.svg": {
+  "h": 198,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Miami_Dolphins_logo.svg",
+  "title": "File:Miami Dolphins logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/3/37/Miami_Dolphins_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 250,
   "wiki": "en"
  },
  "File:Miami Dolphins wordmark.svg": {
@@ -349,6 +619,36 @@
   "w": 250,
   "wiki": "en"
  },
+ "File:Minnesota Vikings V logo.png": {
+  "h": 632,
+  "license": "Public domain [trademarked]",
+  "mime": "image/png",
+  "page": "https://commons.wikimedia.org/wiki/File:Minnesota_Vikings_V_logo.png",
+  "title": "File:Minnesota Vikings V logo.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Minnesota_Vikings_V_logo.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 578,
+  "wiki": "en"
+ },
+ "File:Minnesota Vikings logo.svg": {
+  "h": 156,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Minnesota_Vikings_logo.svg",
+  "title": "File:Minnesota Vikings logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/4/48/Minnesota_Vikings_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 127,
+  "wiki": "en"
+ },
+ "File:Minnesota Vikings wordmark (1982 - 2003).svg": {
+  "h": 101,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Minnesota_Vikings_wordmark_(1982_-_2003).svg",
+  "title": "File:Minnesota Vikings wordmark (1982 - 2003).svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Minnesota_Vikings_wordmark_%281982_-_2003%29.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 503,
+  "wiki": "en"
+ },
  "File:Minnesota Vikings wordmark.svg": {
   "h": 62,
   "license": "Public domain [trademarked]",
@@ -357,6 +657,46 @@
   "title": "File:Minnesota Vikings wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Minnesota_Vikings_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 190,
+  "wiki": "en"
+ },
+ "File:NFL Los Angeles Rams.svg": {
+  "h": 400,
+  "license": "CC BY-SA 4.0",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:NFL_Los_Angeles_Rams.svg",
+  "title": "File:NFL Los Angeles Rams.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/NFL_Los_Angeles_Rams.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 600,
+  "wiki": "en"
+ },
+ "File:NFL Rams Classical Helmet.svg": {
+  "h": 278,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:NFL_Rams_Classical_Helmet.svg",
+  "title": "File:NFL Rams Classical Helmet.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/b/b7/NFL_Rams_Classical_Helmet.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 360,
+  "wiki": "en"
+ },
+ "File:NFL Rams logo.svg": {
+  "h": 200,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:NFL_Rams_logo.svg",
+  "title": "File:NFL Rams logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/8/8b/NFL_Rams_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 281,
+  "wiki": "en"
+ },
+ "File:National Football League logo.svg": {
+  "h": 371,
+  "license": "CC-BY-4.0 [design|trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:National_Football_League_logo.svg",
+  "title": "File:National Football League logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/a/a2/National_Football_League_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 270,
   "wiki": "en"
  },
  "File:New England Patriots NE logo.png": {
@@ -379,6 +719,16 @@
   "w": 228,
   "wiki": "en"
  },
+ "File:New England Patriots logo.svg": {
+  "h": 94,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:New_England_Patriots_logo.svg",
+  "title": "File:New England Patriots logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/b/b9/New_England_Patriots_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 193,
+  "wiki": "en"
+ },
  "File:New England Patriots wordmark.svg": {
   "h": 46,
   "license": "Public domain [trademarked]",
@@ -387,6 +737,16 @@
   "title": "File:New England Patriots wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/New_England_Patriots_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 193,
+  "wiki": "en"
+ },
+ "File:New Orleans Saints logo.svg": {
+  "h": 234,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_Saints_logo.svg",
+  "title": "File:New Orleans Saints logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/5/50/New_Orleans_Saints_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 192,
   "wiki": "en"
  },
  "File:New Orleans Saints shield logo.svg": {
@@ -409,6 +769,16 @@
   "w": 192,
   "wiki": "en"
  },
+ "File:New York Giants logo.svg": {
+  "h": 150,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:New_York_Giants_logo.svg",
+  "title": "File:New York Giants logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/6/60/New_York_Giants_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 193,
+  "wiki": "en"
+ },
  "File:New York Giants wordmark.svg": {
   "h": 74,
   "license": "Public domain [trademarked]",
@@ -417,6 +787,26 @@
   "title": "File:New York Giants wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/New_York_Giants_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 191,
+  "wiki": "en"
+ },
+ "File:New York Jets 2024 (wordmark).svg": {
+  "h": 177,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:New_York_Jets_2024_(wordmark).svg",
+  "title": "File:New York Jets 2024 (wordmark).svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/New_York_Jets_2024_%28wordmark%29.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 564,
+  "wiki": "en"
+ },
+ "File:New York Jets 2024.svg": {
+  "h": 244,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:New_York_Jets_2024.svg",
+  "title": "File:New York Jets 2024.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/6/69/New_York_Jets_2024.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 408,
   "wiki": "en"
  },
  "File:New York Jets logo (1978\u20131997).svg": {
@@ -437,6 +827,16 @@
   "title": "File:New York Jets wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/New_York_Jets_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 194,
+  "wiki": "en"
+ },
+ "File:Philadelphia Eagles logo.svg": {
+  "h": 173,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Philadelphia_Eagles_logo.svg",
+  "title": "File:Philadelphia Eagles logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/8/8e/Philadelphia_Eagles_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 250,
   "wiki": "en"
  },
  "File:Philadelphia Eagles wordmark (2022\u2013present).svg": {
@@ -479,6 +879,16 @@
   "w": 250,
   "wiki": "en"
  },
+ "File:Pittsburgh Steelers logo.svg": {
+  "h": 196,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Pittsburgh_Steelers_logo.svg",
+  "title": "File:Pittsburgh Steelers logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/d/de/Pittsburgh_Steelers_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 196,
+  "wiki": "en"
+ },
  "File:SF49ers.svg": {
   "h": 192,
   "license": "Public domain",
@@ -489,6 +899,16 @@
   "w": 486,
   "wiki": "en"
  },
+ "File:San Francisco 49ers logo.svg": {
+  "h": 272,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:San_Francisco_49ers_logo.svg",
+  "title": "File:San Francisco 49ers logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/3/3a/San_Francisco_49ers_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 460,
+  "wiki": "en"
+ },
  "File:San Francisco 49ers wordmark.svg": {
   "h": 38,
   "license": "Public domain [trademarked]",
@@ -497,6 +917,16 @@
   "title": "File:San Francisco 49ers wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/2/24/San_Francisco_49ers_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 192,
+  "wiki": "en"
+ },
+ "File:Seattle Seahawks logo.svg": {
+  "h": 64,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Seattle_Seahawks_logo.svg",
+  "title": "File:Seattle Seahawks logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/8/8e/Seattle_Seahawks_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 144,
   "wiki": "en"
  },
  "File:Seattle Seahawks wordmark.svg": {
@@ -529,6 +959,16 @@
   "w": 220,
   "wiki": "en"
  },
+ "File:Tampa Bay Buccaneers logo.svg": {
+  "h": 265,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Tampa_Bay_Buccaneers_logo.svg",
+  "title": "File:Tampa Bay Buccaneers logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/a/a2/Tampa_Bay_Buccaneers_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 298,
+  "wiki": "en"
+ },
  "File:Tampa Bay Buccaneers wordmark.svg": {
   "h": 53,
   "license": "Public domain [trademarked]",
@@ -539,6 +979,26 @@
   "w": 191,
   "wiki": "en"
  },
+ "File:Tennessee Titans Logo 2026.svg": {
+  "h": 316,
+  "license": "Fair use (non-free)",
+  "mime": "image/svg+xml",
+  "page": "https://en.wikipedia.org/wiki/File:Tennessee_Titans_Logo_2026.svg",
+  "title": "File:Tennessee Titans Logo 2026.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/en/5/53/Tennessee_Titans_Logo_2026.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 316,
+  "wiki": "en"
+ },
+ "File:Tennessee Titans wordmark, 2018.svg": {
+  "h": 92,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Tennessee_Titans_wordmark,_2018.svg",
+  "title": "File:Tennessee Titans wordmark, 2018.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/7/75/Tennessee_Titans_wordmark%2C_2018.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 250,
+  "wiki": "en"
+ },
  "File:Tennessee Titans wordmark.svg": {
   "h": 70,
   "license": "Public domain [trademarked]",
@@ -547,6 +1007,16 @@
   "title": "File:Tennessee Titans wordmark.svg",
   "url": "https://upload.wikimedia.org/wikipedia/commons/4/41/Tennessee_Titans_wordmark.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
   "w": 191,
+  "wiki": "en"
+ },
+ "File:Washington Commanders logo.svg": {
+  "h": 279,
+  "license": "Public domain [trademarked]",
+  "mime": "image/svg+xml",
+  "page": "https://commons.wikimedia.org/wiki/File:Washington_Commanders_logo.svg",
+  "title": "File:Washington Commanders logo.svg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Washington_Commanders_logo.svg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+  "w": 512,
   "wiki": "en"
  },
  "File:Washington Commanders wordmark.svg": {
