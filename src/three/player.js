@@ -58,6 +58,19 @@ function fabric(repeat, { sheen = 0.35, roughness = 0.78, normal = 0.35 } = {}) 
   });
 }
 
+// a tiling normal map at its own repeat (for materials outside fabric())
+function repeatNormal(base, repeat) {
+  const n = base.clone();
+  n.wrapS = n.wrapT = THREE.RepeatWrapping;
+  n.repeat.set(repeat[0], repeat[1]);
+  n.needsUpdate = true;
+  return n;
+}
+
+// Optional gear modelled as separate meshes (by material name) and whether
+// each is shown by default. Toggle with player.setAccessory(name, on).
+export const ACCESSORIES = { belt: true, towel: true, wristband: false, eyeblack: true };
+
 function tex(canvas, aniso) {
   const t = new THREE.CanvasTexture(canvas);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -129,20 +142,28 @@ export class Player {
       pants: fabric([14, 18], { roughness: 0.55, sheen: 0.7, normal: 0.25 }),
       socks: fabric([8, 10], { roughness: 0.9, sheen: 0.3 }),
       skin: new THREE.MeshPhysicalMaterial({ roughness: 0.48, sheen: 0.3, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.08, clearcoatRoughness: 0.5 }),
-      cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.3, normalMap: getFabricNormal(), normalScale: new THREE.Vector2(0.15, 0.15) }),
+      // synthetic knit upper: soft sheen rather than a patent-leather shine
+      cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.55, clearcoat: 0.12, clearcoatRoughness: 0.5, sheen: 0.3, sheenRoughness: 0.5, normalMap: repeatNormal(getFabricNormal(), [1, 1]), normalScale: new THREE.Vector2(0.45, 0.45) }),
       sole: new THREE.MeshPhysicalMaterial({ roughness: 0.55 }),
       glove: new THREE.MeshPhysicalMaterial({ roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5 }),
       eye: new THREE.MeshPhysicalMaterial({ roughness: 0.08, clearcoat: 1, map: tex(eyeCanvas(), this.aniso) }),
+      // accessories (separate meshes, see ACCESSORIES)
+      belt: new THREE.MeshPhysicalMaterial({ color: '#1c1d20', roughness: 0.62, sheen: 0.4, sheenRoughness: 0.5, normalMap: repeatNormal(getFabricNormal(), [60, 2]), normalScale: new THREE.Vector2(0.3, 0.3) }),
+      towel: new THREE.MeshPhysicalMaterial({ color: '#f3f2ee', roughness: 0.96, sheen: 1, sheenRoughness: 0.8, sheenColor: new THREE.Color(1, 1, 1), normalMap: repeatNormal(getFabricNormal(), [10, 22]), normalScale: new THREE.Vector2(1.2, 1.2), side: THREE.DoubleSide }),
+      wristband: new THREE.MeshPhysicalMaterial({ color: '#f2f2f0', roughness: 0.95, sheen: 0.8, sheenRoughness: 0.7, sheenColor: new THREE.Color(1, 1, 1), normalMap: repeatNormal(getFabricNormal(), [3, 1]), normalScale: new THREE.Vector2(0.9, 0.9) }),
+      eyeblack: new THREE.MeshPhysicalMaterial({ color: '#0d0d0e', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }),
     };
+    this.mats.beltloop = this.mats.pants;   // belt loops are pants fabric (UVs sit on the waistband)
     this.meshes = {};
     root.traverse((o) => {
       if (!o.isMesh) return;
       const key = o.material.name.split('.')[0];
       if (this.mats[key]) o.material = this.mats[key];
-      o.castShadow = true;
+      o.castShadow = key !== 'eyeblack';
       o.receiveShadow = true;
       (this.meshes[key] ||= []).push(o);
     });
+    for (const [k, on] of Object.entries(ACCESSORIES)) this.setAccessory(k, on);
     this.group.add(root);
 
     // Joints (three.js space)
@@ -152,6 +173,20 @@ export class Player {
     this.helmet.group.position.set(0, eyes.y + 0.004, eyes.z - 0.078);
     this.loaded = true;
     if (this.pending) this.setUniform(...this.pending);
+  }
+
+  setAccessory(name, on) {
+    for (const k of name === 'belt' ? ['belt', 'beltloop'] : [name]) {
+      for (const m of this.meshes?.[k] || []) m.visible = !!on;
+    }
+  }
+
+  // colours for the accessories that follow the uniform
+  dressAccessories(team, pants) {
+    const m = this.mats;
+    if (!m?.belt) return;
+    // a belt in the team's primary colour unless the pants say otherwise
+    m.belt.color.set(pants.belt || team.colors?.[0] || '#1c1d20');
   }
 
   disposeUniform() {
@@ -201,6 +236,7 @@ export class Player {
     m.cleat.color.set(cleat);
     m.sole.color.set(luminance(cleat) > 0.5 ? '#D9DADB' : '#1E1F21');
 
+    this.dressAccessories(team, pants);
     this.placeDecals(team, jersey, pants, player, logos, cleat);
     this.helmet.set(helmet, { ...player, font: helmet.numFont || jersey.font || team.font });
   }
