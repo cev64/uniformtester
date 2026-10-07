@@ -192,6 +192,18 @@ class Vent:
             return 1.0
         return poly_sd(c, self.poly) - self.rnd
 
+    def lip_side(self, p):
+        """signed distance to the lip line inside the scoop region (None elsewhere)"""
+        if not self.depth:
+            return None
+        c = self.coords(p)
+        if c is None or not (self.box[0] < c[0] < self.box[1] and self.box[2] < c[1] < self.box[3]):
+            return None
+        if poly_sd(c, self.poly) > self.fade + 0.002:
+            return None
+        (a0, b0), (a1, b1) = self.lip
+        return ((a1 - a0) * (c[1] - b0) - (b1 - b0) * (c[0] - a0)) / math.hypot(a1 - a0, b1 - b0)
+
     def scoop(self, p):
         if not self.depth:
             return 0.0
@@ -204,15 +216,15 @@ class Vent:
         (a0, b0), (a1, b1) = self.lip
         L = math.hypot(a1 - a0, b1 - b0)
         side = ((a1 - a0) * (c[1] - b0) - (b1 - b0) * (c[0] - a0)) / L
-        return self.depth * (1 - smooth(0.0, self.fade, max(d, 0.0))) * (1 - smooth(-0.0016, 0.0016, side))
+        return self.depth * (1 - smooth(0.0, self.fade, max(d, 0.0))) * (1 - smooth(-LIP_W, 0.0, side))
 
 
 VENTS = [
     # forward-facing brow vent beside the Flex panel: slanted slot, front end high,
     # in a scoop that opens toward the front
-    Vent([(-0.093, 0.097), (-0.085, 0.099), (-0.061, 0.084), (-0.047, 0.080), (-0.046, 0.074),
-          (-0.062, 0.075), (-0.089, 0.090)],
-         lip=((-0.097, 0.100), (-0.044, 0.081)), depth=0.0045, fade=0.02),
+    Vent([(-0.087, 0.096), (-0.079, 0.098), (-0.057, 0.084), (-0.044, 0.080), (-0.043, 0.074),
+          (-0.058, 0.075), (-0.083, 0.089)],
+         lip=((-0.091, 0.099), (-0.041, 0.081)), depth=0.0045, fade=0.018),
     # crown slot
     Vent([(-0.004, 0.138), (0.046, 0.127), (0.049, 0.121), (-0.002, 0.132)],
          lip=((-0.008, 0.140), (0.052, 0.126)), depth=0.0032, fade=0.014),
@@ -226,14 +238,16 @@ VENTS = [
     Vent([(0.052, -0.019), (0.090, -0.008), (0.091, -0.001), (0.054, -0.011)], proj='back',
          lip=((0.048, -0.008), (0.096, 0.004)), depth=0.0028, fade=0.014),
 ]
-PLUG = ((-0.052, -0.088), 0.0062)          # jaw-pad port, side projection (y, z), radius
+PLUG = ((-0.052, -0.088), 0.0062)
+LIP_W = 0.0016                              # width of the bevel at a vent lip
+STEP_W = 0.0014                             # and at the Flex panel's edge          # jaw-pad port, side projection (y, z), radius
 
 
 def displace(p):
     d = 0.0
     e = panel_e(p)
     if e > -0.01:
-        d -= panel_depth(p) * smooth(-0.0013, 0.0013, e)
+        d -= panel_depth(p) * smooth(-STEP_W, 0.0, e)
     for v in VENTS:
         d -= v.scoop(p)
     # the lower back flares out to the rear bumper
@@ -332,36 +346,54 @@ for cuts in (2, 1):
         set_o(v, o)
         v.co = surf(o)
 
-# exact cut: split every edge where the cut field changes sign at its zero
-# crossing, connect the crossings inside each triangle, drop the negative side
-tick(f'densified {len(bm.verts)}')
-bmesh.ops.triangulate(bm, faces=bm.faces[:])
-F = {v: cut_value(v.co) for v in bm.verts}
-zero = set()
-for e in list(bm.edges):
-    a, b = e.verts
-    fa, fb = F[a], F[b]
-    if (fa < 0) == (fb < 0):
-        continue
-    oa, ob = get_o(a), get_o(b)
-    lo, hi = 0.0, 1.0                      # bisection along the edge, on the shell
-    for _ in range(14):
+def split_contour(bm, field):
+    """Split the mesh along the zero contour of field(point) (None = no opinion):
+    every edge whose ends differ in sign gets a vertex at the crossing (found by
+    bisection on the shell), and the crossings in each triangle are joined.
+    Returns the per-vertex field values."""
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    F = {v: field(v.co) for v in bm.verts}
+    zero = set()
+    for e in list(bm.edges):
+        a, b = e.verts
+        fa, fb = F[a], F[b]
+        if fa is None or fb is None or (fa < 0) == (fb < 0) or fa == 0 or fb == 0:
+            continue
+        oa, ob = get_o(a), get_o(b)
+        lo, hi = 0.0, 1.0
+        for _ in range(14):
+            t = (lo + hi) / 2
+            fv = field(surf(oa.lerp(ob, t).normalized()))
+            if fv is None:
+                break
+            lo, hi = (t, hi) if (fv < 0) == (fa < 0) else (lo, t)
         t = (lo + hi) / 2
-        fv = cut_value(surf(oa.lerp(ob, t).normalized()))
-        lo, hi = (t, hi) if (fv < 0) == (fa < 0) else (lo, t)
-    t = (lo + hi) / 2
-    ne, nv = bmesh.utils.edge_split(e, a, t)
-    o = oa.lerp(ob, t).normalized()
-    set_o(nv, o)
-    nv.co = surf(o)
-    F[nv] = 0.0
-    zero.add(nv)
-tick(f'split {len(zero)}')
-for f in list(bm.faces):
-    zs = [v for v in f.verts if v in zero]
-    if len(zs) == 2 and not bm.edges.get(zs):
-        bmesh.utils.face_split(f, zs[0], zs[1])
-tick(f'connected {len(bm.verts)}')
+        ne, nv = bmesh.utils.edge_split(e, a, t)
+        o = oa.lerp(ob, t).normalized()
+        set_o(nv, o)
+        nv.co = surf(o)
+        F[nv] = 0.0
+        zero.add(nv)
+    for f in list(bm.faces):
+        zs = [v for v in f.verts if v in zero]
+        if len(zs) == 2 and not bm.edges.get(zs):
+            bmesh.utils.face_split(f, zs[0], zs[1])
+    return F
+
+
+# vertex rows exactly along the vent lips and the Flex panel's edge, so the
+# scoops and the panel step get clean bevels instead of stair steps
+for v in VENTS:
+    if v.depth:
+        for off in (0.0, LIP_W):
+            split_contour(bm, lambda p, v=v, off=off: (lambda q: None if q is None else q + off)(v.lip_side(p)))
+for off in (0.0, STEP_W):
+    split_contour(bm, lambda p, off=off: (lambda e: None if e < -0.006 else e + off)(panel_e(p)))
+tick(f'lips split {len(bm.verts)}')
+
+# exact cut: split along the zero contour of the cut field, drop the negative side
+F = split_contour(bm, cut_value)
+tick(f'cut {len(bm.verts)}')
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if any(F[v] < 0 for v in f.verts)], context='FACES')
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
 # sliver triangles at the crossings are harmless, but merge crossings that land on top of each other
@@ -390,24 +422,24 @@ def ordered_loops(bm):
 
 
 def surf_normal(o, h=0.002):
-    """outward normal of the analytic shell surface at direction o"""
+    """outward normal of the (undisplaced) shell surface at direction o"""
     t1 = o.orthogonal().normalized()
     t2 = o.cross(t1).normalized()
-    a = surf((o + t1 * h).normalized()) - surf((o - t1 * h).normalized())
-    b = surf((o + t2 * h).normalized()) - surf((o - t2 * h).normalized())
+    a = base_point((o + t1 * h).normalized()) - base_point((o - t1 * h).normalized())
+    b = base_point((o + t2 * h).normalized()) - base_point((o - t2 * h).normalized())
     n = a.cross(b).normalized()
     return n if n.dot(o) > 0 else -n
 
 
 loops = ordered_loops(bm)
 # tiny holes (a lone face dropped by the cut) are filled back in
-for loop in [l for l in loops if len(l) < 7]:
+for loop in [l for l in loops if 3 <= len(l) < 7]:
     try:
         bm.faces.new(loop)
     except ValueError:
         pass
 loops = [l for l in loops if len(l) >= 7]
-main_loop = max(loops, key=len)
+main_loop = min(loops, key=lambda l: min(v.co.z for v in l))   # face opening + bottom edge
 trim_path = [v.co.copy() for v in main_loop]
 trim_norm = [surf_normal(get_o(v)) for v in main_loop]
 
@@ -907,35 +939,58 @@ for s in (1, -1):
 CUP_C = P(0, -0.088, -0.130)            # centre of the cup's curvature
 
 
+CUP_A, CUP_ZH, CUP_N = 1.3, 0.030, 2.6          # angular half-width, half-height, outline roundness
+CUP_HOLES = ((-0.40, -0.002, 0.25, 0.0095), (0.40, -0.002, 0.25, 0.0095))   # (a, z, ra, rz)
+
+
+def cup_point(a, z, inset):
+    rx, ry = 0.051 - inset, 0.027 - inset
+    # the lower edge tucks under the chin, the upper edge leans back a little
+    curl = 0.32 * (min(z, 0) ** 2) / 0.03 + 0.10 * (max(z, 0) ** 2) / 0.03
+    return P(math.sin(a) * rx, -math.cos(a) * ry + curl, z) + CUP_C
+
+
 def cup_sheet(name, mat, inset, holes):
     """the hard cup: a rounded, chin-wrapping shell with two oval vents"""
-    A, ZH = 1.25, 0.029
-    verts, faces, idx = [], [], {}
-    NA, NZ = 44, 22
+    NA, NZ = 96, 44
+    bm = bmesh.new()
+    az = {}
+    grid = {}
     for j in range(NZ + 1):
         for i in range(NA + 1):
-            a = lerp(-A, A, i / NA); z = lerp(-ZH, ZH, j / NZ)
-            # rounded-rectangle outline
-            if (abs(a / A) ** 4 + abs(z / ZH) ** 4) > 1.0:
-                continue
-            rx, ry = 0.050 - inset, 0.027 - inset
-            curl = 0.30 * (min(z, 0) ** 2) / 0.03 + 0.08 * (max(z, 0) ** 2) / 0.03   # lower edge tucks under the chin
-            q = P(math.sin(a) * rx, -math.cos(a) * ry + curl, z) + CUP_C
-            idx[(i, j)] = len(verts); verts.append(q)
+            a = lerp(-CUP_A * 1.05, CUP_A * 1.05, i / NA); z = lerp(-CUP_ZH * 1.05, CUP_ZH * 1.05, j / NZ)
+            v = bm.verts.new(cup_point(a, z, inset)); az[v] = (a, z); grid[(i, j)] = v
+    outside = lambda a, z: abs(a / CUP_A) ** CUP_N + abs(z / CUP_ZH) ** CUP_N > 1
+    in_hole = lambda a, z: holes and any(((a - ha) / ra) ** 2 + ((z - hz) / rz) ** 2 < 1 for ha, hz, ra, rz in CUP_HOLES)
     for j in range(NZ):
         for i in range(NA):
-            k = [(i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1)]
-            if not all(c in idx for c in k):
+            vs = [grid[(i, j)], grid[(i, j + 1)], grid[(i + 1, j + 1)], grid[(i + 1, j)]]
+            if any(outside(*az[v]) or in_hole(*az[v]) for v in vs):
                 continue
-            a = lerp(-A, A, (i + 0.5) / NA); z = lerp(-ZH, ZH, (j + 0.5) / NZ)
-            if holes and any(((a - ha) / 0.30) ** 2 + ((z - hz) / 0.0085) ** 2 < 1 for ha, hz in ((-0.38, -0.003), (0.38, -0.003))):
-                continue
-            faces.append(tuple(idx[c] for c in reversed(k)))
-    ob = mesh_object(name, verts, faces, mat)
-    ob.data.update()
-    if ob.data.polygons[len(faces) // 2].normal.y > 0:
-        for poly in ob.data.polygons:
+            bm.faces.new(vs)
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    # pull the jagged boundary onto the true outline / hole ellipses
+    for v in [v for v in bm.verts if v.is_boundary]:
+        a, z = az[v]
+        best = None
+        k = (abs(a / CUP_A) ** CUP_N + abs(z / CUP_ZH) ** CUP_N) ** (-1 / CUP_N)
+        cand = [(abs(k - 1), a * k, z * k)]
+        if holes:
+            for ha, hz, ra, rz in CUP_HOLES:
+                da, dz = a - ha, z - hz
+                r = math.hypot(da / ra, dz / rz) or 1e-6
+                cand.append((abs(r - 1) * 0.7, ha + da / r, hz + dz / r))
+        _, a2, z2 = min(cand)
+        v.co = cup_point(a2, z2, inset)
+    me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
+    ob = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(ob)
+    ob.data.materials.append(material(mat))
+    me.update()
+    mid = max(me.polygons, key=lambda q: -abs(q.center.x) - abs(q.center.z - CUP_C.z))
+    if mid.normal.y > 0:
+        for poly in me.polygons:
             poly.flip()
+    ob.data.shade_smooth()
     return ob
 
 
