@@ -950,6 +950,9 @@ cr, _, frameR = build_cleat('R')
 # knit mid-cut collar: the ankle surface just above the shoe, hugging the leg
 collar_cuts = [(Vector((0, 0, COLLAR_TOP)), Vector((0, 0, 1)), lambda c, i: True),
                (Vector((0, 0, z_in + 0.04)), Vector((0, 0, -1)), lambda c, i: True)]
+for _s, (_h, _ax, _lat, _L) in (('L', frameL), ('R', frameR)):
+    # end the collar inside the throat, under the laces
+    collar_cuts.append((_h + _ax * (_L * 0.41), _ax, lambda c, i, _s=_s: i['side'] == _s))
 def _collar_keep(c, i):
     if not (i['leg'] and z_in + 0.03 < c.z < COLLAR_TOP + 0.02):
         return False
@@ -1159,6 +1162,23 @@ for poly in wristbands.data.polygons:
     for li in poly.loop_indices:
         p = wristbands.data.vertices[wristbands.data.loops[li].vertex_index].co
         wristbands.data.uv_layers[0].data[li].uv = (math.atan2(p.y + 0.1, p.x) * 3, p.z * 30)
+
+# Compression undersleeves: from under the jersey sleeve to the glove cuff
+us_cuts = []
+for s in 'LR':
+    us_cuts.append((WR[s] - FORE_AXIS[s] * (GLOVE_CUFF - 0.006), FORE_AXIS[s], lambda c, i, s=s: i['side'] == s))
+def _us_keep(c, i):
+    if not i['arm']:
+        return False
+    s_ = i['side']
+    return t_arm(c, s_) > SLEEVE_LEN - 0.035 and (c - WR[s_]).dot(FORE_AXIS[s_]) < -0.02
+undersleeves = make_garment('Undersleeves', _us_keep, us_cuts, lambda co, c: 0.0024, smooth_iters=3)
+undersleeves.data.materials.clear()
+set_materials(undersleeves, ['armsleeve'])
+for poly in undersleeves.data.polygons:
+    for li in poly.loop_indices:
+        p_ = undersleeves.data.vertices[undersleeves.data.loops[li].vertex_index].co
+        undersleeves.data.uv_layers[0].data[li].uv = (math.atan2(p_.y + 0.05, p_.x - math.copysign(0.3, p_.x)) * 4, p_.z * 25)
 
 # Eye black: matte grease strokes on the cheekbones under each eye
 eb_v, eb_f = [], []

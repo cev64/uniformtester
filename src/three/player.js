@@ -33,6 +33,53 @@ function skinTexture(kind, aniso) {
   }
   return skinTex[kind];
 }
+// Tiling skin micro-normal: pores and fine creases from layered periodic
+// value noise, repeated many times over the MakeHuman UV layout.
+let skinNormalTex = null;
+function skinNormal() {
+  if (skinNormalTex) return skinNormalTex;
+  const N = 256;
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const h = new Float32Array(N * N);
+  for (const [cells, amp] of [[64, 0.55], [32, 0.3], [16, 0.15]]) {
+    const g = Array.from({ length: cells * cells }, rnd);
+    const at = (i, j) => g[((j + cells) % cells) * cells + ((i + cells) % cells)];
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const fx = (x / N) * cells, fy = (y / N) * cells;
+      const i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j;
+      const su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v);
+      const a = at(i, j) + (at(i + 1, j) - at(i, j)) * su;
+      const b = at(i, j + 1) + (at(i + 1, j + 1) - at(i, j + 1)) * su;
+      h[y * N + x] += (a + (b - a) * sv) * amp;
+    }
+  }
+  // pores: small pits
+  for (let k = 0; k < 2600; k++) {
+    const x = Math.floor(rnd() * N), y = Math.floor(rnd() * N);
+    h[y * N + x] -= 0.5;
+  }
+  const c = document.createElement('canvas'); c.width = c.height = N;
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(N, N);
+  const H = (x, y) => h[((y + N) % N) * N + ((x + N) % N)];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = (H(x + 1, y) - H(x - 1, y)) * 1.5, dy = (H(x, y + 1) - H(x, y - 1)) * 1.5;
+    const l = Math.hypot(dx, dy, 1);
+    const o = (y * N + x) * 4;
+    img.data[o] = (-dx / l * 0.5 + 0.5) * 255;
+    img.data[o + 1] = (-dy / l * 0.5 + 0.5) * 255;
+    img.data[o + 2] = (1 / l * 0.5 + 0.5) * 255;
+    img.data[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  skinNormalTex = new THREE.CanvasTexture(c);
+  skinNormalTex.wrapS = skinNormalTex.wrapT = THREE.RepeatWrapping;
+  skinNormalTex.repeat.set(40, 40);
+  skinNormalTex.flipY = false;
+  return skinNormalTex;
+}
+
 const MODEL_URL = 'public/models/player.glb';
 const META_URL = 'public/models/player.json';
 
@@ -69,7 +116,7 @@ function repeatNormal(base, repeat) {
 
 // Optional gear modelled as separate meshes (by material name) and whether
 // each is shown by default. Toggle with player.setAccessory(name, on).
-export const ACCESSORIES = { belt: true, towel: true, wristband: false, eyeblack: true };
+export const ACCESSORIES = { belt: true, towel: true, wristband: true, eyeblack: true, armsleeve: false };
 
 function tex(canvas, aniso) {
   const t = new THREE.CanvasTexture(canvas);
@@ -141,7 +188,8 @@ export class Player {
       sleeve: fabric([14, 6]),
       pants: fabric([14, 18], { roughness: 0.55, sheen: 0.7, normal: 0.25 }),
       socks: fabric([8, 10], { roughness: 0.9, sheen: 0.3 }),
-      skin: new THREE.MeshPhysicalMaterial({ roughness: 0.48, sheen: 0.3, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.08, clearcoatRoughness: 0.5 }),
+      // matte skin with a fine pore/crease normal map so it doesn't read as plastic
+      skin: new THREE.MeshPhysicalMaterial({ roughness: 0.6, sheen: 0.25, sheenRoughness: 0.5, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.06, clearcoatRoughness: 0.55, normalMap: skinNormal(), normalScale: new THREE.Vector2(0.22, 0.22) }),
       // synthetic knit upper: soft sheen rather than a patent-leather shine
       cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.55, clearcoat: 0.12, clearcoatRoughness: 0.5, sheen: 0.3, sheenRoughness: 0.5, normalMap: repeatNormal(getFabricNormal(), [1, 1]), normalScale: new THREE.Vector2(0.45, 0.45) }),
       sole: new THREE.MeshPhysicalMaterial({ roughness: 0.55 }),
@@ -151,6 +199,7 @@ export class Player {
       belt: new THREE.MeshPhysicalMaterial({ color: '#1c1d20', roughness: 0.62, sheen: 0.4, sheenRoughness: 0.5, normalMap: repeatNormal(getFabricNormal(), [60, 2]), normalScale: new THREE.Vector2(0.3, 0.3) }),
       towel: new THREE.MeshPhysicalMaterial({ color: '#f3f2ee', roughness: 0.96, sheen: 1, sheenRoughness: 0.8, sheenColor: new THREE.Color(1, 1, 1), normalMap: repeatNormal(getFabricNormal(), [10, 22]), normalScale: new THREE.Vector2(1.2, 1.2), side: THREE.DoubleSide }),
       wristband: new THREE.MeshPhysicalMaterial({ color: '#f2f2f0', roughness: 0.95, sheen: 0.8, sheenRoughness: 0.7, sheenColor: new THREE.Color(1, 1, 1), normalMap: repeatNormal(getFabricNormal(), [3, 1]), normalScale: new THREE.Vector2(0.9, 0.9) }),
+      armsleeve: new THREE.MeshPhysicalMaterial({ color: '#161618', roughness: 0.7, sheen: 0.6, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.35, 0.35, 0.35), normalMap: repeatNormal(getFabricNormal(), [6, 14]), normalScale: new THREE.Vector2(0.3, 0.3) }),
       eyeblack: new THREE.MeshPhysicalMaterial({ color: '#0d0d0e', roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }),
     };
     this.mats.beltloop = this.mats.pants;   // belt loops are pants fabric (UVs sit on the waistband)
