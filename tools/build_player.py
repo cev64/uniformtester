@@ -1201,8 +1201,8 @@ belt_bvh = bvh_of(belt)
 # Towel: a hand towel tucked under the belt on the front of the wearer's
 # right hip, about 13 x 27 cm, lying on the thigh with soft folds and
 # falling free of it toward the hem.
-TW, TL = 0.125, 0.27
-TCX = -0.062
+TW, TL = 0.12, 0.27
+TCX = -0.076
 NU, NV = 28, 42
 tv = []
 prev = [None] * NU
