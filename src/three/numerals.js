@@ -64,6 +64,15 @@ export const NUMERAL_STYLES = {
   ravens: { W: 0.5, th: 0.16, tv: 0.2, ro: 0.25, ri: 0.14, rt: 0.02, notch: 0, one: { flag: 0.16, base: false } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
+
+  // ── team styles: AFC East + AFC North ──
+
+  // ── team styles: AFC South + AFC West ──
+
+  // ── team styles: NFC East + NFC North ──
+
+  // ── team styles: NFC South + NFC West ──
+
 };
 
 export function numeralStyle(key) {

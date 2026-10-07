@@ -39,12 +39,28 @@ export const NUMBER_FONTS = {
   clarendon: { family: '"Bree Serif", "Clarendon", Georgia, serif', weight: 700 },
   // rounded condensed (Bears, Rams, Dolphins plates)
   roundBlock: { family: '"Barlow Condensed", "Arial Narrow", Impact, sans-serif', weight: 800, scaleX: 1.04 },
+  // AFC East + AFC North fonts
+
+  // AFC South + AFC West fonts
+
+  // NFC East + NFC North fonts
+
+  // NFC South + NFC West fonts
+
 };
 
 // Letters that go with each numeral style (nameplates, TV-number fallbacks)
 const LETTERS = {
   block: 'plate', blockRound: 'plate', square: 'squareSans', chamfer: 'squareSans', titans: 'angular', chiefs: 'plate', cowboys: 'plate', vikings: 'squareBlock', rams: 'roundBlock', chargers: 'italic', angular: 'angular',
   round: 'roundBlock', bengals: 'roundSans', bears: 'roundBlock', futura: 'futuraCond', steelers: 'futuraCond', eagles: 'squareSans', ravens: 'plate', italic: 'italic',
+  // AFC East + AFC North team styles
+
+  // AFC South + AFC West team styles
+
+  // NFC East + NFC North team styles
+
+  // NFC South + NFC West team styles
+
 };
 export function letterFont(style) {
   return LETTERS[style] || (NUMBER_FONTS[style] ? style : 'plate');
