@@ -956,12 +956,12 @@ collar_cuts = [(Vector((0, 0, COLLAR_TOP)), Vector((0, 0, 1)), lambda c, i: True
                (Vector((0, 0, z_in + 0.04)), Vector((0, 0, -1)), lambda c, i: True)]
 for _s, (_h, _ax, _lat, _L) in (('L', frameL), ('R', frameR)):
     # end the collar inside the throat, under the laces
-    collar_cuts.append((_h + _ax * (_L * 0.41), _ax, lambda c, i, _s=_s: i['side'] == _s))
+    collar_cuts.append((_h + _ax * (_L * 0.5), _ax, lambda c, i, _s=_s: i['side'] == _s))
 def _collar_keep(c, i):
     if not (i['leg'] and z_in + 0.03 < c.z < COLLAR_TOP + 0.02):
         return False
     heel, ax, lat, L = frameL if i['side'] == 'L' else frameR
-    return (c - heel).dot(ax) / L < 0.5
+    return (c - heel).dot(ax) / L < 0.58
 ankle = make_garment('AnkleCollar', _collar_keep, collar_cuts,
                      lambda co, c: 0.0062, smooth_iters=3)
 solidify(ankle, 0.003)
