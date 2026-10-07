@@ -88,7 +88,7 @@ def tick(msg):
 # ─── shell ─────────────────────────────────────────────────────────────
 AX = 0.127            # half width
 AY_F, AY_B = 0.152, 0.164
-AZ_T, AZ_B = 0.147, 0.17
+AZ_T, AZ_B = 0.138, 0.17
 BROW_Z = 0.03
 SHELL_T = 0.0042      # shell wall
 
@@ -128,7 +128,7 @@ NP_TOP = BROW_Z + 0.046                # nameplate top edge
 _pb = centre_point(NP_TOP + 0.023)
 PANEL_BOT_S = math.atan2(-_pb.y, _pb.z)
 PANEL_R = 0.15                          # arc-length scale for s
-PANEL_GAP = 0.0028
+PANEL_GAP = 0.0032
 GAP_FROM_S = 0.47                       # the gap runs from here down; above it the hinge is a step
 
 
@@ -148,7 +148,7 @@ def panel_e(p):
 
 
 def panel_depth(p):
-    return lerp(0.0010, 0.0026, smooth(PANEL_TOP_S, PANEL_KNEE_S, panel_s(p)))
+    return lerp(0.0020, 0.0028, smooth(PANEL_TOP_S, PANEL_KNEE_S, panel_s(p)))
 
 
 # ─── vents ─────────────────────────────────────────────────────────────
@@ -217,8 +217,8 @@ VENTS = [
     Vent([(-0.004, 0.138), (0.046, 0.127), (0.049, 0.121), (-0.002, 0.132)],
          lip=((-0.008, 0.140), (0.052, 0.126)), depth=0.0032, fade=0.014),
     # rear upper slot, slanting down toward the back
-    Vent([(0.083, 0.096), (0.093, 0.099), (0.126, 0.050), (0.117, 0.044)],
-         lip=((0.115, 0.040), (0.081, 0.098)), depth=0.0035, fade=0.016),
+    Vent([(0.089, 0.093), (0.099, 0.096), (0.134, 0.042), (0.125, 0.036)],
+         lip=((0.123, 0.032), (0.087, 0.095)), depth=0.0035, fade=0.016),
     # jaw / ear vent: long slanted pentagon with a crisp top edge
     Vent([(-0.038, -0.046), (-0.029, -0.037), (0.030, -0.037), (0.037, -0.052), (-0.012, -0.064)],
          lip=((-0.045, -0.035), (0.042, -0.035)), depth=0.0032, fade=0.018, rnd=0.0),
@@ -314,16 +314,17 @@ for v in bm.verts:
 # scoop lips have vertices to land on
 def near_detail(p):
     e = panel_e(p)
-    if -0.009 < e < 0.006 and p.z > 0.0:
+    if -0.0055 < e < 0.0025 and p.z > 0.0 and panel_s(p) > GAP_FROM_S - 0.03:
         return 2
-    if min(v.sd(p) for v in VENTS) < 0.006:
+    if min(v.sd(p) for v in VENTS) < 0.0035:
         return 1
     return 0
 
 
 tick('grown')
 for cuts in (2, 1):
-    edges = [e for e in bm.edges if any(near_detail(v.co) >= cuts for v in e.verts)]
+    edges = [e for e in bm.edges if any(near_detail(v.co) == cuts for v in e.verts)]
+    tick(f'densify {cuts}: {len(edges)} edges, {len(bm.verts)} verts')
     bmesh.ops.subdivide_edges(bm, edges=edges, cuts=cuts, use_grid_fill=True)
     for v in bm.verts:
         o = get_o(v)
@@ -333,7 +334,7 @@ for cuts in (2, 1):
 
 # exact cut: split every edge where the cut field changes sign at its zero
 # crossing, connect the crossings inside each triangle, drop the negative side
-tick('densified')
+tick(f'densified {len(bm.verts)}')
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 F = {v: cut_value(v.co) for v in bm.verts}
 zero = set()
@@ -358,9 +359,9 @@ for e in list(bm.edges):
 tick(f'split {len(zero)}')
 for f in list(bm.faces):
     zs = [v for v in f.verts if v in zero]
-    if len(zs) == 2:
-        bmesh.ops.connect_verts(bm, verts=zs)
-tick('connected')
+    if len(zs) == 2 and not bm.edges.get(zs):
+        bmesh.utils.face_split(f, zs[0], zs[1])
+tick(f'connected {len(bm.verts)}')
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if any(F[v] < 0 for v in f.verts)], context='FACES')
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
 # sliver triangles at the crossings are harmless, but merge crossings that land on top of each other
@@ -415,6 +416,8 @@ trim_norm = [surf_normal(get_o(v)) for v in main_loop]
 for loop in loops:
     N = len(loop)
     r1, r2 = {}, {}
+    # the Flex panel gap is dark all the way down; vents show the shell wall first
+    in_gap = sum(abs(f_gap(v.co)) < 0.0005 for v in loop) > N * 0.6
     for v in loop:
         n = surf_normal(get_o(v))
         a = bm.verts.new(v.co - n * SHELL_T); set_o(a, get_o(v)); r1[v] = a
@@ -428,7 +431,7 @@ for loop in loops:
         fwd = any(l.vert is a and l.link_loop_next.vert is b for l in f.loops)
         if not fwd:
             a, b = b, a
-        q1 = bm.faces.new((b, a, r1[a], r1[b])); q1.material_index = 0
+        q1 = bm.faces.new((b, a, r1[a], r1[b])); q1.material_index = 1 if in_gap else 0
         q2 = bm.faces.new((r1[b], r1[a], r2[a], r2[b])); q2.material_index = 1
         e.smooth = False
 
@@ -454,7 +457,7 @@ while len(me.uv_layers) > 1:
     me.uv_layers.remove(me.uv_layers[0])
 shell.data.materials.append(material('shell'))
 shell.data.materials.append(material('liner'))
-print('shell verts', len(me.vertices))
+tick(f'shell verts {len(me.vertices)}')
 
 
 # Fine surface detail baked into a bump map in the painter's UV space:
@@ -670,7 +673,7 @@ def edge_point(phi):
 
 def build_bumper():
     COLS, ROWS = 72, 7
-    H = 0.034                                  # height up the shell
+    H = 0.027                                  # height up the shell
     phis = []
     # azimuth range: from where the bottom edge passes y = BUMPER_Y on each side
     lim = 1.2
@@ -705,8 +708,8 @@ def build_bumper():
             p = surf(o)
             n = p.normalized()
             # the lower edge flares outward and hangs a little below the shell
-            out = 0.0016 + 0.0065 * (1 - h) ** 1.6 * endk
-            down = 0.004 * (1 - h) ** 3 * endk
+            out = 0.0014 + 0.0045 * (1 - h) ** 1.8 * endk
+            down = 0.003 * (1 - h) ** 3 * endk
             verts.append(p + n * out - P(0, 0, down))
             uvs.append((t, h))
     faces = [(i * ROWS + j, i * ROWS + j + 1, (i + 1) * ROWS + j + 1, (i + 1) * ROWS + j)
@@ -847,8 +850,8 @@ NOSE_C = P(0.0, -0.191, -0.047)
 CHIN_C = P(0.0, -0.170, -0.152)
 J1 = P(0.121, -0.111, -0.044)              # side bar meets nose bar
 nose = bar('Mask_nose', across([J1, P(0.104, -0.152, -0.040), P(0.064, -0.183, -0.044), P(0.0, -0.191, -0.047)]), 1)
-chin = bar('Mask_chin', across([LO + P(-0.002, -0.006, -0.004), P(0.100, -0.126, -0.124), P(0.072, -0.158, -0.147),
-                                 P(0.036, -0.168, -0.152), CHIN_C]), 1)
+chin = bar('Mask_chin', across([LO + P(-0.002, -0.006, -0.004), P(0.092, -0.130, -0.128), P(0.060, -0.160, -0.149),
+                                 P(0.032, -0.168, -0.152), CHIN_C]), 1)
 
 
 def nearest(path, x, sign=1):
@@ -886,9 +889,9 @@ def qr_clip(name, at, n, along):
     place(housing, M)
     btn = cylinder(name + '_btn', 0.0046, 0.0022, 'button', verts=24, bevel=0.0006)
     place(btn, M @ Matrix.Translation((0, 0, 0.0112)))
-    pin = cylinder(name + '_pin', 0.0018, 0.0012, 'screw', verts=16)
+    pin = cylinder(name + '_pin', 0.0018, 0.0012, 'clipscrew', verts=16)
     place(pin, M @ Matrix.Translation((0, 0, 0.0133)))
-    base = cylinder(name + '_base', 0.0075, 0.0012, 'screw', verts=24)
+    base = cylinder(name + '_base', 0.0075, 0.0012, 'clipscrew', verts=24)
     place(base, M @ Matrix.Translation((0, 0, 0.0002)))
     return [housing, btn, pin, base]
 
@@ -901,13 +904,47 @@ for s in (1, -1):
 
 
 # ─── chin strap ────────────────────────────────────────────────────────
-CUP_C = P(0, -0.095, -0.131)
-cup = blob('ChinCup', CUP_C, (0.050, 0.023, 0.030), 'cup', n=2.8, seg=40, rings=20,
-           keep=lambda c: c.y < CUP_C.y - 0.004 and abs(c.z - CUP_C.z) < 0.026)
-sol = cup.modifiers.new('S', 'SOLIDIFY'); sol.thickness = 0.0035
-select_only(cup); bpy.ops.object.modifier_apply(modifier='S')
-cup_liner = blob('ChinCupLiner', CUP_C + P(0, 0.003, 0), (0.047, 0.020, 0.027), 'pad', n=2.8, seg=32, rings=16,
-                 keep=lambda c: c.y < CUP_C.y - 0.002 and abs(c.z - CUP_C.z) < 0.024)
+CUP_C = P(0, -0.088, -0.130)            # centre of the cup's curvature
+
+
+def cup_sheet(name, mat, inset, holes):
+    """the hard cup: a rounded, chin-wrapping shell with two oval vents"""
+    A, ZH = 1.25, 0.029
+    verts, faces, idx = [], [], {}
+    NA, NZ = 44, 22
+    for j in range(NZ + 1):
+        for i in range(NA + 1):
+            a = lerp(-A, A, i / NA); z = lerp(-ZH, ZH, j / NZ)
+            # rounded-rectangle outline
+            if (abs(a / A) ** 4 + abs(z / ZH) ** 4) > 1.0:
+                continue
+            rx, ry = 0.050 - inset, 0.027 - inset
+            curl = 0.30 * (min(z, 0) ** 2) / 0.03 + 0.08 * (max(z, 0) ** 2) / 0.03   # lower edge tucks under the chin
+            q = P(math.sin(a) * rx, -math.cos(a) * ry + curl, z) + CUP_C
+            idx[(i, j)] = len(verts); verts.append(q)
+    for j in range(NZ):
+        for i in range(NA):
+            k = [(i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1)]
+            if not all(c in idx for c in k):
+                continue
+            a = lerp(-A, A, (i + 0.5) / NA); z = lerp(-ZH, ZH, (j + 0.5) / NZ)
+            if holes and any(((a - ha) / 0.30) ** 2 + ((z - hz) / 0.0085) ** 2 < 1 for ha, hz in ((-0.38, -0.003), (0.38, -0.003))):
+                continue
+            faces.append(tuple(idx[c] for c in reversed(k)))
+    ob = mesh_object(name, verts, faces, mat)
+    ob.data.update()
+    if ob.data.polygons[len(faces) // 2].normal.y > 0:
+        for poly in ob.data.polygons:
+            poly.flip()
+    return ob
+
+
+cup = cup_sheet('ChinCup', 'cup', 0.0, True)
+sol = cup.modifiers.new('S', 'SOLIDIFY'); sol.thickness = 0.003; sol.offset = -1
+bev = cup.modifiers.new('B', 'BEVEL'); bev.width = 0.0012; bev.segments = 2; bev.limit_method = 'ANGLE'
+select_only(cup); bpy.ops.object.modifier_apply(modifier='S'); bpy.ops.object.modifier_apply(modifier='B')
+cup.data.shade_smooth()
+cup_liner = cup_sheet('ChinCupLiner', 'cuppad', 0.0055, False)
 cup_rim = []
 straps = []
 up_out = lambda p: (p - P(0, -0.03, -0.05)).normalized()
