@@ -73,10 +73,10 @@ function browTexture() {
   ctx.font = '700 46px "Helvetica Neue", Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.save(); ctx.translate(512, 70); ctx.scale(1.05, 1); ctx.fillText('SPEEDFLEX', 0, 0); ctx.restore();
+  ctx.save(); ctx.translate(512, 100); ctx.scale(1.05, 1); ctx.fillText('SPEEDFLEX', 0, 0); ctx.restore();
   ctx.fillStyle = '#b5352d';
   ctx.font = '800 22px "Helvetica Neue", Arial, sans-serif';
-  ctx.fillText('Rıddell', 512, 34);
+  ctx.fillText('Rıddell', 512, 64);
   return canvasTexture(c);
 }
 
@@ -215,7 +215,7 @@ export class Helmet {
     const fin = helmet.finish;
     // gloss: urethane clear coat over pigmented shell; matte: flat clear, no
     // coat; metallic: flake under the coat; chrome: vacuum-metallised film
-    m.roughness = fin === 'matte' ? 0.52 : fin === 'metallic' ? 0.34 : fin === 'chrome' ? 0.06 : 0.3;
+    m.roughness = fin === 'matte' ? 0.62 : fin === 'metallic' ? 0.34 : fin === 'chrome' ? 0.06 : 0.3;
     m.metalness = fin === 'metallic' ? 0.75 : fin === 'chrome' ? 1 : 0;
     m.clearcoat = fin === 'matte' ? 0 : 1;
     m.clearcoatRoughness = fin === 'metallic' ? 0.06 : 0.035;

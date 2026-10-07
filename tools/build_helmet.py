@@ -228,9 +228,9 @@ class Vent:
 VENTS = [
     # forward-facing brow vent beside the Flex panel: slanted slot, front end high,
     # in a scoop that opens toward the front
-    Vent([(-0.087, 0.096), (-0.079, 0.098), (-0.057, 0.084), (-0.044, 0.080), (-0.043, 0.074),
-          (-0.058, 0.075), (-0.083, 0.089)],
-         lip=((-0.091, 0.099), (-0.041, 0.081)), depth=0.0045, fade=0.018),
+    Vent([(-0.088, 0.095), (-0.080, 0.098), (-0.056, 0.087), (-0.041, 0.083), (-0.039, 0.072),
+          (-0.056, 0.070), (-0.084, 0.083)],
+         lip=((-0.092, 0.099), (-0.038, 0.084)), depth=0.005, fade=0.02),
     # crown slot
     Vent([(-0.004, 0.138), (0.046, 0.127), (0.049, 0.121), (-0.002, 0.132)],
          lip=((-0.008, 0.140), (0.052, 0.126)), depth=0.0032, fade=0.014),
@@ -457,6 +457,7 @@ main_loop = min(loops, key=lambda l: min(v.co.z for v in l))   # face opening + 
 trim_path = [v.co.copy() for v in main_loop]
 trim_norm = [surf_normal(get_o(v)) for v in main_loop]
 
+SKIRT = bm.faces.layers.int.new('skirt')
 # walls: the shell edge (4 mm, shell coloured) then dark liner behind it, so
 # vents, the panel gap and the face opening show depth instead of a paper edge
 for loop in loops:
@@ -479,6 +480,7 @@ for loop in loops:
             a, b = b, a
         q1 = bm.faces.new((b, a, r1[a], r1[b])); q1.material_index = 1 if in_gap else 0
         q2 = bm.faces.new((r1[b], r1[a], r2[a], r2[b])); q2.material_index = 1
+        q1[SKIRT] = q2[SKIRT] = 1
         e.smooth = False
 
 # UVs from the growth directions
@@ -496,10 +498,38 @@ for f in bm.faces:
                 l[uvl].uv.x += 1
 for f in bm.faces:
     f.smooth = True
-for l in OL:
-    bm.verts.layers.float.remove(l)
 bm.to_mesh(me); bm.free()
 me.validate(clean_customdata=False)
+
+
+def surf_normal_disp(o, h=0.0004):
+    """outward normal of the displaced shell (panel recess and scoops included)"""
+    t1 = o.orthogonal().normalized()
+    t2 = o.cross(t1).normalized()
+    a = surf((o + t1 * h).normalized()) - surf((o - t1 * h).normalized())
+    b = surf((o + t2 * h).normalized()) - surf((o - t2 * h).normalized())
+    n = a.cross(b).normalized()
+    return n if n.dot(o) > 0 else -n
+
+
+# shade the outer surface from the analytic shape, so the triangulation left by
+# the cuts never shows in reflections; the walls keep flat normals
+ox, oy, oz = (me.attributes[k].data for k in ('ox', 'oy', 'oz'))
+skirt = me.attributes['skirt'].data
+vn = {}
+loop_normals = []
+for poly in me.polygons:
+    for li in poly.loop_indices:
+        vi = me.loops[li].vertex_index
+        if skirt[poly.index].value:
+            loop_normals.append(tuple(poly.normal))
+        else:
+            if vi not in vn:
+                vn[vi] = tuple(surf_normal_disp(Vector((ox[vi].value, oy[vi].value, oz[vi].value)).normalized()))
+            loop_normals.append(vn[vi])
+me.normals_split_custom_set(loop_normals)
+for k in ('ox', 'oy', 'oz', 'skirt'):
+    me.attributes.remove(me.attributes[k])
 while len(me.uv_layers) > 1:
     me.uv_layers.remove(me.uv_layers[0])
 shell.data.materials.append(material('shell'))
@@ -951,15 +981,15 @@ for s in (1, -1):
 
 
 # ─── chin strap ────────────────────────────────────────────────────────
-CUP_C = P(0, -0.088, -0.130)            # centre of the cup's curvature
+CUP_C = P(0, -0.086, -0.129)            # centre of the cup's curvature
 
 
-CUP_A, CUP_ZH, CUP_N = 1.18, 0.027, 2.4          # angular half-width, half-height, outline roundness
-CUP_HOLES = ((-0.40, -0.002, 0.25, 0.0095), (0.40, -0.002, 0.25, 0.0095))   # (a, z, ra, rz)
+CUP_A, CUP_ZH, CUP_N = 1.2, 0.0225, 2.6          # angular half-width, half-height, outline roundness
+CUP_HOLES = ((-0.34, -0.006, 0.21, 0.0072), (0.34, -0.006, 0.21, 0.0072))   # (a, z, ra, rz)
 
 
 def cup_point(a, z, inset):
-    rx, ry = 0.051 - inset, 0.027 - inset
+    rx, ry = 0.064 - inset, 0.031 - inset
     # the lower edge tucks under the chin, the upper edge leans back a little
     curl = 0.32 * (min(z, 0) ** 2) / 0.03 + 0.10 * (max(z, 0) ** 2) / 0.03
     return P(math.sin(a) * rx, -math.cos(a) * ry + curl, z) + CUP_C
