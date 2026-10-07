@@ -66,6 +66,12 @@ export const NUMERAL_STYLES = {
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
 
   // ── team styles: AFC East + AFC North ──
+  // Jets 2024: chamfered heavy block, octagonal 0, footed 1 with a long flag
+  jets: { cut: 'chamfer', W: 0.62, th: 0.2, tv: 0.235, ro: 0.12, ri: 0.04, rt: 0.02, one: { flag: 0.16, base: true } },
+  // Jets Gotham City FC: the same block, softened and slightly rough-cut
+  gotham: { W: 0.58, th: 0.2, tv: 0.22, ro: 0.2, ri: 0.1, rt: 0.06, slant: 0.03, one: { flag: 0.14, base: false } },
+  // Dolphins 2018+: heavy rounded-square block, flat-topped 2 and 5, no hook on the 1
+  dolphins: { W: 0.6, th: 0.2, tv: 0.22, ro: 0.14, ri: 0.05, rt: 0.03, one: { flag: 0.15, base: false } },
 
   // ── team styles: AFC South + AFC West ──
 
