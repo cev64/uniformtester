@@ -49,6 +49,7 @@ const VIEWS = {
   hip: { theta: 0.35, phi: 1.5, r: 1.0, target: [0, 1.08, 0] },
   backclose: { theta: Math.PI + 0.25, phi: 1.5, r: 1.0, target: [0, 1.45, 0] },
   side3: { theta: 1.0, phi: 1.4, r: 3.2, target: [0, 1.2, 0] },
+  shouldertop: { theta: 0.15, phi: 0.75, r: 1.3, target: [0, 1.55, 0] },
 };
 
 const out = args.out || 'shots';
