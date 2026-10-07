@@ -1201,8 +1201,8 @@ belt_bvh = bvh_of(belt)
 # Towel: a hand towel tucked under the belt on the front of the wearer's
 # right hip, about 13 x 27 cm, lying on the thigh with soft folds and
 # falling free of it toward the hem.
-TW, TL = 0.135, 0.27
-TCX = -0.098
+TW, TL = 0.125, 0.27
+TCX = -0.062
 NU, NV = 28, 42
 tv = []
 prev = [None] * NU
@@ -1217,15 +1217,16 @@ for j in range(NV):
         y = (hit[0].y if hit[0] is not None else -0.15) - 0.0042
         # it lies on the thigh, but can only come back toward the body slowly
         if prev[i] is not None:
-            y = min(y, prev[i] + 0.0045 * (1 - 0.6 * l))
+            y = min(y, prev[i] + 0.0045 * (1 - l) ** 1.5)
         prev[i] = y
         # two soft lengthwise folds from the tuck that open toward the hem,
         # plus a gentle curl of the free edges
-        amp = 0.0042 + 0.0045 * l
+        amp = 0.005 + 0.0065 * l
         fold = amp * math.sin(s_ * math.pi * 1.9 + 0.5 + 0.6 * l)
         fold += 0.0022 * math.sin(s_ * math.pi * 4.3 + 1.7 * l) * (1 - l) * gather
         edge = 0.006 * smooth01(0.65, 1.0, abs(s_)) * (0.3 + l)
-        y -= max(0.0, fold) * 1.2 + min(0.0, fold) * 0.35 + edge + 0.01 * l ** 2.2
+        lip = 0.0075 * math.exp(-((l - 0.035) / 0.035) ** 2) * (1 - 0.3 * s_ * s_)   # rolled where it leaves the belt
+        y -= max(0.0, fold) * 1.2 + min(0.0, fold) * 0.35 + edge + 0.01 * l ** 2.2 + lip
         zz = z - 0.005 * (1 - s_ * s_) * l ** 3 + 0.003 * math.sin(s_ * 2.3 + 0.8) * l ** 2   # uneven hem
         tv.append(Vector((x, y, zz)))
 tf = []
