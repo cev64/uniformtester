@@ -512,7 +512,7 @@ def keep_out(bm, min_off):
         if d < min_off:
             v.co += nrm * (min_off - d)
 
-def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, shape=None, tension=None, min_off=0.0, detail=None):
+def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, shape=None, tension=None, min_off=0.0, detail=None, drape=None):
     """keep_face(center, info) coarse region test; cuts = [(co, no, region(center, info))]
     Faces in `region` on the +normal side of a cut plane are removed; the cut gives a clean hem."""
     me = bdata.copy(); me.name = name
@@ -552,6 +552,8 @@ def make_garment(name, keep_face, cuts, offset, smooth_iters=6, post_cut=None, s
         keep_out(bm, min_off)
         for _ in range(2):
             bmesh.ops.smooth_vert(bm, verts=inner, factor=0.3, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+    if drape:
+        drape(bm)
     if detail:
         # crisp surface detail (pad edges, plackets, folds) after all the smoothing
         bm.normal_update()
@@ -661,11 +663,52 @@ def jersey_detail(co, c, n):
 
 ARM_FRAME0 = {s: frame(ARM_AXIS[s], SIGN[s]) for s in 'LR'}
 
+def jersey_drape(bm):
+    """Below the pads a jersey does not cling to the abs: it falls nearly
+    straight from the bottom of the chest and back plates to where it is
+    tucked and bloused at the waistband. Each column of the torso is pushed
+    out to the line between its radius under the pads and at the waist."""
+    ztop, zbot = SHZ - 0.2, WAIST_Z + 0.025
+    YC0 = 0.02
+    NBIN = 96
+    def polar(co):
+        return math.atan2(co.x, -(co.y - YC0)), math.hypot(co.x, co.y - YC0)
+    def bin_of(a):
+        return int((a + math.pi) / (2 * math.pi) * NBIN) % NBIN
+    torso = [v for v in bm.verts if not info_at(v.co)['arm']]
+    rt, rb = [0.0] * NBIN, [0.0] * NBIN
+    for v in torso:
+        a, r = polar(v.co)
+        if abs(v.co.z - ztop) < 0.012:
+            rt[bin_of(a)] = max(rt[bin_of(a)], r)
+        if abs(v.co.z - zbot) < 0.012:
+            rb[bin_of(a)] = max(rb[bin_of(a)], r)
+    for arr in (rt, rb):
+        for i in range(NBIN):
+            if arr[i] == 0:
+                arr[i] = max(arr[i - 1], arr[(i + 1) % NBIN])
+        for _ in range(3):
+            arr[:] = [(arr[i - 1] + 2 * arr[i] + arr[(i + 1) % NBIN]) / 4 for i in range(NBIN)]
+    for v in torso:
+        z = v.co.z
+        if not (zbot - 0.03 < z < ztop):
+            continue
+        a, r = polar(v.co)
+        b = bin_of(a)
+        sfrac = min(1.0, max(0.0, (ztop - z) / (ztop - zbot)))
+        line = rt[b] + (rb[b] + 0.006 - rt[b]) * sfrac ** 0.9 - 0.007 * math.sin(math.pi * sfrac)
+        w = 0.85 * smooth01(zbot - 0.03, zbot, z) * (1 - smooth01(ztop - 0.03, ztop, z) * 0.0)
+        target = r + (line - r) * w
+        if target > r:
+            k = target / max(r, 1e-6)
+            v.co.x *= k
+            v.co.y = YC0 + (v.co.y - YC0) * k
+
 jersey = make_garment(
     'Jersey',
     lambda c, i: (not i['leg']) and not (i['head'] and c.z > NECK.z + 0.01) and c.z > JERSEY_BOTTOM - 0.06 and (not i['arm'] or t_arm(c, i['side']) < SLEEVE_LEN + 0.06),
     jersey_cuts, jersey_offset, smooth_iters=10, post_cut=neck_hook, shape=pad_shape,
-    tension=(lambda c: c.z < CHEST_Z + 0.04 and abs(c.x) < 0.22, 25), min_off=0.004, detail=jersey_detail)
+    tension=(lambda c: c.z < CHEST_Z + 0.04 and abs(c.x) < 0.22, 25), min_off=0.004, detail=jersey_detail, drape=jersey_drape)
 
 # ─── pants ───
 pants_cuts = [(Vector((0, 0, WAIST_Z)), Vector((0, 0, 1)), lambda c, i: True)]
