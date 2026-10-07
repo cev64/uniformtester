@@ -62,6 +62,16 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
   fins, sleeve text bands, knotwork, diamond plate) and numbers are painted
   per team at real sizes; logos, the NFL shield and swooshes are projected
   decals.
+- **Cloth**: every garment is built like Nike's Vapor F.U.S.E. game gear.
+  The jersey has the real panel layout (chest yoke, front and back panel
+  seams, back nameplate yoke, side vents, mesh insert under the collar) as
+  sewn seams with cover stitching, a fine double knit with laser-perforated
+  vent panels and smooth stretch shoulders, all at true scale; pants are
+  glossy stretch twill with a stitched waistband and belt loops; socks and
+  collar are rib knit. Numbers, names and wordmarks are built as tackle
+  twill (stacked cloth layers with zig-zag stitched edges, each layer
+  shading the one below) or heat-pressed film (`numStyle`), the shield and
+  swooshes as embroidery, plus the woven jock tag.
 - **Reference**: `research/uniforms/` holds each team's uniform sheet from
   Wikimedia Commons (CC0) that the data was built from, with notes in
   `research/notes.md`. Team logos in `public/logos/` come from Wikimedia;
@@ -74,6 +84,9 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
 | `tools/build_player.py`, `tools/build_helmet.py` | Blender scripts that generate `public/models/*.glb` (`npm run build:model`) |
 | `src/three/garments.js`, `src/three/paint.js` | Canvas painters for jerseys, sleeves, pants, socks, helmet shells and drawn marks |
 | `src/three/numerals.js` | Twill-style number shapes and per-team numeral styles |
+| `src/three/fabric.js` | Cloth material (knit / twill / rib micro-weaves, seam and panel maps in each garment's UV space) |
+| `src/three/applique.js`, `src/three/sdf.js` | Builds numbers, letters and logos as twill, pressed film or embroidery (colour + relief maps, stitching) |
+| `src/three/fonts.js` | Lettering fonts for wordmarks, nameplates and tags |
 | `src/three/player.js` | Loads the player, paints the garments and places number/name/logo decals |
 | `src/three/helmet.js` | Loads the helmet and applies shell paint, finish and logo decals |
 | `src/three/stage.js` | Renderer, lighting, turf, camera and controls |

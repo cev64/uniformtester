@@ -12,6 +12,7 @@
 // outline width (so corners follow the digit), stacked under the fill.
 
 import { makeCanvas } from './paint.js';
+import { signedDistance, grow, cpuCanvas, alphaOf, maskCanvas } from './sdf.js';
 
 // ─── styles ────────────────────────────────────────────────────────────
 // W: digit width, th / tv: horizontal / vertical stroke, m: waist height,
@@ -214,26 +215,8 @@ function drawDigitMask(ctx, D, S, x0, baseY, px) {
   ctx.globalCompositeOperation = 'source-over';
 }
 
-// grow an alpha mask by r pixels (round kernel)
-function dilate(src, r) {
-  const c = makeCanvas(src.width, src.height);
-  const ctx = c.getContext('2d');
-  ctx.drawImage(src, 0, 0);
-  if (r <= 0) return c;
-  const rings = Math.max(1, Math.ceil(r / 6));
-  for (let k = 1; k <= rings; k++) {
-    const rr = (r * k) / rings;
-    const n = Math.max(12, Math.ceil(rr * 1.6));
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      ctx.drawImage(src, Math.cos(a) * rr, Math.sin(a) * rr);
-    }
-  }
-  return c;
-}
-
 function tint(mask, color) {
-  const c = makeCanvas(mask.width, mask.height);
+  const c = cpuCanvas(mask.width, mask.height);
   const ctx = c.getContext('2d');
   ctx.drawImage(mask, 0, 0);
   ctx.globalCompositeOperation = 'source-in';
@@ -292,7 +275,10 @@ export function numeralPattern(p) {
   };
 }
 
-export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, shadow = null, fillPattern = null, px = 300 } = {}) {
+// The number as a stack of twill layers, bottom to top: drop shadow, outer
+// outline, inner outline, face. Each layer is an alpha mask the size of the
+// final canvas; the face may carry a printed pattern.
+export function numeralLayers(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, shadow = null, fillPattern = null, px = 300 } = {}) {
   const S = numeralStyle(styleKey) || numeralStyle('block');
   const digits = [...String(text)].map((ch) => digit(ch, S)).filter(Boolean);
   if (!digits.length) return null;
@@ -304,11 +290,11 @@ export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, s
   const slantPad = Math.abs(S.slant) * px;
   const W = Math.ceil(adv * px + slantPad + pad * 2), H = Math.ceil(px + pad * 2);
 
-  const mask = makeCanvas(W, H);
+  let mask = cpuCanvas(W, H);
   const mctx = mask.getContext('2d');
   mctx.fillStyle = '#000';
   let x = pad + (S.slant < 0 ? slantPad : 0);
-  const one = makeCanvas(W, H);
+  const one = cpuCanvas(W, H);
   const octx = one.getContext('2d');
   octx.fillStyle = '#000';
   for (const D of digits) {
@@ -319,14 +305,39 @@ export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, s
     x += (D.width + S.gap) * px;
   }
 
-  const out = makeCanvas(W, H);
-  const ctx = out.getContext('2d');
-  const outer = w2 ? dilate(mask, w1 + w2) : w1 ? dilate(mask, w1) : mask;
-  if (shadow) ctx.drawImage(tint(outer, shadow.color), sh.dx, sh.dy);
-  if (w2) ctx.drawImage(tint(outer, c2), 0, 0);
-  if (w1) ctx.drawImage(tint(dilate(mask, w1), c1), 0, 0);
+  // outlines are the digit grown by the outline widths (round corners, like
+  // twill cut around the layer above it)
+  // rebuild the face from its distance field: shapes drawn in pieces leave
+  // hairline seams in the alpha where they meet
+  const sd = signedDistance(alphaOf(mask), W, H);
+  const a0 = grow(sd, 0);
+  mask = maskCanvas(a0, W, H);
+  const layers = [];
+  const aOuter = sd ? grow(sd, w1 + w2) : a0;
+  if (shadow) {
+    const a = new Float32Array(W * H);
+    const dx = Math.round(sh.dx), dy = Math.round(sh.dy);
+    for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
+      const sx = xx - dx, sy = y - dy;
+      if (sx >= 0 && sy >= 0 && sx < W && sy < H) a[y * W + xx] = aOuter[sy * W + sx];
+    }
+    layers.push({ alpha: a, mask: maskCanvas(a, W, H), color: shadow.color });
+  }
+  // grown layers' distance fields are the face's, offset (exact for a dilation)
+  const offset = (r) => { const o = new Float32Array(W * H); for (let i = 0; i < W * H; i++) o[i] = sd[i] - r; return o; };
+  if (w2) layers.push({ alpha: aOuter, sd: offset(w1 + w2), mask: maskCanvas(aOuter, W, H), color: c2 });
+  if (w1) { const a = grow(sd, w1); layers.push({ alpha: a, sd: offset(w1), mask: maskCanvas(a, W, H), color: c1 }); }
   const face = tint(mask, fill);
   if (fillPattern) fillPattern(face.getContext('2d'), W, H, px);
-  ctx.drawImage(face, 0, 0);
-  return { canvas: out, aspect: W / H, inkHeight: px / H };
+  layers.push({ alpha: a0, sd, mask, color: fill, face });
+  return { layers, W, H, aspect: W / H, inkHeight: px / H, px };
+}
+
+export function numeralCanvas(text, colors, styleKey, opts = {}) {
+  const L = numeralLayers(text, colors, styleKey, opts);
+  if (!L) return null;
+  const out = cpuCanvas(L.W, L.H);
+  const ctx = out.getContext('2d');
+  for (const l of L.layers) ctx.drawImage(l.face || tint(l.mask, l.color), 0, 0);
+  return { canvas: out, aspect: L.aspect, inkHeight: L.inkHeight, layers: L.layers, px: L.px };
 }
