@@ -350,7 +350,7 @@ PAD_SHAPES = [
 ]
 for s_ in (1, -1):
     # arch over the shoulder ending in a rounded cap over the deltoid
-    PAD_SHAPES.append((Vector((s_ * (SHX + 0.02), -0.016, SHZ + 0.045)), (0.1, 0.15) if s_ < 0 else (0.15, 0.1), (0.12, 0.118), (0.11, 0.09), (4.6, 3.2)))
+    PAD_SHAPES.append((Vector((s_ * (SHX + 0.02), -0.016, SHZ + 0.045)), (0.1, 0.15) if s_ < 0 else (0.15, 0.1), (0.12, 0.118), (0.092, 0.09), (4.6, 3.2)))
 
 def _sdf_one(p, shape):
     c, rx, ry, rz, (nxz, ny) = shape
@@ -828,10 +828,13 @@ socks = make_garment('Socks',
 #   studs:  bladed studs under the forefoot and conical ones under the heel.
 # Everything sits on the 'cleat' (upper, collar, laces) and 'sole' (plate,
 # studs) materials.
-STUD_H = 0.012          # stud length
-STUD_SINK = 0.35        # fraction of the studs pressed into the turf
-PLATE_T = 0.0055
-COLLAR_TOP = ANK['L'].z + 0.034
+STUD_H = 0.0145         # stud length
+STUD_SINK = 0.2        # fraction of the studs pressed into the turf
+PLATE_T = 0.0075
+def plate_t(t):
+    # a little heel wedge under the plate
+    return PLATE_T + 0.0045 * (1 - smooth01(0.15, 0.5, t))
+COLLAR_TOP = ANK['L'].z + 0.024
 
 def _ring_faces(nrings, nr, closed=True, base=0):
     faces = []
@@ -876,7 +879,7 @@ def build_cleat(side):
     for arr in (cen, wid, top):
         for _ in range(8):
             arr[:] = [arr[0]] + [(arr[i - 1] + 2 * arr[i] + arr[i + 1]) / 4 for i in range(1, NS - 1)] + [arr[-1]]
-    T_OPEN = 0.36
+    T_OPEN = 0.27
     for i, t in enumerate(ts):
         # tapered, slightly medial toe box
         k = smooth01(0.7, 1.0, t)
@@ -887,8 +890,8 @@ def build_cleat(side):
             top[i] = z_in + 0.068 + 0.012 * smooth01(0.2, T_OPEN, t)
         else:
             u = smooth01(T_OPEN, 0.95, t)
-            prof = z_in + 0.08 - (0.08 - 0.037) * u ** 0.8
-            top[i] = min(top[i], prof) * 0.5 + prof * 0.5
+            prof = z_in + 0.08 - (0.08 - 0.034) * u ** 0.8
+            top[i] = max(top[i], prof)
     # heel slightly narrower than the measured heel pad (a cupped counter)
     for i, t in enumerate(ts):
         wid[i] *= 1 - 0.06 * (1 - smooth01(0.0, 0.25, t))
@@ -914,8 +917,8 @@ def build_cleat(side):
         params.append((-back / L, wid[0] * (0.75 + 0.25 * f), cen[0], z_in + (top[0] - z_in) * (0.92 + 0.08 * f), f))
     for i, t in enumerate(ts):
         params.append((t, wid[i], cen[i], top[i], 1.0))
-    for f, fwd in ((0.9, 0.006), (0.68, 0.011), (0.38, 0.015), (0.12, 0.017)):
-        params.append((1 + fwd / L, wid[-1] * (0.7 + 0.3 * f), cen[-1], z_in + (top[-1] - z_in) * (0.55 + 0.45 * f), f ** 0.6))
+    for f, fwd in ((0.9, 0.004), (0.68, 0.008), (0.38, 0.011), (0.12, 0.013)):
+        params.append((1 + fwd / L, wid[-1] * (0.7 + 0.3 * f), cen[-1], z_in + (top[-1] - z_in) * (0.45 + 0.55 * f), f ** 0.6))
     rings = [section(t, w, c, zt, sc) for t, w, c, zt, sc in params]
 
     # ── upper
@@ -938,12 +941,13 @@ def build_cleat(side):
     plate_rings = []
     for t, w, c, zt, sc in params:
         base = heel + ax * (t * L)
-        W = w * (1 if sc >= 0.99 else sc ** 0.5) + 0.002
+        W = w * (1 if sc >= 0.99 else sc ** 0.5) + 0.0035
         r = []
         for k in range(PR):
             a = 2 * math.pi * k / PR
             x = math.copysign(abs(math.cos(a)) ** 0.25, math.cos(a)) * W
-            zz = z_in - PLATE_T / 2 + math.copysign(abs(math.sin(a)) ** 0.5, math.sin(a)) * (PLATE_T / 2 + 0.002)
+            pt = plate_t(t)
+            zz = z_in - pt / 2 + math.copysign(abs(math.sin(a)) ** 0.5, math.sin(a)) * (pt / 2 + 0.002)
             r.append(base + lat * (c + x) + Vector((0, 0, zz - base.z)))
         plate_rings.append(r)
     pbase = len(verts)
@@ -958,11 +962,11 @@ def build_cleat(side):
     def at(t, f):
         i = min(NS - 1, max(0, int(round(t * (NS - 1)))))
         return heel + ax * (t * L) + lat * (cen[i] + f * wid[i] * 0.78)
-    z_plate_bottom = z_in - PLATE_T
-    STUDS = [(0.92, -0.15, 'b'), (0.81, -0.7, 'b'), (0.80, 0.68, 'b'), (0.66, -0.75, 'b'), (0.66, 0.72, 'b'), (0.53, 0.0, 'b'),
+    STUDS = [(0.9, -0.15, 'b'), (0.79, -0.7, 'b'), (0.78, 0.68, 'b'), (0.65, -0.75, 'b'), (0.65, 0.72, 'b'), (0.53, 0.0, 'b'),
              (0.09, -0.5, 'r'), (0.09, 0.5, 'r'), (0.24, -0.56, 'r'), (0.24, 0.56, 'r')]
     for t, f, kind in STUDS:
         c = at(t, f)
+        z_plate_bottom = z_in - plate_t(t)
         c.z = z_plate_bottom
         if kind == 'b':
             sv, sf = _stud(c, 0.0105, 0.0042, (lat, ax), z_plate_bottom, STUD_H)
@@ -976,8 +980,8 @@ def build_cleat(side):
 
     # ── laces: flat straps arched over the instep
     lace_faces = []
-    for j in range(6):
-        t = T_OPEN + 0.035 + j * 0.062
+    for j in range(7):
+        t = T_OPEN + 0.03 + j * 0.052
         i = min(NS - 1, int(round(t * (NS - 1))))
         base = heel + ax * (t * L)
         w, c, zt = wid[i], cen[i], top[i]
@@ -1013,7 +1017,7 @@ def build_cleat(side):
     # toe spring: the forefoot lifts off the ground
     for v in bm.verts:
         t = (v.co - heel).dot(ax) / L
-        v.co.z += 0.013 * smooth01(0.66, 1.08, t) ** 1.6
+        v.co.z += 0.022 * smooth01(0.76, 1.08, t) ** 1.6
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     bm.to_mesh(me); bm.free()
     # thickness for the upper's open edge
@@ -1040,14 +1044,14 @@ collar_cuts = [(Vector((0, 0, COLLAR_TOP)), Vector((0, 0, 1)), lambda c, i: True
                (Vector((0, 0, z_in + 0.04)), Vector((0, 0, -1)), lambda c, i: True)]
 for _s, (_h, _ax, _lat, _L) in (('L', frameL), ('R', frameR)):
     # end the collar inside the throat, under the laces
-    collar_cuts.append((_h + _ax * (_L * 0.5), _ax, lambda c, i, _s=_s: i['side'] == _s))
+    collar_cuts.append((_h + _ax * (_L * 0.33) + Vector((0, 0, z_in + 0.075 - _h.z)), (_ax - Vector((0, 0, 0.8))).normalized(), lambda c, i, _s=_s: i['side'] == _s))
 def _collar_keep(c, i):
     if not (i['leg'] and z_in + 0.03 < c.z < COLLAR_TOP + 0.02):
         return False
     heel, ax, lat, L = frameL if i['side'] == 'L' else frameR
-    return (c - heel).dot(ax) / L < 0.58
+    return (c - heel).dot(ax) / L < 0.5
 ankle = make_garment('AnkleCollar', _collar_keep, collar_cuts,
-                     lambda co, c: 0.0062, smooth_iters=3)
+                     lambda co, c: 0.0056, smooth_iters=3)
 solidify(ankle, 0.003)
 ankle.data.materials.clear()
 set_materials(ankle, ['cleat'])
@@ -1064,7 +1068,7 @@ bpy.context.view_layer.objects.active = cl
 bpy.ops.object.join()
 cleats = cl
 cleats.name = 'Cleats'
-GROUND_Z = z_in - PLATE_T - STUD_H * (1 - STUD_SINK)
+GROUND_Z = z_in - plate_t(0) - STUD_H * (1 - STUD_SINK)
 
 # ─── gloves ───
 # receiver gloves: snug fingers and a raised wrist cuff with a strap edge
@@ -1194,43 +1198,52 @@ for poly in belt.data.polygons:
 belt.data.shade_smooth()
 belt_bvh = bvh_of(belt)
 
-# Towel: a hand towel tucked into the front of the pants on the wearer's
-# right, gathered under the belt and hanging over the thigh in soft folds.
-TW, TL = 0.13, 0.30
-TCX = -0.072
-NU, NV = 26, 40
+# Towel: a hand towel tucked under the belt on the front of the wearer's
+# right hip, about 13 x 27 cm, lying on the thigh with soft folds and
+# falling free of it toward the hem.
+TW, TL = 0.135, 0.27
+TCX = -0.098
+NU, NV = 28, 42
 tv = []
-prev_y = [None] * NU
+prev = [None] * NU
 for j in range(NV):
     l = j / (NV - 1)
-    z = BELT_BOT + 0.014 - l * TL * (1 - 0.04 * math.sin(3.0 * (0.0)))
-    gather = 0.62 + 0.38 * smooth01(0.0, 0.45, l)          # pinched where it is tucked
-    amp = 0.0035 + 0.0065 * (1 - smooth01(0.0, 0.7, l)) + 0.004 * l
+    z = BELT_BOT + 0.012 - l * TL
+    gather = 0.66 + 0.34 * smooth01(0.0, 0.4, l)          # pinched where it is tucked
     for i in range(NU):
         s_ = i / (NU - 1) * 2 - 1
-        x = TCX + s_ * TW / 2 * gather
+        x = TCX + s_ * TW / 2 * gather - 0.012 * l * l     # drifts a little toward the side
         hit = pants_bvh.ray_cast(Vector((x, -0.5, z)), Vector((0, 1, 0)), 1.0)
-        y = (hit[0].y if hit[0] is not None else -0.15) - 0.006
-        # gravity: the cloth hangs straight down where the body falls away beneath it
-        if prev_y[i] is not None:
-            y = min(y, prev_y[i] + 0.003 * (1 - l))
-        prev_y[i] = y
-        fold = amp * math.sin(s_ * math.pi * 2.3 + 0.9 + 0.5 * l) + 0.0025 * math.sin(s_ * math.pi * 5.1 + 2.0 * l) * (1 - l)
-        y -= abs(fold) * 0.6 + fold * 0.7 + 0.006 * l * l
-        zz = z - 0.006 * (1 - s_ * s_) * l ** 3 + 0.004 * math.sin(s_ * 2.0 + 1.0) * l ** 2   # uneven hem
-        tv.append(Vector((x + 0.005 * math.sin(l * 3.5) * l, y, zz)))
+        y = (hit[0].y if hit[0] is not None else -0.15) - 0.0042
+        # it lies on the thigh, but can only come back toward the body slowly
+        if prev[i] is not None:
+            y = min(y, prev[i] + 0.0045 * (1 - 0.6 * l))
+        prev[i] = y
+        # two soft lengthwise folds from the tuck that open toward the hem,
+        # plus a gentle curl of the free edges
+        amp = 0.0042 + 0.0045 * l
+        fold = amp * math.sin(s_ * math.pi * 1.9 + 0.5 + 0.6 * l)
+        fold += 0.0022 * math.sin(s_ * math.pi * 4.3 + 1.7 * l) * (1 - l) * gather
+        edge = 0.006 * smooth01(0.65, 1.0, abs(s_)) * (0.3 + l)
+        y -= max(0.0, fold) * 1.2 + min(0.0, fold) * 0.35 + edge + 0.01 * l ** 2.2
+        zz = z - 0.005 * (1 - s_ * s_) * l ** 3 + 0.003 * math.sin(s_ * 2.3 + 0.8) * l ** 2   # uneven hem
+        tv.append(Vector((x, y, zz)))
 tf = []
 for j in range(NV - 1):
     for i in range(NU - 1):
-        a = j * NU + i
-        tf.append((a, a + NU, a + NU + 1, a + 1))
+        a_ = j * NU + i
+        tf.append((a_, a_ + NU, a_ + NU + 1, a_ + 1))
 towel = new_object('Towel', tv, tf, ['towel'])
 tuv = towel.data.uv_layers.new(name='UVMap')
 for poly in towel.data.polygons:
     for li in poly.loop_indices:
         vi = towel.data.loops[li].vertex_index
         tuv.data[li].uv = ((vi % NU) / (NU - 1), (vi // NU) / (NV - 1))
-so = towel.modifiers.new('T', 'SOLIDIFY'); so.thickness = 0.004; so.offset = -1
+bm = bmesh.new(); bm.from_mesh(towel.data)
+for _ in range(2):
+    bmesh.ops.smooth_vert(bm, verts=[v for v in bm.verts if not v.is_boundary], factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+bm.to_mesh(towel.data); bm.free()
+so = towel.modifiers.new('T', 'SOLIDIFY'); so.thickness = 0.003; so.offset = -1
 bpy.context.view_layer.objects.active = towel
 bpy.ops.object.select_all(action='DESELECT'); towel.select_set(True)
 bpy.ops.object.modifier_apply(modifier='T')
