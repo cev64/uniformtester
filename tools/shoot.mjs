@@ -41,6 +41,15 @@ const VIEWS = {
   shoulder: { theta: 1.1, phi: 1.2, r: 1.6, target: [0.15, 1.45, 0] },
   pants: { theta: 0.5, phi: 1.5, r: 2.4, target: [0, 0.75, 0] },
   feet: { theta: 0.7, phi: 1.3, r: 1.5, target: [0, 0.2, 0] },
+  // close-ups for cloth, stitching and branding detail
+  numclose: { theta: 0.25, phi: 1.5, r: 0.9, target: [0.04, 1.32, 0] },
+  neck: { theta: 0.1, phi: 1.4, r: 0.75, target: [0, 1.56, 0] },
+  sleeve: { theta: 1.15, phi: 1.45, r: 1.0, target: [0.25, 1.48, 0] },
+  sleeveR: { theta: -1.15, phi: 1.45, r: 1.0, target: [-0.25, 1.48, 0] },
+  hip: { theta: 0.35, phi: 1.5, r: 1.0, target: [0, 1.08, 0] },
+  backclose: { theta: Math.PI + 0.25, phi: 1.5, r: 1.0, target: [0, 1.45, 0] },
+  side3: { theta: 1.0, phi: 1.4, r: 3.2, target: [0, 1.2, 0] },
+  shouldertop: { theta: 0.15, phi: 0.75, r: 1.3, target: [0, 1.55, 0] },
 };
 
 const out = args.out || 'shots';
@@ -72,6 +81,9 @@ try {
   await page.addStyleTag({ content: '.stage-label,.stage-tools{display:none!important}' });
   await page.waitForFunction(() => window.__stage0?.player?.loaded && window.__stage0.player.helmet.loaded, null, { timeout: 120000 });
 
+  // --patch 'js': run against window.__teams before dressing, to try out data
+  // changes without editing teams.js, e.g. --patch "__teams.NYJ.jerseys[0].plateArch = 0.3"
+  if (args.patch) await page.evaluate((code) => new Function(code)(), String(args.patch));
   const teams = String(args.team || 'BUF').split(',');
   for (const teamId of teams) {
     const looks = await page.evaluate(([id]) => window.__teams[id].looks.map((l) => l.name), [teamId]);

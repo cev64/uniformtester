@@ -17,7 +17,34 @@
 //   shoulder: decal on each shoulder (drawn mark or logo image)
 //   panels: { yoke, sides, vstripes }        word: chest wordmark
 //   chestLogo / sleeveLogo / centerLogo: logo image keys (public/logos)
-//   neckTag: text on the back of the collar
+//   neckTag: text on the back of the collar ({ s, c, bg, font, style })
+//
+// Optional jersey fields for the cloth renderer (all have defaults):
+//   numStyle: 'twill' | 'pressed'   how numbers, name and wordmark are applied.
+//              'twill' = sewn tackle twill (layered cloth, zig-zag stitched
+//              edges, matte); 'pressed' = heat-applied film (flat, thin edge,
+//              slightly glossy, knit shows through). Also 'embroidered' |
+//              'print'. Default 'twill', or 'pressed' when numPattern is set.
+//   plateFont: font key (src/three/fonts.js) for the nameplate; default
+//              follows the numeral style (letterFont). `plate` is an alias.
+//   plateArch: vertical arch of the nameplate as a fraction of the letter
+//              height (0.25 = middle letters ride 25% higher); default 0.
+//   plateTracking: letter spacing (fraction of font size), default 0.05.
+//   plateScaleX: horizontal scale of the name letters, default 1.
+//   plateH: name letter height in metres, default 0.05 (2 in).
+//   plateColor / plateOutline: name fill (default num[0]) / [outline, outer].
+//   plateStyle: finish of the name letters, default numStyle.
+//   plateBar: true (jersey colour) or a colour: a separate sewn-on nameplate strip.
+//   word.img: image wordmark instead of text, a public/logos key ('KEY' or
+//              'KEY@#hex' for a one-colour version); word.h = its height in
+//              metres (default 0.045) or word.w = width. word.style = finish
+//              (default 'twill', 'pressed' when numStyle is 'pressed').
+//              Text wordmarks also take word.arch and word.scaleX.
+//   swoosh: sleeve swoosh colour, or false; default white on dark jerseys,
+//              the number colour on light ones.
+//   jockTag: { size, bg, fg } for the woven tag at the lower left front, or false.
+// Optional pants fields: swoosh (colour of the hip swoosh), hipStyle (finish
+//   of the hip logos, default 'pressed').
 // Helmet logo: { img: key, faces: 'left'|'right' } uses the real team mark;
 // `faces` says which way it points so it can face forward on both sides.
 
@@ -341,8 +368,10 @@ export const TEAMS = [
         { id: 'gold1933', name: '1933 Gold', tag: 'Throwback', shell: GOLD, finish: 'matte', mask: '#9EA2A2', stripe: null, logo: steel },
       ],
       jerseys: [
-        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W], tv: 'shoulder', chestLogo: 'PIT', sleeve: { stripes, from: 2 } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK], tv: 'shoulder', chestLogo: 'PIT', sleeve: { stripes, from: 2 } },
+        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W], tv: 'shoulder', chestLogo: 'PIT', sleeve: { stripes, from: 2 },
+          plateBar: true, plateColor: GOLD },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK], tv: 'shoulder', chestLogo: 'PIT', sleeve: { stripes, from: 2 },
+          plateBar: true, plateColor: GOLD, plateOutline: [BK] },
         { id: 'rush', name: 'Color Rush', tag: 'Color Rush', base: BK, num: [GOLD], font: 'block', tv: 'shoulder', chestLogo: 'PIT', sleeve: { stripes, from: 2 } },
         { id: 'y1933', name: '1933', tag: 'Throwback', base: GOLD, num: [W, BK], numO: [0.06, 0], font: 'block', collar: [[GOLD, 2.5]], chestLogo: 'PIT_crest',
           panels: { vstripes: [BK, 3.2, 4.2], vband: [BK, 5, 27, 0.1] } },
