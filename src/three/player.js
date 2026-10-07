@@ -138,7 +138,7 @@ function repeatNormal(base, repeat) {
 
 // Optional gear modelled as separate meshes (by material name) and whether
 // each is shown by default. Toggle with player.setAccessory(name, on).
-export const ACCESSORIES = { belt: true, towel: true, wristband: true, eyeblack: true, armsleeve: false };
+export const ACCESSORIES = { belt: true, towel: false, wristband: true, eyeblack: true, armsleeve: false };
 
 function tex(canvas, aniso) {
   const t = new THREE.CanvasTexture(canvas);
@@ -593,7 +593,7 @@ export class Player {
     for (const s of ['L', 'R']) {
       const f = this.J[`foot.${s}`];
       const sx = Math.sign(f.x);
-      const hit = this.raycast(cleats, new THREE.Vector3(sx * 0.6, 0.035, f.z + 0.03), new THREE.Vector3(-sx, 0, 0));
+      const hit = this.raycast(cleats, new THREE.Vector3(sx * 0.6, 0.05, f.z + 0.03), new THREE.Vector3(-sx, 0, 0));
       this.decal(cleats, hit, 0.1, 0.05, cs, { minDot: 0.2 });
     }
   }
