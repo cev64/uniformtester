@@ -278,7 +278,7 @@ SIGN = {'L': 1, 'R': -1}
 
 WAIST_Z = HIP['L'].z + 0.03        # top of the pants: at the hip bones, below the navel
 JERSEY_BOTTOM = HIP['L'].z - 0.05  # jersey tucks well under the pants
-SLEEVE_LEN = 0.115                 # short modern sleeves: shoulder joint → hem along the arm
+SLEEVE_LEN = 0.13                  # short modern sleeves: shoulder joint → hem along the arm
 PANTS_HEM = 0.07                   # below the knee joint
 SOCK_BOTTOM = 0.09                 # just above the ankle joint (the cleat's knit collar covers the rest)
 
@@ -350,7 +350,7 @@ PAD_SHAPES = [
 ]
 for s_ in (1, -1):
     # arch over the shoulder ending in a rounded cap over the deltoid
-    PAD_SHAPES.append((Vector((s_ * (SHX + 0.02), -0.016, SHZ + 0.045)), (0.1, 0.15) if s_ < 0 else (0.15, 0.1), (0.12, 0.118), (0.092, 0.09), (4.6, 3.2)))
+    PAD_SHAPES.append((Vector((s_ * (SHX + 0.012), -0.016, SHZ + 0.045)), (0.088, 0.142) if s_ < 0 else (0.142, 0.088), (0.106, 0.104), (0.092, 0.09), (4.6, 3.2)))
 
 def _sdf_one(p, shape):
     c, rx, ry, rz, (nxz, ny) = shape
