@@ -207,6 +207,10 @@ def turn(bone_name, axis, angle):
     pb.matrix = R @ pb.matrix
     bpy.context.view_layer.update()
 
+# feet turned out a little, as people stand
+for side, sx in (('L', 1), ('R', -1)):
+    turn(f'foot.{side}', Vector((0, 0, 1)), math.radians(8) * sx)
+
 # relaxed gloved hands: fingers loosely curled toward the palm
 CURL = {2: (10, 20, 14), 3: (14, 26, 16), 4: (17, 30, 18), 5: (20, 34, 20)}
 for side, sx in (('L', 1), ('R', -1)):
@@ -668,7 +672,7 @@ def jersey_drape(bm):
     straight from the bottom of the chest and back plates to where it is
     tucked and bloused at the waistband. Each column of the torso is pushed
     out to the line between its radius under the pads and at the waist."""
-    ztop, zbot = SHZ - 0.2, WAIST_Z + 0.025
+    ztop, zbot = SHZ - 0.16, WAIST_Z + 0.025
     YC0 = 0.02
     NBIN = 96
     def polar(co):
@@ -697,7 +701,7 @@ def jersey_drape(bm):
         b = bin_of(a)
         sfrac = min(1.0, max(0.0, (ztop - z) / (ztop - zbot)))
         line = rt[b] + (rb[b] + 0.006 - rt[b]) * sfrac ** 0.9 - 0.007 * math.sin(math.pi * sfrac)
-        w = 0.85 * smooth01(zbot - 0.03, zbot, z) * (1 - smooth01(ztop - 0.03, ztop, z) * 0.0)
+        w = 0.85 * smooth01(zbot - 0.03, zbot, z) * (1 - smooth01(ztop - 0.08, ztop, z))
         target = r + (line - r) * w
         if target > r:
             k = target / max(r, 1e-6)
