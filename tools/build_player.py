@@ -350,7 +350,7 @@ PAD_SHAPES = [
 ]
 for s_ in (1, -1):
     # arch over the shoulder ending in a rounded cap over the deltoid
-    PAD_SHAPES.append((Vector((s_ * (SHX + 0.02), -0.016, SHZ + 0.045)), (0.1, 0.15) if s_ < 0 else (0.15, 0.1), (0.12, 0.118), (0.11, 0.09), (3.6, 3.2)))
+    PAD_SHAPES.append((Vector((s_ * (SHX + 0.02), -0.016, SHZ + 0.045)), (0.1, 0.15) if s_ < 0 else (0.15, 0.1), (0.12, 0.118), (0.11, 0.09), (4.6, 3.2)))
 
 def _sdf_one(p, shape):
     c, rx, ry, rz, (nxz, ny) = shape
@@ -389,7 +389,7 @@ def pad_shape(p, c):
     w = 1.0
     if c['arm']:
         # fade out down the sleeve so the epaulet meets the arm smoothly
-        w = 1 - smooth01(0.03, 0.1, t_arm(p, c['side']))
+        w = 1 - smooth01(0.05, 0.08, t_arm(p, c['side']))
         if w <= 0:
             return p
     if p.z < CHEST_Z - 0.12:
@@ -707,6 +707,90 @@ def jersey_drape(bm):
             k = target / max(r, 1e-6)
             v.co.x *= k
             v.co.y = YC0 + (v.co.y - YC0) * k
+    pad_arch(bm)
+    # crisp pad caps: after smoothing, put the fabric over the shoulders back
+    # on the pad shell so the epaulet keeps a defined edge above the arm
+    cap = [v for v in bm.verts if abs(v.co.x) > 0.09 and v.co.z > SHZ - 0.14 and not v.is_boundary]
+    for it in range(3):
+        for v in cap:
+            v.co = pad_snap(v.co, info_at(v.co))
+        if it < 2:
+            bmesh.ops.smooth_vert(bm, verts=cap, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+
+def pad_snap(p, c, off=0.0045, band=0.012):
+    """move a point within `band` of the pad shell onto the shell + `off`"""
+    w = 1.0
+    if c['arm']:
+        w = 1 - smooth01(0.05, 0.08, t_arm(p, c['side']))
+        if w <= 0:
+            return p
+    d0 = pad_sdf(p)
+    if d0 > band:
+        return p
+    q = p.copy()
+    e = 0.0015
+    for _ in range(5):
+        d = pad_sdf(q) - off
+        g = Vector((pad_sdf(q + Vector((e, 0, 0))) - pad_sdf(q - Vector((e, 0, 0))),
+                    pad_sdf(q + Vector((0, e, 0))) - pad_sdf(q - Vector((0, e, 0))),
+                    pad_sdf(q + Vector((0, 0, e))) - pad_sdf(q - Vector((0, 0, e)))))
+        if g.length < 1e-9:
+            break
+        q = q - g.normalized() * d
+        if abs(d) < 2e-4:
+            break
+    # fade the pull for points that were already well outside the shell
+    k = w * (1 - smooth01(band * 0.5, band, d0)) * smooth01(0.1, 0.2, abs(p.x))
+    return p.lerp(q, k)
+
+def pad_arch(bm):
+    """The pad arches rise round the sides and back of the neck almost to the
+    jaw, pushing the collar up: lift the fabric there into a raised rim that
+    hugs the neck, leaving the front V where it is."""
+    C = Vector((0, NECK.y + 0.005))
+    H_SIDE, H_BACK = SHZ + 0.135, SHZ + 0.122
+    NB = 72
+    def ang(co):
+        return math.atan2(co.x - C.x, -(co.y - C.y))
+    # neck radius per direction, a little below the top of the arch
+    neck_r = [0.0] * NB
+    for bv in bdata.vertices:
+        co = bv.co
+        if abs(co.z - (H_SIDE - 0.02)) < 0.008:
+            r = math.hypot(co.x - C.x, co.y - C.y)
+            if r < 0.13:
+                b = int((ang(co) + math.pi) / (2 * math.pi) * NB) % NB
+                neck_r[b] = max(neck_r[b], r)
+    for i in range(NB):
+        if neck_r[i] == 0:
+            neck_r[i] = 0.07
+    for _ in range(2):
+        neck_r = [(neck_r[i - 1] + 2 * neck_r[i] + neck_r[(i + 1) % NB]) / 4 for i in range(NB)]
+    for v in bm.verts:
+        co = v.co
+        if co.z < SHZ - 0.04 or info_at(co)['arm']:
+            continue
+        th = ang(co)
+        f = smooth01(0.5, 1.35, abs(th))
+        if f <= 0:
+            continue
+        H = H_SIDE + (H_BACK - H_SIDE) * smooth01(2.2, 3.0, abs(th))
+        b = int((th + math.pi) / (2 * math.pi) * NB) % NB
+        r_in = neck_r[b] + 0.013
+        r = math.hypot(co.x - C.x, co.y - C.y)
+        d = r - r_in
+        if d > 0.09:
+            continue
+        sd = smooth01(0.012, 0.085, d)
+        # rounded lip on the inside of the arch
+        lip = 0.006 * (1 - smooth01(-0.004, 0.012, d))
+        zt = (H - lip) * (1 - sd) + co.z * sd
+        if zt > co.z:
+            co.z += f * (zt - co.z)
+        if d < 0:
+            k = 1 + f * (r_in - r) / max(r, 1e-6)
+            co.x = C.x + (co.x - C.x) * k
+            co.y = C.y + (co.y - C.y) * k
 
 jersey = make_garment(
     'Jersey',
