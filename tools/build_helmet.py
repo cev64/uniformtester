@@ -216,7 +216,13 @@ class Vent:
         (a0, b0), (a1, b1) = self.lip
         L = math.hypot(a1 - a0, b1 - b0)
         side = ((a1 - a0) * (c[1] - b0) - (b1 - b0) * (c[0] - a0)) / L
-        return self.depth * (1 - smooth(0.0, self.fade, max(d, 0.0))) * (1 - smooth(-LIP_W, 0.0, side))
+        # only alongside the opening: the scoop dies out just past its ends
+        ux, uy = (a1 - a0) / L, (b1 - b0) / L
+        ts = [(q[0] - a0) * ux + (q[1] - b0) * uy for q in self.poly]
+        t = (c[0] - a0) * ux + (c[1] - b0) * uy
+        along = max(min(ts) - t, t - max(ts), 0.0)
+        return (self.depth * (1 - smooth(0.0, self.fade, max(d, 0.0))) * (1 - smooth(0.0, 0.004, along))
+                * (1 - smooth(-LIP_W, 0.0, side)))
 
 
 VENTS = [
@@ -229,8 +235,8 @@ VENTS = [
     Vent([(-0.004, 0.138), (0.046, 0.127), (0.049, 0.121), (-0.002, 0.132)],
          lip=((-0.008, 0.140), (0.052, 0.126)), depth=0.0032, fade=0.014),
     # rear upper slot, slanting down toward the back
-    Vent([(0.089, 0.093), (0.099, 0.096), (0.134, 0.042), (0.125, 0.036)],
-         lip=((0.123, 0.032), (0.087, 0.095)), depth=0.0035, fade=0.016),
+    Vent([(0.093, 0.090), (0.101, 0.092), (0.131, 0.046), (0.124, 0.042)],
+         lip=((0.122, 0.038), (0.091, 0.093)), depth=0.003, fade=0.012),
     # jaw / ear vent: long slanted pentagon with a crisp top edge
     Vent([(-0.038, -0.046), (-0.029, -0.037), (0.030, -0.037), (0.037, -0.052), (-0.012, -0.064)],
          lip=((-0.045, -0.035), (0.042, -0.035)), depth=0.0032, fade=0.018, rnd=0.0),
@@ -368,8 +374,16 @@ def split_contour(bm, field):
                 break
             lo, hi = (t, hi) if (fv < 0) == (fa < 0) else (lo, t)
         t = (lo + hi) / 2
-        ne, nv = bmesh.utils.edge_split(e, a, t)
         o = oa.lerp(ob, t).normalized()
+        # a crossing right next to a vertex moves that vertex instead of making a sliver
+        near = a if t < 0.2 else b if t > 0.8 else None
+        if near is not None and near not in zero:
+            set_o(near, o)
+            near.co = surf(o)
+            F[near] = 0.0
+            zero.add(near)
+            continue
+        ne, nv = bmesh.utils.edge_split(e, a, t)
         set_o(nv, o)
         nv.co = surf(o)
         F[nv] = 0.0
@@ -485,6 +499,7 @@ for f in bm.faces:
 for l in OL:
     bm.verts.layers.float.remove(l)
 bm.to_mesh(me); bm.free()
+me.validate(clean_customdata=False)
 while len(me.uv_layers) > 1:
     me.uv_layers.remove(me.uv_layers[0])
 shell.data.materials.append(material('shell'))
@@ -662,8 +677,8 @@ def on_shell(target, lift=0.0):
     return hit[0] + hit[1] * lift, hit[1]
 
 
-def on_shell_dir(origin, direction, lift=0.0):
-    hit = shell_bvh.ray_cast(origin, direction)
+def on_shell_dir(origin, direction, lift=0.0, dist=0.32):
+    hit = shell_bvh.ray_cast(origin, direction, dist)
     return (hit[0] + hit[1] * lift, hit[1]) if hit[0] is not None else (None, None)
 
 
@@ -837,7 +852,7 @@ def plate_on_shell(name, outline, mat, thick_fn, rings=6, dirn=Vector((0, 1, 0))
     return ob
 
 
-np_outline = rounded_trapezoid(0.057, 0.050, BROW_Z - 0.002, NP_TOP, 0.011, 0.004)
+np_outline = rounded_trapezoid(0.057, 0.050, BROW_Z + 0.0015, NP_TOP, 0.011, 0.004)
 nameplate = plate_on_shell('Nameplate', np_outline, 'bumper', lambda v: lerp(0.0068, 0.0048, v))
 
 
@@ -916,13 +931,13 @@ clips = []
 
 def qr_clip(name, at, n, along):
     M = frame(at, n, along)
-    housing = blob(name, (0, 0, 0.0055), (0.0175, 0.0115, 0.0062), 'clip', n=2.6, seg=24, rings=12,
+    housing = blob(name, (0, 0, 0.0058), (0.0215, 0.0135, 0.0066), 'clip', n=2.4, seg=28, rings=14,
                    keep=lambda c: c.z > 0.0005)
     place(housing, M)
-    btn = cylinder(name + '_btn', 0.0046, 0.0022, 'button', verts=24, bevel=0.0006)
-    place(btn, M @ Matrix.Translation((0, 0, 0.0112)))
+    btn = cylinder(name + '_btn', 0.0056, 0.0024, 'button', verts=28, bevel=0.0007)
+    place(btn, M @ Matrix.Translation((0, 0, 0.0118)))
     pin = cylinder(name + '_pin', 0.0018, 0.0012, 'clipscrew', verts=16)
-    place(pin, M @ Matrix.Translation((0, 0, 0.0133)))
+    place(pin, M @ Matrix.Translation((0, 0, 0.0141)))
     base = cylinder(name + '_base', 0.0075, 0.0012, 'clipscrew', verts=24)
     place(base, M @ Matrix.Translation((0, 0, 0.0002)))
     return [housing, btn, pin, base]
@@ -939,7 +954,7 @@ for s in (1, -1):
 CUP_C = P(0, -0.088, -0.130)            # centre of the cup's curvature
 
 
-CUP_A, CUP_ZH, CUP_N = 1.3, 0.030, 2.6          # angular half-width, half-height, outline roundness
+CUP_A, CUP_ZH, CUP_N = 1.18, 0.027, 2.4          # angular half-width, half-height, outline roundness
 CUP_HOLES = ((-0.40, -0.002, 0.25, 0.0095), (0.40, -0.002, 0.25, 0.0095))   # (a, z, ra, rz)
 
 

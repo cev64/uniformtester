@@ -284,8 +284,10 @@ export class Helmet {
     this.decal(this.parts.shell || [], hit, 0.026 * a, 0.026, shield, finish, false);
   }
 
-  // point on the shell side: at = [up, back] offsets of the aim direction
-  hitSide(sx, at = [0.2, 0.06]) {
+  // point on the shell side: at = [up, back] offsets of the aim direction. The
+  // default centres a mark about 6 cm above eye level, just behind the ear line,
+  // where NFL decals sit on a SpeedFlex (clear of the strap rocker below).
+  hitSide(sx, at = [0.5, 0.08]) {
     const [up, back] = at;
     const dir = new THREE.Vector3(sx, up, -back).normalize();
     const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
