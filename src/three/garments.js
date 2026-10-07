@@ -7,7 +7,8 @@
 // player.json gives each region's length and circumference so everything is
 // drawn in real centimetres. Canvas y runs top-down, so row = (1 - v) * H.
 
-import { makeCanvas, rng, stripeTotal, strokeStripes, drawLettering, wedge, spots, grain, shade } from './paint.js';
+import { makeCanvas, rng, stripeTotal, strokeStripes, drawLettering, wedge, spots, grain, shade, luminance } from './paint.js';
+import { paintTorsoConstruction } from './fabric.js';
 import { NUMBER_FONTS, fontCss } from './fonts.js';
 import { signedDistance, grow, cpuCanvas, alphaOf, maskCanvas } from './sdf.js';
 
@@ -141,6 +142,8 @@ export function paintTorso(jersey, meta) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, jersey.fade.cm * pxPerCmY);
   }
+  // seams, cover stitching and the mesh insert under the collar
+  paintTorsoConstruction(ctx, meta, W, H, jersey.base, shade, luminance(jersey.base));
   grain(ctx, W, H, 0.03, 3);
   return c;
 }
@@ -610,36 +613,53 @@ export function swooshCanvas(color, px = 256, { mirror = false } = {}) {
   return c;
 }
 
-// Jock tag: the woven label at the lower left front of every Nike NFL
-// jersey with the NFL shield, the size and the swoosh.
-export function jockTagCanvas(shieldImg, { size = '44', bg = '#2B2D30', fg = '#E9EAEC', px = 256 } = {}) {
-  const W = px, H = Math.round(px * 1.18);
+// Jock tag: the woven satin label at the front hem of every Nike Vapor
+// F.U.S.E. jersey: NFL shield, NFLPA mark, the "engineered to the exact
+// specifications of championship players" line and the swoosh, light on black.
+export function jockTagCanvas(shieldImg, { size = null, bg = '#121314', fg = '#D9DBDE', px = 128 } = {}) {
+  const H = px, W = Math.round(px * 3.4);
   const c = makeCanvas(W, H);
   const ctx = c.getContext('2d');
-  const r = W * 0.08;
+  const r = H * 0.1;
   ctx.fillStyle = bg;
   ctx.beginPath();
-  ctx.roundRect ? ctx.roundRect(W * 0.02, H * 0.02, W * 0.96, H * 0.96, r) : ctx.rect(W * 0.02, H * 0.02, W * 0.96, H * 0.96);
+  ctx.roundRect ? ctx.roundRect(1, 1, W - 2, H - 2, r) : ctx.rect(1, 1, W - 2, H - 2);
   ctx.fill();
   // woven border
-  ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = W * 0.018;
+  ctx.strokeStyle = fg; ctx.globalAlpha = 0.35; ctx.lineWidth = H * 0.03;
   ctx.beginPath();
-  ctx.roundRect ? ctx.roundRect(W * 0.07, H * 0.06, W * 0.86, H * 0.88, r * 0.7) : ctx.rect(W * 0.07, H * 0.06, W * 0.86, H * 0.88);
+  ctx.roundRect ? ctx.roundRect(H * 0.07, H * 0.07, W - H * 0.14, H - H * 0.14, r * 0.6) : ctx.rect(H * 0.07, H * 0.07, W - H * 0.14, H - H * 0.14);
   ctx.stroke();
+  ctx.globalAlpha = 1;
+  let x = H * 0.18;
   if (shieldImg) {
-    const h = H * 0.42, w = h * (shieldImg.width / shieldImg.height);
-    ctx.drawImage(shieldImg, (W - w) / 2, H * 0.1, w, h);
+    const h = H * 0.66, w = h * (shieldImg.width / shieldImg.height);
+    ctx.drawImage(shieldImg, x, (H - h) / 2, w, h);
+    x += w + H * 0.14;
   }
-  ctx.fillStyle = fg;
-  ctx.font = `700 ${Math.round(H * 0.2)}px "Saira Condensed", "Arial Narrow", sans-serif`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-  ctx.fillText(size, W / 2, H * 0.76);
+  // NFLPA: a small shield outline with the letters
+  ctx.strokeStyle = fg; ctx.lineWidth = H * 0.035; ctx.fillStyle = fg;
+  const sw0 = H * 0.5, sh0 = H * 0.6, sy = (H - sh0) / 2;
+  ctx.beginPath();
+  ctx.moveTo(x, sy); ctx.lineTo(x + sw0, sy); ctx.lineTo(x + sw0, sy + sh0 * 0.6);
+  ctx.quadraticCurveTo(x + sw0, sy + sh0 * 0.9, x + sw0 / 2, sy + sh0);
+  ctx.quadraticCurveTo(x, sy + sh0 * 0.9, x, sy + sh0 * 0.6); ctx.closePath(); ctx.stroke();
+  ctx.font = `700 ${Math.round(H * 0.13)}px "Saira Condensed", "Arial Narrow", sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('NFLPA', x + sw0 / 2, sy + sh0 * 0.42);
+  x += sw0 + H * 0.16;
+  // the small print
+  ctx.textAlign = 'left';
+  ctx.font = `600 ${Math.round(H * 0.12)}px "Saira Condensed", "Arial Narrow", sans-serif`;
+  const lines = size ? ['ENGINEERED TO THE', 'EXACT SPECIFICATIONS', `SIZE ${size}`] : ['ENGINEERED TO THE', 'EXACT SPECIFICATIONS', 'OF CHAMPIONSHIP PLAYERS'];
+  lines.forEach((t, i) => ctx.fillText(t, x, H * (0.3 + i * 0.2)));
+  // swoosh at the right
   const sw = swooshCanvas(fg, 64);
-  const sh = W * 0.28;
-  ctx.drawImage(sw, (W - sh) / 2, H * 0.8, sh, sh * (sw.height / sw.width));
-  // woven texture
-  ctx.globalAlpha = 0.08; ctx.fillStyle = '#000';
-  for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+  const swW = H * 0.75;
+  ctx.drawImage(sw, W - swW - H * 0.16, H * 0.5 - (swW * sw.height / sw.width) / 2, swW, swW * (sw.height / sw.width));
+  // satin weave
+  ctx.globalAlpha = 0.1; ctx.fillStyle = '#000';
+  for (let y = 0; y < H; y += 2) ctx.fillRect(0, y, W, 1);
   ctx.globalAlpha = 1;
   return c;
 }

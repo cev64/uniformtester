@@ -26,7 +26,7 @@ export const NUMBER_FONTS = {
   // classic heavy athletic block, wide (Bears, Browns, Colts style plates)
   heavyBlock: { family: '"Saira Semi Condensed", "Arial Narrow", Impact, sans-serif', weight: 800, scaleX: 1.06 },
   // Futura Condensed style (Steelers, Bengals' and Dolphins' geometric plates)
-  futuraCond: { family: '"Jost", "Futura", "Century Gothic", sans-serif', weight: 700, scaleX: 0.82 },
+  futuraCond: { family: '"Jost", "Futura", "Century Gothic", sans-serif', weight: 800, scaleX: 0.68 },
   // sharp, condensed angular sets (Broncos, Seahawks, Titans, Jaguars)
   angular: { family: '"Teko", "Arial Narrow", Impact, sans-serif', weight: 600, scaleX: 1.08 },
   // squared techno block (Texans, Vikings, Falcons)

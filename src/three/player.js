@@ -406,13 +406,13 @@ export class Player {
       const c = paintLogo(jersey.chestPatch, 'right');
       if (c) this.canvasDecal(torso, front(neckY - 0.16, 0.11), 0.075, c, { key: JSON.stringify(jersey.chestPatch) });
     }
-    // Jock tag: lower left front, peeking out above the pants
+    // Jock tag: the woven label on the front hem, just left of centre (the
+    // player's left). Shown where it peeks out above the pants.
     if (jersey.jockTag !== false && logos.NFL_shield) {
       const jt = jersey.jockTag || {};
-      const light = luminance(jersey.base) > 0.6;
-      const bg = jt.bg || (light ? '#3A3C40' : '#8F949A'), fg = jt.fg || (light ? '#E4E5E7' : '#16171A');
-      const c = jockTagCanvas(logos.NFL_shield.image, { size: jt.size || '44', bg, fg });
-      this.canvasDecal(torso, front(meta.constants.waist + 0.03, 0.095), 0.04, c, { style: 'print', key: `jock${jt.size}${bg}${fg}` });
+      const bg = jt.bg || '#121314', fg = jt.fg || '#D9DBDE';
+      const c = jockTagCanvas(logos.NFL_shield.image, { size: jt.size || null, bg, fg });
+      this.canvasDecal(torso, front(meta.constants.waist + 0.022, 0.055), 0.07, c, { style: 'print', key: `jock${jt.size}${bg}${fg}` });
     }
 
     // Back collar tag just under the neckline
@@ -480,8 +480,8 @@ export class Player {
       // Nike swoosh on each sleeve, pointing forward on both sides
       if (jersey.swoosh !== false) {
         const col = jersey.swoosh || (luminance(jersey.base) > 0.55 ? (colors[0] || '#111111') : '#FFFFFF');
-        const p = sh.clone().lerp(el, 0.06);
-        const dir = new THREE.Vector3(sx * 0.85, 0.2, 0.5).normalize();
+        const p = sh.clone().lerp(el, 0.02).add(new THREE.Vector3(0, 0.015, 0.01));
+        const dir = new THREE.Vector3(sx * 0.9, 0.35, 0.3).normalize();
         const hit = this.raycast(sleeves, p.clone().add(dir.clone().multiplyScalar(0.4)), dir.clone().negate());
         this.canvasDecal(sleeves, hit, 0.058, swooshCanvas(col, 192, { mirror: sx > 0 }), { style: 'embroidered', key: `sw${col}${sx}`, minDot: 0.2 });
       }

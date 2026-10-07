@@ -428,14 +428,39 @@ function zoneTex(c, aniso) {
   return t;
 }
 
-// Torso panel layout shared by the macro and zone maps.
-// Returns canvas-space paths for a W×H map (row = (1 - v) * H).
-function torsoLayout(meta, W, H) {
+// Torso panel layout shared by the macro, zone and colour maps.
+//
+// Modelled on the Nike Vapor F.U.S.E. game jersey: a V-shaped chest yoke
+// running from high on each armhole down to just under the collar point (the
+// NFL shield sits on it); a centre front panel bounded by two long seams to
+// the hem; a back yoke across the shoulder blades that carries the
+// nameplate, with the centre back panel's seams running down from its
+// corners; side panels with a dart across the lower ribs; the armhole join.
+// Returns canvas-space polylines for a W×H map (row = (1 - v) * H).
+export function torsoLayout(meta, W, H) {
+  const R = meta.regions.jersey;
   const gs = meta.ground_shift || 0, z0 = meta.jersey.z0 + gs, z1 = meta.jersey.z1 + gs;
   const V = (z) => (z - z0) / (z1 - z0);
   const sh = meta.joints['upperarm01.L'];
   const top = V(meta.constants.neck_z - 0.03), bot = V(sh[2] - 0.09);
   const P = (u, v) => [u * W, (1 - v) * H];
+  const du = (cm, v) => cm / (circAt(R, v) * 100);
+  const line = (pts, n = 24) => {
+    // a smooth polyline through control points (Catmull-Rom)
+    const out = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+      for (let k = 0; k < n; k++) {
+        const t = k / n, t2 = t * t, t3 = t2 * t;
+        out.push([0, 1].map((j) => 0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3)));
+      }
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  };
+  const vV = meta.collar?.front_uv ? Math.min(...meta.collar.front_uv.map(([, v]) => v)) : 0.82;
+
+  // the armhole join (raglan-like, from the collar to the armpit)
   const raglans = [];
   for (const [ua, ub] of [[0.572, 0.672], [0.885, 0.8]]) {
     for (const m of [false, true]) {
@@ -443,11 +468,40 @@ function torsoLayout(meta, W, H) {
       raglans.push(curve(P(f(ua), top), P(f((ua + ub) / 2 + (ub - ua) * 0.08), (top + bot) / 2), P(f(ub), bot)));
     }
   }
-  // side vent panels between the armpit and the hem, ~7 cm wide
   // bottom of the armhole (the sleeve covers the torso above it)
   const armpit = V(sh[2] - 0.2);
+  const yokeV = vV - 0.05, yokeOuter = Math.min(top - 0.02, vV + 0.03);
+  const seams = [];          // [polyline, rows]
+  const fu = (v) => du(12, v), hemU = du(10, 0.05);
+  for (const s of [-1, 1]) {
+    // chest yoke: armhole → under the collar point
+    seams.push([line([P(0.5 + s * 0.15, yokeOuter), P(0.5 + s * 0.08, (yokeOuter + yokeV) / 2 - 0.004), P(0.5, yokeV)]), 2]);
+    // front panel seams: from the yoke to the hem, drifting in toward the waist
+    const vy = yokeV + (yokeOuter - yokeV) * (fu(0.75) / 0.15);
+    seams.push([line([P(0.5 + s * fu(0.75), vy), P(0.5 + s * fu(0.5) * 0.97, 0.45), P(0.5 + s * hemU, 0.02)]), 2]);
+    // back panel seams: from the corners of the back yoke to the hem
+    const bu = (u) => (s < 0 ? u : 1 - u);
+    seams.push([line([P(bu(fu(0.7)), 0.7), P(bu(fu(0.45) * 0.97), 0.45), P(bu(hemU), 0.02)]), 2]);
+    // darts across the lower ribs, side seam → panel seam
+    seams.push([line([P(0.5 + s * 0.25, 0.44), P(0.5 + s * (fu(0.4) + 0.05), 0.4), P(0.5 + s * fu(0.37), 0.37)]), 1]);
+    seams.push([line([P(bu(0.25), 0.44), P(bu(fu(0.4) + 0.05), 0.4), P(bu(fu(0.37)), 0.37)]), 1]);
+    // side seams under the arms
+    seams.push([line([P(0.5 + s * 0.25, armpit), P(0.5 + s * 0.25, 0.02)]), 1]);
+  }
+  // back yoke (nameplate panel): bottom edge across the shoulder blades and
+  // its sides up to the shoulders; drawn either side of the u = 0/1 wrap
+  const yb = 0.7, yu = fu(0.7);
+  const backYoke = [];
+  for (const off of [0, 1]) {
+    backYoke.push(line([P(off - yu, Math.min(top, 0.9)), P(off - yu, yb), P(off + yu, yb), P(off + yu, Math.min(top, 0.9))], 2));
+  }
+  for (const b of backYoke) seams.push([b, 2]);
+  for (const r of raglans) seams.push([r, 2]);
+  // vent panels: perforated strips down the side seams
   const sides = [0.25, 0.75].map((u) => ({ u, half: 0.034, top: armpit }));
-  return { V, top, bot, armpit, raglans, sides, P };
+  // the mesh insert under the collar point
+  const insert = [P(0.5 - 0.042, vV + 0.012), P(0.5, yokeV + 0.004), P(0.5 + 0.042, vV + 0.012)];
+  return { V, top, bot, armpit, raglans, sides, seams, backYoke: { u: yu, v: yb }, insert, yokeV, P };
 }
 
 export function torsoDetail(meta, aniso = 8) {
@@ -456,19 +510,7 @@ export function torsoDetail(meta, aniso = 8) {
   const pxPerCm = H / (R.length * 100);
   const L = torsoLayout(meta, W, H);
   const { c: hc, ctx } = heightCanvas(W, H);
-  // raglan seams
-  for (const pts of L.raglans) seam(ctx, polyPath(pts), pxPerCm);
-  // vent panels: seams down both edges, from the armpit to the hem
-  for (const s of L.sides) {
-    for (const e of [-1, 1]) {
-      const pts = [];
-      for (let v = 0; v <= s.top; v += 0.02) {
-        const k = (circAt(R, 0.45) / circAt(R, v));
-        pts.push(L.P(s.u + e * s.half * k, v));
-      }
-      seam(ctx, polyPath(pts), pxPerCm, { rows: 1 });
-    }
-  }
+  for (const [pts, rows] of L.seams) seam(ctx, polyPath(pts), pxPerCm, { rows });
   // hem: folded edge with a twin-needle cover stitch
   ctx.fillStyle = 'rgba(255,255,255,0.25)';
   ctx.fillRect(0, H - 2.2 * pxPerCm, W, 2.2 * pxPerCm);
@@ -482,9 +524,46 @@ export function torsoDetail(meta, aniso = 8) {
     const pts = meta.collar.front_uv.map(([u, v]) => [u * W, (1 - v) * H + 0.9 * pxPerCm]);
     seam(ctx, polyPath(pts), pxPerCm, { rows: 1, ridge: 0.6 });
   }
+  // mesh insert under the collar point: a slightly sunken panel
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath(); L.insert.forEach((p, i) => (i ? ctx.lineTo(...p) : ctx.moveTo(...p))); ctx.closePath(); ctx.fill();
   return finish(hc, W, H, 3.0, aniso, 1, (h) => torsoWrinkles(h, W, H, meta, L));
 }
 
+// Thread and panel colour on the jersey's colour map: the cover stitching
+// shows as fine lines a shade off the cloth, the mesh insert is darker.
+export function paintTorsoConstruction(ctx, meta, W, H, base, shadeFn, lum) {
+  const R = meta.regions.jersey;
+  const pxPerCm = H / (R.length * 100);
+  const L = torsoLayout(meta, W, H);
+  const thread = shadeFn(base, lum > 0.55 ? -0.2 : 0.3);
+  ctx.save();
+  // mesh insert: darker, with a fine diamond mesh
+  ctx.beginPath(); L.insert.forEach((p, i) => (i ? ctx.lineTo(...p) : ctx.moveTo(...p))); ctx.closePath();
+  ctx.fillStyle = shadeFn(base, lum > 0.55 ? -0.1 : -0.35);
+  ctx.fill();
+  ctx.clip();
+  ctx.strokeStyle = shadeFn(base, lum > 0.55 ? -0.25 : 0.12); ctx.lineWidth = Math.max(1, 0.06 * pxPerCm);
+  const step = 0.35 * pxPerCm;
+  const [x0, y0] = L.insert[0], [x1] = L.insert[2], y1 = L.insert[1][1];
+  for (let x = x0 - (y1 - y0); x < x1 + (y1 - y0); x += step) {
+    ctx.beginPath(); ctx.moveTo(x, y0 - 2); ctx.lineTo(x + (y1 - y0) + 4, y1 + 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y0 - 2); ctx.lineTo(x - (y1 - y0) - 4, y1 + 2); ctx.stroke();
+  }
+  ctx.restore();
+  // stitching
+  ctx.save();
+  ctx.strokeStyle = thread; ctx.globalAlpha = 0.55;
+  ctx.lineWidth = Math.max(1, 0.07 * pxPerCm);
+  ctx.setLineDash([0.3 * pxPerCm, 0.14 * pxPerCm]);
+  for (const [pts, rows] of L.seams) {
+    const path = polyPath(pts);
+    for (const s of rows === 2 ? [-1, 1] : [1]) {
+      ctx.beginPath(); path(ctx, s * 0.275 * pxPerCm); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
 // Soft folds where a game jersey really creases: ripples round the waist
 // where it is tucked and belted, and drape folds fanning down from under
 // the arms. Heights in the same units as the seam map.
@@ -540,13 +619,10 @@ export function torsoZones(meta, aniso = 8) {
       ctx.fillRect(x0, y, x1 - x0, 2);
     }
   }
-  // centre back: a tall perforated panel down the spine
-  for (const cu of [0, 1]) {
-    ctx.beginPath();
-    ctx.ellipse(cu * W, (1 - 0.36) * H, 0.07 * W, 0.26 * H, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // B: smooth stretch over the shoulders, between the front and back raglan seams
+  // the mesh insert under the collar point
+  ctx.beginPath(); L.insert.forEach((p, i) => (i ? ctx.lineTo(...p) : ctx.moveTo(...p))); ctx.closePath(); ctx.fill();
+  // B: smooth stretch over the shoulders (between the armhole joins) and the
+  // back yoke that carries the nameplate
   ctx.fillStyle = 'rgb(0,0,255)';
   for (const m of [0, 1]) {
     const f = m ? L.raglans[1] : L.raglans[0];
@@ -557,15 +633,13 @@ export function torsoZones(meta, aniso = 8) {
     ctx.closePath();
     ctx.fill();
   }
+  for (const off of [0, 1]) ctx.fillRect((off - L.backYoke.u) * W, 0, 2 * L.backYoke.u * W, (1 - L.backYoke.v) * H);
   ctx.globalCompositeOperation = 'source-over';
-  // soften panel edges a touch so the knit change isn't a hard line
-  const d = ctx.getImageData(0, 0, W, H);
-  void d;
   // G: occlusion along seams and under the collar
   ctx.globalCompositeOperation = 'multiply';
   ctx.strokeStyle = 'rgb(255,200,255)';
   ctx.lineWidth = 0.6 * pxPerCm;
-  for (const pts of L.raglans) { ctx.beginPath(); polyPath(pts)(ctx); ctx.stroke(); }
+  for (const [pts] of L.seams) { ctx.beginPath(); polyPath(pts)(ctx); ctx.stroke(); }
   if (meta.collar?.front_uv) {
     ctx.strokeStyle = 'rgb(255,170,255)';
     ctx.lineWidth = 1.6 * pxPerCm;
