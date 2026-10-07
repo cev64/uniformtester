@@ -91,7 +91,6 @@ J('LAC_classic', 'Los Angeles Charges classic mark.svg', '1960 Los Angeles Charg
 J('LAR_ram', 'NFL Rams logo.svg', 'ram head (2000-16)', 'throwback')
 J('LAR_word_alt', 'LA Rams wordmark.svg', 'LOS ANGELES / RAMS block wordmark', 'chest / sleeve')
 J('PHI_word_wing', 'Philadelphia Eagles wordmark.svg', 'winged EAGLES wordmark', 'chest')
-J('PIT_steelmark', 'Steelmark logo.svg', 'Steelmark (ring w/ hypocycloids)', 'helmet right side', primary=False)
 J('MIN_word_1982', 'Minnesota Vikings wordmark (1982 - 2003).svg', 'VIKINGS wordmark (1982-2003)', 'throwback')
 
 LEGACY = {  # cut from the CC0 uniform sheets earlier; cleaned (specks, fringe) but not re-sourced
@@ -115,6 +114,17 @@ def clean_specks(im, frac=0.004):
     sizes = ndimage.sum(np.ones_like(lab), lab, range(1, n + 1))
     for j, sz in enumerate(sizes, 1):
         if sz < frac * sizes.max(): a[lab == j] = 0
+    return trim(Image.fromarray(a, 'RGBA'))
+
+
+def clean_thin(im, r=3, grow=2):
+    """Drop thin stray strokes (bits of neighbouring marks on the sheet): keep what survives a morphological opening."""
+    from scipy import ndimage
+    a = np.asarray(im).copy()
+    m = a[..., 3] > 0
+    body = ndimage.binary_opening(m, structure=np.ones((3, 3)), iterations=r)
+    keep = ndimage.binary_dilation(body, structure=np.ones((3, 3)), iterations=grow) & m
+    a[~keep] = 0
     return trim(Image.fromarray(a, 'RGBA'))
 
 
@@ -207,7 +217,8 @@ def main(only):
         if not os.path.exists(dest): continue
         im = Image.open(dest).convert('RGBA')
         if not man.get(key, {}).get('cleaned'):
-            im = clamp_alpha(defringe(clean_specks(im)))
+            if key == 'PIT_crest': im = clean_thin(im)
+            im = clamp_alpha(defringe(clean_specks(im, 0.08 if key in ('DEN_tb', 'TB_tb', 'PIT_crest', 'PHI_tb') else 0.004)))
             save_png(im, dest)
         pg = 'https://commons.wikimedia.org/wiki/File:' + sheet.replace(' ', '_')
         man[key] = dict(file=key + '.png', what=what, worn=worn, size=list(im.size), render='cut from uniform sheet', source_title=sheet,

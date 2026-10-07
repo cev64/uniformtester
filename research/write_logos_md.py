@@ -36,5 +36,18 @@ out = ['# Logo and wordmark library (`public/logos`)', '',
 for r in rows:
     f, team, what, worn, src, lic, col, sz, rend = r
     out.append(f'| `{f}.png` | {team} | {what} | {worn} | {sz} | {rend} | {short(src) if src else ""} | {lic} | {col} |')
+out += ['', '## Notes on specific files', '',
+ '- `<TEAM>_word` is the club\'s official wordmark (Wikimedia `<Team> wordmark.svg`, PD-textlogo). For stacked wordmarks `<TEAM>_word_city` / `_word_name` are the two lines cropped from the same artwork (e.g. `CIN_word_name` = BENGALS, `ARI_word_city` = ARIZONA). `TEN_word` and `TB_word` could not be split: the small top line touches the tall letters of the second line.',
+ '- Wordmarks are drawn in the club colours (some two-tone: Ravens black + gold outline, Dolphins aqua + orange, Chargers navy + gold underline). For one-colour use the runtime tint `KEY@#hex`.',
+ '- `LAR` is the current Rams primary (LA monogram); `LAR_ram` is the 2000-2016 ram head; the 2026 horn mark has no clean Wikimedia source (see below).',
+ '- `NE_pat` replaces the old sheet crop with the SVG of the same Pat Patriot mark; `NYJ_word` replaces the old file with the SVG render of the same wordmark (`NYJ_word_plain` is the plainer JETS lettering, `NYJ_1978` the 1978-97 JETS mark).',
+ '- `NE_ne` and `CLE_elf` are raster-only sources (496x362 and 147x168 px, never upscaled): the elf is soft when drawn large.',
+ '- Low-res legacy crops (`*_tb`, `BAL_dark`, `NYJ_classic`, `NYJ_plane`, `PIT_crest`, `PHI_tb`) come from the CC0 Wikimedia uniform sheets (100-300 px); they were cleaned (stray fragments of neighbouring marks removed, edge colours bled from solid pixels) but cannot be sharper than the sheet.',
+ '', '## Not found (no clean Wikimedia source)', '',
+ '- **Rams 2026 ram-horn helmet/sleeve mark**: Wikimedia only has the LA monogram, the 2000-16 ram head and the horn-helmet drawing. `ramhorn()` in teams.js stays as the fallback.',
+ '- **Steelers steelmark alone** (three hypocycloids, no ring/text) for the helmet: only the ringed "Steelers" logo (`PIT`) and the older "Steel" ring are on Wikimedia; the ring cannot be removed without redrawing.',
+ '- **Ravens** shield patch and the 2026 redesign secondary marks (`BAL_dark` is the only extra, from the sheet); **Bears** "GSH" sleeve patch; **Titans** 2026 secondary (flaming T / sleeve marks); **Falcons** 2026 redesign secondary marks; **Commanders** alt marks; **Giants** capital "NY"; **Dolphins** alternate dolphin; **Saints** alt; **Vikings** horn; **Seahawks** alternates; **Eagles** Kelly-green throwback eagle at high resolution (`PHI_tb` is a low-res sheet crop); **Broncos** 1968 "D" (`DEN_tb` low-res sheet crop); **Bucs** Bucco Bruce, **Jaguars** 1995 mark, **Dolphins** 1966 throwback dolphin, **Steelers** 1933 crest, **Jets** classic oval and Gotham plate, **Falcons** 1966 (all low-res sheet crops only).',
+ '- **Typeset text that is not a mark** (needs no image): "BILLS MAFIA", "GO BILLS", "H-TOWN", "WE ARE ALL PATRIOTS", "DIRTY BIRDS", "GO FINS!" etc.',
+ '- Colts jerseys, Raiders, Cowboys etc. have no extra secondary marks on Wikimedia beyond those listed.', '']
 open(os.path.join(HERE, 'logos.md'), 'w').write('\n'.join(out) + '\n')
 print(len(rows), 'rows')

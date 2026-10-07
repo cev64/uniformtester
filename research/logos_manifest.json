@@ -548,8 +548,8 @@
   "license": "CC0 (uniform sheet); mark itself trademarked",
   "render": "cut from uniform sheet",
   "size": [
-   166,
-   163
+   146,
+   151
   ],
   "source_title": "Denver Broncos Uniforms 2024-Present.png",
   "source_url": "https://commons.wikimedia.org/wiki/File:Denver_Broncos_Uniforms_2024-Present.png",
@@ -1408,8 +1408,8 @@
   "license": "CC0 (uniform sheet); mark itself trademarked",
   "render": "cut from uniform sheet",
   "size": [
-   139,
-   151
+   138,
+   144
   ],
   "source_title": "Philadelphia Eagles Uniforms (2026).png",
   "source_url": "https://commons.wikimedia.org/wiki/File:Philadelphia_Eagles_Uniforms_(2026).png",
@@ -1469,29 +1469,14 @@
   "license": "CC0 (uniform sheet); mark itself trademarked",
   "render": "cut from uniform sheet",
   "size": [
-   109,
-   130
+   108,
+   123
   ],
   "source_title": "Pittsburgh Steelers Uniforms 2025.png",
   "source_url": "https://commons.wikimedia.org/wiki/File:Pittsburgh_Steelers_Uniforms_2025.png",
   "team": "PIT",
   "what": "1933 crest",
   "worn": "1933 throwback chest"
- },
- "PIT_steelmark": {
-  "colors": "#FCFCFC #848484 #0C0CFC",
-  "file": "PIT_steelmark.png",
-  "license": "Public domain [trademarked]",
-  "render": "thumb.php",
-  "size": [
-   1024,
-   1024
-  ],
-  "source_title": "Steelmark logo.svg",
-  "source_url": "https://commons.wikimedia.org/wiki/File:Steelmark_logo.svg",
-  "team": "PIT",
-  "what": "Steelmark (ring w/ hypocycloids)",
-  "worn": "helmet right side"
  },
  "PIT_word": {
   "colors": "#0C0C0C",
@@ -1620,8 +1605,8 @@
   "license": "CC0 (uniform sheet); mark itself trademarked",
   "render": "cut from uniform sheet",
   "size": [
-   192,
-   195
+   176,
+   186
   ],
   "source_title": "Tampa Bay Buccaneers Uniforms (2026).png",
   "source_url": "https://commons.wikimedia.org/wiki/File:Tampa_Bay_Buccaneers_Uniforms_(2026).png",
