@@ -60,6 +60,7 @@ const LETTERS = {
   // AFC East + AFC North team styles
   jets: 'squareBlock', gotham: 'roundBlock',
   dolphins: 'dolphinsPlate',
+  patriots: 'plate', browns: 'squareSans',
 
   // AFC South + AFC West team styles
   colts: 'plate', jaguars: 'squareSans', broncos: 'angular',
