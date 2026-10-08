@@ -50,6 +50,8 @@ export const NUMBER_FONTS = {
   // NFC East + NFC North fonts
 
   // NFC South + NFC West fonts
+  // Falcons 2026 nameplate: tall, narrow, squared-off block (club type specimen)
+  falconsPlate: { family: '"Big Shoulders Display", "Arial Narrow", Impact, sans-serif', weight: 800, scaleX: 0.96 },
 
 };
 
@@ -67,7 +69,7 @@ const LETTERS = {
   // NFC East + NFC North team styles
 
   // NFC South + NFC West team styles
-  falcons: 'squareBlock',
+  falcons: 'falconsPlate',
   saints: 'plate',
   bucs: 'plate',
 

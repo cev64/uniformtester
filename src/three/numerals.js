@@ -86,8 +86,9 @@ export const NUMERAL_STYLES = {
   lionsItalic: { cut: 'chamfer', ro: 0.12, ri: 0.04, rt: 0.02, slant: 0.2, one: { flag: 0.17, base: true } },
 
   // ── team styles: NFC South + NFC West ──
-  // Falcons 2026: wide heavy block, chamfered corners with the angular "wing tip" cut, based 1
-  falcons: { cut: 'chamfer', W: 0.64, th: 0.2, tv: 0.235, m: 0.5, ro: 0.16, ri: 0.035, rt: 0.045, hook: 0.22, notch: 0.45, one: { flag: 0.2, base: true } },
+  // Falcons 2026 (traced from the club's number-set graphic): upright heavy block, near-square outer corners with tiny
+  // chamfers, square counters, flagged 1 with no foot, waist bites on 3 and 8
+  falcons: { cut: 'chamfer', W: 0.6, th: 0.17, tv: 0.2, m: 0.5, ro: 0.055, ri: 0.02, rt: 0.03, hook: 0.2, notch: 0.4, twoWaist: 0.42, one: { flag: 0.23, base: false } },
   // Saints: square block with clipped corners (big chamfers on 0 6 8 9) and a footed 1
   saints: { cut: 'chamfer', W: 0.58, th: 0.18, tv: 0.21, ro: 0.13, ri: 0.04, rt: 0.02, one: { flag: 0.17, base: true } },
   // Buccaneers: heavy block with clipped corners, notched 1 foot

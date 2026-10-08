@@ -1085,20 +1085,20 @@ export const TEAMS = [
       colors: [R, BK, SIL], font: 'falcons',
       helmets: [
         // low-gloss black shell, plain silver facemask (replaces the satin black / brushed nickel of 2020-25)
-        { id: 'black', name: 'Black', tag: 'Primary', shell: BK, finish: 'matte', mask: SIL, stripe: null, logo: { img: 'ATL', faces: 'right', size: 0.13 } },
+        { id: 'black', name: 'Black', tag: 'Primary', shell: BK, finish: 'matte', mask: SIL, stripe: null, logo: { img: 'ATL', faces: 'right', size: 0.15 } },
         // 1966 throwback: red shell, black centre stripe edged in white, silver mask
         { id: 'red', name: '1966 Red', tag: 'Throwback', shell: R, finish: 'gloss', mask: SIL, stripe: sym([W, 0.5], [BK, 1.8]), logo: { img: 'ATL_tb', faces: 'left', size: 0.1 } },
       ],
       jerseys: [
         { id: 'red', name: 'Red', tag: 'Home · New 2026', base: R, num: [W, BK], numO: [0.025, 0], tv: 'shoulder',
-          word: { s: 'FALCONS', c: W, font: 'squareBlock', h: 0.026, tracking: 0.16 },
-          neckTag: { s: 'DIRTY BIRDS', c: W }, sleeveLogo: 'ATL', swoosh: W,
-          plateFont: 'plate', plateTracking: 0.07 },
+          numStyle: 'twill', word: { s: 'FALCONS', c: W, font: 'squareBlock', h: 0.023, tracking: 0.18 },
+          neckTag: { s: 'DIRTY BIRDS', c: W, font: 'squareBlock' }, sleeveLogo: 'ATL', swoosh: W,
+          plateFont: 'falconsPlate', plateTracking: 0.04 },
         { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [R, BK], numO: [0.025, 0], tv: 'shoulder',
-          word: { s: 'ATLANTA', c: BK, font: 'squareBlock', h: 0.026, tracking: 0.16 },
-          neckTag: { s: 'DIRTY BIRDS', c: R }, sleeveLogo: 'ATL', swoosh: R,
-          plateFont: 'plate', plateTracking: 0.07 },
-        { id: 'y1966', name: '1966 Black', tag: 'Throwback', base: BK, num: [W, R], numO: [0.03, 0], font: 'block', tv: 'shoulder', sleeveLogo: 'ATL_tb', swoosh: W },
+          numStyle: 'twill', word: { s: 'ATLANTA', c: BK, font: 'squareBlock', h: 0.023, tracking: 0.18 },
+          neckTag: { s: 'DIRTY BIRDS', c: R, font: 'squareBlock' }, sleeveLogo: 'ATL', swoosh: R,
+          plateFont: 'falconsPlate', plateTracking: 0.04 },
+        { id: 'y1966', name: '1966 Black', tag: 'Throwback', base: BK, num: [W, R], numO: [0.03, 0], font: 'block', numStyle: 'twill', tv: 'shoulder', sleeveLogo: 'ATL_tb', swoosh: W },
       ],
       pants: [
         { id: 'white', name: 'White', tag: 'New 2026', base: W, stripe: stripe26, swoosh: R },
@@ -1108,8 +1108,8 @@ export const TEAMS = [
       socks: [
         { id: 'red', name: 'Red', base: R },
         { id: 'white', name: 'White', base: W },
-        // official 2026 closet photo: black socks with a red / white ankle band
-        { id: 'tb', name: 'Throwback', base: BK, stripes: [[R, 1.6], [W, 0.9], [R, 1.6]], stripesFrom: 20 },
+        // 1966 throwback socks per the 2026 uniform sheet: white, with a black / white / black-red-black band set below the knee
+        { id: 'tb', name: 'Throwback', base: W, stripes: [[BK, 2.2], [W, 1], [BK, 1], [R, 3.6], [BK, 1], [W, 1], [BK, 2.2]], stripesFrom: 9 },
       ],
       looks: [
         { name: 'Home', h: 'black', j: 'red', p: 'white', s: 'red', status: 'worn' },
