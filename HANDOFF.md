@@ -70,7 +70,7 @@ git clone --depth 1 https://github.com/makehumancommunity/makehuman <dir>   # CC
 | **Rendering engine** | Done. Vapor F.U.S.E. fabric (knit, perforated zones, stretch shoulders, seams, cover-stitch), layered tackle-twill/pressed/embroidered appliqués with stitched edges, sleeve swoosh, embroidered collar shield, jock tag, nameplate fonts, arching and nameplate bars, image wordmarks, stadium lighting. | `src/three/fabric.js`, `applique.js`, `sdf.js`, `garments.js`, `numerals.js`, `fonts.js`, `player.js`, `stage.js` |
 | **Player model** | Done (two rounds). NFL build, pro pad silhouette with the pad arch up to the jaw, defined shoulder caps, bloused tuck, thigh/knee pads, belt, wristbands, eye black, painted brows, pore normals. | `tools/build_player.py`, `tools/fix_skin.py`, `tools/paint_brows.py`, `public/models/player.*` |
 | **Cleats** | Done; **user approved**. Subdivision-cage Nike Vapor-style cleat traced from product photos: knit sock collar, laces, bladed studs. | `tools/cleat.py` |
-| **Helmet** | Done. Riddell SpeedFlex shell (Flex panel gap, vents, rear bumper, nameplate), SF-2BD-SW facemask traced from Riddell renders with `2EG`/`3BD` variants, four quick-release clips, 4-point chinstrap with hard cup, metallic flake/matte/chrome finishes, true-width stripes. | `tools/build_helmet.py`, `src/three/helmet.js`, `paintHelmet` in `paint.js` |
+| **Helmet** | **Needs another pass, see §5 Step 2.** The user isn't satisfied: there's a visible gap between the top of the facemask and the shell. Current state: Riddell SpeedFlex shell (Flex panel gap, vents, rear bumper, nameplate), SF-2BD-SW facemask traced from Riddell renders with `2EG`/`3BD` variants, four quick-release clips, 4-point chinstrap with hard cup, metallic flake/matte/chrome finishes, true-width stripes. | `tools/build_helmet.py`, `src/three/helmet.js`, `paintHelmet` in `paint.js` |
 | **Team accuracy (phase 2)** | **Partial**, see §4. | `src/data/teams.js` |
 
 All new data fields are documented in the header comment of `src/data/teams.js`. Highlights:
@@ -144,10 +144,46 @@ Each agent reports per team: what was wrong, what changed, and a before/after sh
 
 **You** review each sheet against the reference before merging. Send back anything that doesn't match, with the specific fix.
 
-### Step 2: small engine fixes (one Opus subagent, or do them yourself)
+### Step 2: helmet rework (one Opus subagent in a worktree; can run in parallel with Step 1)
 
-1. **Helmet chin cup** (`tools/build_helmet.py`): it's still too large and sits forward of the chin bar in the front view. Make it smaller, wrap it around the chin, and tuck it behind the chin bar. Rebuild helmet.glb.
-2. **Cleat knit collar** (`player.js`, `cleatknit` material): it renders greyish on black cleats. Make it follow the cleat colour. **Don't change the cleat geometry.**
+The user still thinks the helmet needs work. The most visible problem is **a gap between the top of the facemask and the helmet shell**. It looks wrong, and on a real SpeedFlex the top bar sits snug under the brim and nameplate bumper. The user specifically asked that this pass use **the same kind of brief that worked for the cleats**. The cleats only came out right after a fresh agent was told why the old approach failed, made to switch modelling methods, and made to trace real product photos. The brief below follows that pattern; give it to the subagent nearly verbatim.
+
+> You are the HELMET specialist. The Riddell SpeedFlex in `tools/build_helmet.py` has been iterated on in place and still doesn't hold up at close range. Your job is to make it unmistakably a SpeedFlex, starting with how the facemask meets the shell.
+>
+> **Why the current helmet fails (from review of the renders):**
+> - **Gap at the top of the mask:** there is a visible gap between the facemask's top bar and the shell/brim. On the real helmet the top bar sits tight under the front bumper and nameplate, following the brim curve within a few millimetres. The two upper quick-release clips sit right at the temples, so the mask reads as fastened to the shell, not floating in front of it.
+> - **Chin cup:** it's too large and sits forward of the chin bar in the front view. The real hard cup is smaller, wraps the chin, and sits behind the chin bar.
+> - **How it was built:** the mask is a set of hand-placed bar paths and the shell an analytically displaced surface, so the parts don't share a fit. Don't keep nudging constants in the old code; change approach.
+>
+> **Approach (suggested; use judgement):**
+> - **Trace real silhouettes.** Find side, front, top and ¾ product photos of a current Riddell SpeedFlex adult helmet and the SF-2BD-SW mask (Riddell product renders on white are ideal; keep the images in scratch only, don't commit them). Encode the traced profiles as point lists:
+>   - the shell's side profile, top outline and front outline
+>   - the face-opening edge and the brim line
+>   - the jaw extensions and the Flex panel cut line
+>   - every bar of the mask in front and side view
+> - **Build the shell as a subdivision cage.** Use a low-poly control mesh with a Subdivision Surface modifier, adding creases or support loops where edges must stay crisp (shell lip, Flex panel gap, vent lips, bumper edges). This gives a smooth, sculpted surface with crisp detail edges.
+> - **Fit the mask to the shell.** Build the mask from the traced bar curves as round tube (~6.8 mm). Then constrain it to the shell:
+>   - the top bar runs along the brim/bumper with a 2–4 mm clearance, measured along its whole length
+>   - the upper clips sit on the shell at the temples and the lower clips on the jaw extensions
+>   - each bar passes through its clip, with no air between bar, clip and shell
+>
+>   Check it numerically: report the minimum and maximum top-bar-to-shell distance.
+> - **Keep the existing contracts** so `src/data/teams.js` keeps working:
+>   - the helmet origin, scale and axes, and the shell UV layout (see the docstring in build_helmet.py)
+>   - material names
+>   - the `maskStyle` variants `2BD`/`2EG`/`3BD`, as separate meshes
+>   - `nameplate`, `cup`, `chinstrap`
+>   - the default logo position `[0.5, 0.08]`
+>
+>   If any of these must change, report exactly what changed.
+>
+> **Verify:** for each angle (front, ¾, side, plus a top-bar close-up), make a sheet with your render next to the reference photo at the same angle. Check that team logos and stripes still sit right on a few teams (PHI, DAL, PIT, LAC). Iterate until the silhouettes and the mask-to-shell fit match. Then **stop**: the user doesn't want endless re-rendering. Keep the GLB under ~2.5 MB after meshopt. Run `npm run build`, make WIP commits along the way, and report with the sheets.
+
+**Review it yourself before merging.** Look at the top-bar close-up and the front view specifically. If the gap is still visible, send it back.
+
+### Step 2b: small engine fixes (one Opus subagent, or do them yourself)
+
+1. **Cleat knit collar** (`player.js`, `cleatknit` material): it renders greyish on black cleats. Make it follow the cleat colour. **Don't change the cleat geometry.**
 3. **Cleat swoosh decal** (`placeDecals` in player.js): it's 0.1 × 0.05 m with the same unmirrored texture on both shoes. Size it like the real lateral swoosh and mirror it so it points forward on both feet.
 4. **Jock tag:** it shows above the belt. On a tucked game jersey it sits under the pants. Lower it or hide it by default, and check against game photos.
 5. **Towel:** hidden by default (`ACCESSORIES.towel = false`) because it reads as a stiff board. Optional: drape it with Blender cloth simulation (pinned under the belt at the front-right hip, ~12×27 cm) and re-enable it only if it looks real.
