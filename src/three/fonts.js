@@ -42,6 +42,8 @@ export const NUMBER_FONTS = {
   // AFC East + AFC North fonts
 
   // AFC South + AFC West fonts
+  // blackletter H (Texans H-Town helmet)
+  blackletter: { family: '"UnifrakturCook", "Old English Text MT", Georgia, serif', weight: 700 },
 
   // NFC East + NFC North fonts
 
@@ -56,6 +58,7 @@ const LETTERS = {
   // AFC East + AFC North team styles
 
   // AFC South + AFC West team styles
+  colts: 'plate', jaguars: 'squareSans', broncos: 'angular',
 
   // NFC East + NFC North team styles
 
