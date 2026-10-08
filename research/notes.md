@@ -1,4 +1,4 @@
-# Uniform notes from the Wikipedia/Commons uniform sheets (CC0)
+# Uniform notes from the Wikipedia/Commons uniform sheets (CC BY / CC BY-SA 4.0, not CC0; these notes contain errors)
 
 Shorthand: TV = where the small "TV" numbers sit (shoulder = top of shoulder,
 sleeve = outer sleeve). Collar = the V-neck trim band, listed from the neck
@@ -314,6 +314,6 @@ show stripe order, collar bands and number outlines clearly. Highlights:
   Bengals narrow ovals, Ravens tall, Eagles with a black drop shadow.
 - Textures in the numbers: Patriots Nor'easter dots, Seahawks feathers, Lions
   Concrete carbon fibre, Jaguars Rivalries spots, Rams gradient/perforation.
-- Throwback marks cut from the CC0 sheets (`public/logos/*_tb.png`,
+- Throwback marks cut from the Commons sheets (CC BY / CC BY-SA 4.0) (`public/logos/*_tb.png`,
   `NYJ_classic`, `NYJ_plane`, `BAL_dark`, `PIT_crest`): cropped, background
   flood-filled from the border, trimmed.

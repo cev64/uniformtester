@@ -1,7 +1,7 @@
 // NFL uniform closet data, 2026 season.
 //
 // Sources: each team's current uniform sheet on Wikipedia / Wikimedia Commons
-// (research/uniforms/*.png, CC0), team announcements for 2026 debuts, and
+// (research/uniforms/*.png, CC BY / CC BY-SA 4.0, not CC0), team announcements for 2026 debuts, and
 // back-of-jersey conventions (nameplate, back-collar tags) from team sites.
 //
 // Units: stripe widths are centimetres on the real garment, listed edge to
