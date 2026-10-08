@@ -649,7 +649,8 @@ export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tr
   if (w2) { const a = grow(sd, w1 + w2); layers.push({ alpha: a, sd: offset(w1 + w2), mask: maskCanvas(a, W, H), color: c2 }); }
   if (w1) { const a = grow(sd, w1); layers.push({ alpha: a, sd: offset(w1), mask: maskCanvas(a, W, H), color: c1 }); }
   layers.push({ alpha: a0, sd: sd || undefined, mask: faceC, color: fill });
-  return { layers, W, H, aspect: W / H, inkHeight: px / H, px };
+  // inkW: width of the letters with their outlines, without the padding (nameplate width cap)
+  return { layers, W, H, aspect: W / H, inkHeight: px / H, px, inkW: W - 2 * pad + 2 * (w1 + w2) };
 }
 
 // Flattened lettering canvas (kept for callers that just want the picture).

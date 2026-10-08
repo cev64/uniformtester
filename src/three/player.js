@@ -352,7 +352,9 @@ export class Player {
   // style) the decal gets the cloth material for that finish and `normal`
   // as its relief map; otherwise a plain printed material.
   // `axis` projects along a fixed world direction instead of the hit face's normal; `order` is the renderOrder.
-  decal(meshes, hit, width, height, texture, { up = new THREE.Vector3(0, 1, 0), depth = 0.1, rough = 0.6, minDot = 0.35, finish = null, normal = null, axis = null, order = 2 } = {}) {
+  // `inside` draws on the inner face of the cloth (seen through the neck opening): the decal is
+  // oriented along `axis` but kept on triangles facing the other way, and rendered back-side.
+  decal(meshes, hit, width, height, texture, { up = new THREE.Vector3(0, 1, 0), depth = 0.1, rough = 0.6, minDot = 0.35, finish = null, normal = null, axis = null, order = 2, inside = false } = {}) {
     if (!hit || !texture) return;
     const n = axis ? axis.clone().normalize() : hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
     const helper = new THREE.Object3D();
@@ -362,12 +364,12 @@ export class Player {
     const F = FINISH[finish] || null;
     const common = { map: texture, color: F ? ALBEDO : '#ffffff', transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 };
     const mat = F
-      ? fabricMaterial({ ...F, ...common, macro: normal, macroScale: 1, cm: [width * 100, height * 100], side: THREE.FrontSide, aniso: this.aniso })
-      : new THREE.MeshPhysicalMaterial({ ...common, roughness: rough, sheen: 0.2 });
+      ? fabricMaterial({ ...F, ...common, macro: normal, macroScale: 1, cm: [width * 100, height * 100], side: inside ? THREE.BackSide : THREE.FrontSide, aniso: this.aniso })
+      : new THREE.MeshPhysicalMaterial({ ...common, roughness: rough, sheen: 0.2, side: inside ? THREE.BackSide : THREE.FrontSide });
     const inv = new THREE.Matrix4().copy(this.group.matrixWorld).invert();
     let used = false;
     for (const mesh of meshes) {
-      const geo = facing(new DecalGeometry(mesh, hit.point, helper.rotation, new THREE.Vector3(width, height, depth)), n, minDot);
+      const geo = facing(new DecalGeometry(mesh, hit.point, helper.rotation, new THREE.Vector3(width, height, depth)), inside ? n.clone().negate() : n, minDot);
       if (!geo) continue;
       geo.applyMatrix4(inv);   // DecalGeometry is in world space
       const d = new THREE.Mesh(geo, mat);
@@ -404,8 +406,13 @@ export class Player {
       const L = (isNum && numeralLayers(text, colors, font, { ...opts, px }))
         || letteringLayers(text, colors, numeralStyle(font) ? letterFont(font) : font, { ...opts, px });
       const res = buildApplique(L.layers, { style, pxPerMm: L.px / (heightM * 1000) });
-      return { ...res, aspect: L.aspect, inkHeight: L.inkHeight };
+      return { ...res, aspect: L.aspect, inkHeight: L.inkHeight, inkAspect: L.inkW ? L.inkW / L.px : null };
     });
+    // maxW: cap on the letters' width in metres; wider text is condensed (scaleX), as real nameplates are
+    const wide = opts.maxW && built.inkAspect ? built.inkAspect * heightM : 0;
+    if (wide > opts.maxW) {
+      return this.lettering(meshes, hit, text, heightM, colors, font, { ...opts, maxW: 0, scaleX: (opts.scaleX || 1) * (opts.maxW / wide) * 0.985 });
+    }
     const { map, normal } = this.appliqueTextures(built);
     const h = heightM / (built.inkHeight || 0.7);
     this.decal(meshes, hit, h * built.aspect, h, map, { ...opts, finish: style, normal });
@@ -531,6 +538,54 @@ export class Player {
     }
   }
 
+  // Shoulder graphics seen from behind, drawn per side in back-view world metres and projected
+  // from behind, tilted out and up so they wrap over the pad cap and the outside of the sleeve.
+  // jersey.backShoulder: { shapes: [[colour, [[x, y], ...], round], ...], out, lift }
+  //   x: metres out from the spine, y: metres above the shoulder joint (upperarm01; the top of the
+  //   cap is about +0.09 at x 0.18 and +0.06 at x 0.29, the sleeve's outer edge is x 0.33 at y 0);
+  //   the player's left shoulder, mirrored for the right. round: corner radius in metres.
+  // A Seahawks wing (panels.wing: [band, accent]) adds its back view by default: the accent wedge
+  // over the outer cap and the band where it wraps the outside of the sleeve.
+  backShoulderPanel(jersey, torso, sleeves) {
+    const sh = this.J['upperarm01.L'];
+    let spec = jersey.backShoulder;
+    if (!spec) {
+      const [band, accent] = jersey.panels.wing;
+      spec = { shapes: [
+        [band, [[0.27, -0.005], [0.37, -0.02], [0.37, -0.075], [0.285, -0.06]]],
+        [accent || band, [[0.235, 0.12], [0.37, 0.12], [0.37, 0.0], [0.29, 0.01]], 0.01],
+      ] };
+    }
+    const x0 = 0.1, x1 = 0.42, yT = sh.y + 0.16, yB = sh.y - 0.14, ppm = 2600;
+    const W = Math.round((x1 - x0) * ppm), H = Math.round((yT - yB) * ppm);
+    for (const sx of [1, -1]) {
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      // seen from behind the decal's +u runs toward world -x: the left shoulder's outer end is at u = 0
+      const P = ([x, y]) => [(sx > 0 ? x1 - x : x - x0) * ppm, (yT - sh.y - y) * ppm];
+      for (const [col, pts, r = 0] of spec.shapes) {
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        const Q = pts.map(P), n = Q.length, rad = r * ppm;
+        for (let i = 0; i < n; i++) {
+          const a = Q[(i + n - 1) % n], b = Q[i], d = Q[(i + 1) % n];
+          if (!rad) { ctx[i ? 'lineTo' : 'moveTo'](...b); continue; }
+          const k1 = Math.min(rad, Math.hypot(b[0] - a[0], b[1] - a[1]) / 2) / (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1);
+          const k2 = Math.min(rad, Math.hypot(d[0] - b[0], d[1] - b[1]) / 2) / (Math.hypot(d[0] - b[0], d[1] - b[1]) || 1);
+          ctx[i ? 'lineTo' : 'moveTo'](b[0] + (a[0] - b[0]) * k1, b[1] + (a[1] - b[1]) * k1);
+          ctx.quadraticCurveTo(...b, b[0] + (d[0] - b[0]) * k2, b[1] + (d[1] - b[1]) * k2);
+        }
+        ctx.closePath(); ctx.fill();
+      }
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = this.aniso;
+      this.textures.push(t);
+      const hit = { point: new THREE.Vector3(sx * (x0 + x1) / 2, (yT + yB) / 2, -0.05) };
+      this.decal([...torso, ...sleeves], hit, x1 - x0, yT - yB, t,
+        { axis: new THREE.Vector3(sx * (spec.out ?? 0.45), spec.lift ?? 0.35, -1), depth: 0.5, finish: 'print', minDot: 0.12, order: 1 });
+    }
+  }
+
   placeDecals(team, jersey, pants, player, logos, cleatColor) {
     this.group.updateMatrixWorld(true);
     const torso = this.meshes.jersey || [];
@@ -599,11 +654,13 @@ export class Player {
       this.image([...torso, ...collar], front(yV - (sw / a) * 0.38), sw, logos.NFL_shield, { style: 'embroidered', depth: 0.06 });
     }
     // chest patch sits on the player's left chest (viewer's right)
-    if (jersey.chestLogo) this.image(torso, front(neckY - 0.16, 0.11), 0.07, logos[jersey.chestLogo]);
+    // chestLogoAt: [across toward the player's left, down from neckY] in metres; chestLogoSize: width
+    const [clx, cly] = jersey.chestLogoAt || [0.11, 0.16];
+    if (jersey.chestLogo) this.image(torso, front(neckY - cly, clx), jersey.chestLogoSize || 0.07, logos[jersey.chestLogo]);
     if (jersey.chestPatch) {
       // drawn patch on the player's left chest (e.g. the Browns' 1946 football)
       const c = paintLogo(jersey.chestPatch, 'right');
-      if (c) this.canvasDecal(torso, front(neckY - 0.16, 0.11), 0.075, c, { key: JSON.stringify(jersey.chestPatch) });
+      if (c) this.canvasDecal(torso, front(neckY - cly, clx), jersey.chestLogoSize || 0.075, c, { key: JSON.stringify(jersey.chestPatch) });
     }
     // Jock tag: the woven label on the front hem, just left of centre (the
     // player's left). A game jersey is tucked, so the tag sits under the pants
@@ -616,22 +673,41 @@ export class Player {
       this.canvasDecal(torso, front(meta.constants.waist + 0.022, 0.055), 0.07, c, { style: 'print', key: `jock${jt.size}${bg}${fg}` });
     }
 
-    // Back collar tag just under the neckline
-    if (jersey.neckTag) {
-      const t = jersey.neckTag;
-      this.lettering(torso, back(neckY - 0.045), t.s, t.s.length > 12 ? 0.012 : 0.016, [t.c], t.font || 'block',
-        { tracking: 0.08, bg: t.bg || null, style: t.style || 'pressed' });
+    // Back layout, measured from straight-on photos (research/backs.md) as fractions of the back
+    // number height H: name top 0.10 H below the back neck seam, name letters 0.21 H, name bottom
+    // to number top 0.07 H. The seam (top edge of the back collar seen from behind) is at
+    // neckY - 0.03 on this model (probed: collar band -0.044..-0.034, cloth edge -0.027).
+    const seam = neckY - 0.03;
+    const numH = jersey.numBackH || 0.25, plateH = jersey.plateH || 0.05;
+    const backColors = jersey.numBack || colors;
+    const tag = jersey.neckTag, tagOut = tag && !tag.at;
+    // Back collar tag. Default: on the outside just under the seam (real only for BUF, LAR, WAS, HOU);
+    // at: 'inside' prints it on the inner back neck (most phrase tags); at: 'hidden' leaves it off.
+    if (tag && tag.at !== 'hidden') {
+      const th = tag.h || (tag.s.length > 12 ? 0.012 : 0.016);
+      const lopts = { tracking: 0.08, bg: tag.bg || null, style: tag.style || 'pressed' };
+      if (tagOut) this.lettering(torso, back(seam - 0.006 - th / 2), tag.s, th, [tag.c], tag.font || 'block', lopts);
+      else if (tag.at === 'inside') {
+        // aim from inside the neck at the inner face of the back, reading from the front
+        const hit = this.raycast(torso, new THREE.Vector3(0, seam - 0.008 - th / 2, 0), new THREE.Vector3(0, 0, -1));
+        this.lettering(torso, hit, tag.s, th, [tag.c], tag.font || 'block', { ...lopts, axis: new THREE.Vector3(0, 0, 1), inside: true, depth: 0.06 });
+      }
     }
 
-    // Back: nameplate and number
+    // Back: nameplate and number. plateAt = name top below the seam (m); an outside tag pushes it down.
     const plate = jersey.plateFont || jersey.plate || (font === 'script' ? 'plate' : letterFont(font));
+    const arch = jersey.plateArch || 0;
+    const plateTop = seam - (jersey.plateAt ?? (tagOut ? Math.max(0.025, (tag.h || 0.016) + 0.022) : 0.1 * numH));
+    const plateBot = plateTop - plateH * (1 + Math.max(0, arch));
     if (player.name) {
-      this.lettering(torso, back(neckY - 0.1), player.name.toUpperCase(), jersey.plateH || 0.05,
-        [jersey.plateColor || colors[0], ...(jersey.plateOutline || [])], plate,
-        { tracking: jersey.plateTracking ?? 0.05, arch: jersey.plateArch || 0, scaleX: jersey.plateScaleX || 1, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
+      this.lettering(torso, back((plateTop + plateBot) / 2), player.name.toUpperCase(), plateH,
+        [jersey.plateColor || backColors[0], ...(jersey.plateOutline || [])], plate,
+        { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
           bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
     }
-    this.lettering(torso, back(neckY - 0.3), num, 0.25, colors, font, numOpts);
+    const numTop = plateBot - 0.07 * numH;
+    this.lettering(torso, back(numTop - numH / 2), num, numH, backColors, font, numOpts);
+    if (jersey.backShoulder || jersey.panels?.wing) this.backShoulderPanel(jersey, torso, sleeves);
 
     // TV numbers: on top of the shoulders, or on the outside of the sleeves
     for (const s of ['L', 'R']) {
@@ -699,7 +775,7 @@ export class Player {
       if (jersey.sleeveLogo) {
         const p = sh.clone().lerp(el, 0.18);
         const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
-        this.image(sleeves, hit, 0.075, logos[jersey.sleeveLogo]);
+        this.image(sleeves, hit, jersey.sleeveLogoSize || 0.075, logos[jersey.sleeveLogo]);
       }
       // Nike swoosh on each sleeve, pointing forward on both sides
       if (jersey.swoosh !== false) {
