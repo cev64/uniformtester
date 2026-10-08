@@ -378,7 +378,7 @@ export const TEAMS = [
 
   (() => {
     const GOLD = '#FFB612', BK = '#101820', KHAKI = '#C4B283';
-    const steel = { img: 'PIT', size: 0.095, side: 'right' };
+    const steel = { img: 'PIT', size: 0.095, side: 'right', at: [0.46, 0.32] };
     // Sleeve: gold/white/gold wide-centre stripe group, symmetric, black between (sheet + Elite shop photo).
     // On the white road jersey the black edge lines are what separate it from the body.
     const stripes = [[BK, 0.35], [GOLD, 1.2], [BK, 0.5], [W, 1.5], [BK, 0.5], [GOLD, 6.2], [BK, 0.5], [W, 1.5], [BK, 0.5], [GOLD, 1.2], [BK, 0.35]];
