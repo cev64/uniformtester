@@ -876,7 +876,7 @@ for i, sg in enumerate(segs):
     closed = (pts[0] - pts[-1]).length < 0.006 and len(segs) == 1
     for _ in range(3):
         pts = [pts[0]] + [(pts[k - 1] + pts[k] * 2 + pts[k + 1]) / 4 for k in range(1, len(pts) - 1)] + [pts[-1]]
-    tube(f'Trim{i}', pts, 0.0036, 'trim', cyclic=closed, res=3)
+    tube(f'Trim{i}', pts, 0.0025, 'trim', cyclic=closed, res=3)
 
 
 # ─── rear bumper ───────────────────────────────────────────────────────
@@ -893,7 +893,7 @@ def edge_point(phi):
 
 def build_bumper():
     COLS, ROWS = 72, 7
-    H = 0.027                                  # height up the shell
+    H = 0.022                                  # height up the shell
     phis = []
     # azimuth range: from where the bottom edge passes y = BUMPER_Y on each side
     lim = 1.2
@@ -928,8 +928,8 @@ def build_bumper():
             p = surf(o)
             n = p.normalized()
             # the lower edge flares outward and hangs a little below the shell
-            out = 0.0014 + 0.0045 * (1 - h) ** 1.8 * endk
-            down = 0.003 * (1 - h) ** 3 * endk
+            out = 0.0012 + 0.0030 * (1 - h) ** 1.8 * endk
+            down = 0.0015 * (1 - h) ** 3 * endk
             verts.append(p + n * out - P(0, 0, down))
             uvs.append((t, h))
     faces = [(i * ROWS + j, i * ROWS + j + 1, (i + 1) * ROWS + j + 1, (i + 1) * ROWS + j)
@@ -1608,7 +1608,7 @@ def shell_normal_fn(p):
 
 
 hw_parts = []
-STRAP_LIFT = 0.0018
+STRAP_LIFT = 0.0026
 for s in (1, -1):
     sm = (lambda q: q) if s > 0 else (lambda q: P(-q.x, q.y, q.z))
     # upper strap: cup → up the front of the jaw flap, under the temple clip → rocker → tail
@@ -1678,16 +1678,24 @@ for f in bm.faces:
     f.normal_flip()
 bm.to_mesh(inner.data); bm.free()
 
+# jaw pads sit inside the jaw flap: clamped to the inside of the shell wall and
+# set back so only their front edge shows in the face opening
 pads = []
 for s in (1, -1):
-    pads.append(blob(f'JawPad{s}', (s * 0.089, -0.052, -0.080), (0.015, 0.042, 0.048), 'pad', n=2.6))
+    jp = blob(f'JawPad{s}', (s * 0.087, -0.045, -0.082), (0.014, 0.036, 0.044), 'pad', n=2.6)
+    for v in jp.data.vertices:
+        o = v.co.normalized()
+        r_in = surf(o).length - SHELL_T - 0.0015
+        if v.co.length > r_in:
+            v.co = o * r_in
+    pads.append(jp)
 
 # brow pad: a curved band behind the brow edge with "SPEEDFLEX" printed on it
 BR, A0 = 0.118, 0.72
 verts, uvs, faces = [], [], []
 COLS, ROWS = 33, 5
 for j in range(ROWS):
-    z = lerp(BROW_Z - 0.026, BROW_Z + 0.022, j / (ROWS - 1))
+    z = lerp(BROW_Z - 0.010, BROW_Z + 0.022, j / (ROWS - 1))
     for i in range(COLS):
         a = lerp(-A0, A0, i / (COLS - 1))
         bulge = 0.004 * math.sin(math.pi * j / (ROWS - 1))

@@ -858,6 +858,21 @@
   "what": "KC monogram",
   "worn": "sleeve / alternate"
  },
+ "KC_LH": {
+  "colors": "#A71930 #F2E3B6 #0033A0",
+  "file": "KC_LH.png",
+  "license": "Licensed by the project owner (user-supplied artwork, 2026-10-08)",
+  "render": "raster",
+  "size": [
+   636,
+   636
+  ],
+  "source_title": "Lamar Hunt / AFL memorial patch",
+  "source_url": "",
+  "team": "KC",
+  "what": "Lamar Hunt memorial patch",
+  "worn": "jersey chest (Home, Road)"
+ },
  "KC_word": {
   "colors": "#E4243C",
   "file": "KC_word.png",

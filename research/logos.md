@@ -72,6 +72,7 @@ The app loads `public/logos/<KEY>.png`; `KEY@#hex` tints a mark one colour at ru
 | `DEN_word_city.png` | Broncos | city line of the DEN wordmark | chest above number | 430x29 | thumb.php | commons:File:Denver_Broncos_wordmark.svg | Public domain [trademarked] | #FC540C |
 | `DEN_word_name.png` | Broncos | name line of the DEN wordmark | chest above number | 1024x117 | thumb.php | commons:File:Denver_Broncos_wordmark.svg | Public domain [trademarked] | #0C243C |
 | `KC.png` | Chiefs | primary logo | helmet; sleeve | 1012x640 | svg | commons:File:Kansas_City_Chiefs_logo.svg | Public domain [trademarked] | #FCFCFC #0C0C0C #E4243C |
+| `KC_LH.png` | Chiefs | Lamar Hunt memorial patch | jersey chest (Home, Road) | 636x636 | raster |  | Licensed by the project owner (user-supplied artwork, 2026-10-08) | #A71930 #F2E3B6 #0033A0 |
 | `KC_kc.png` | Chiefs | KC monogram | sleeve / alternate | 944x608 | svg | commons:File:Kansas_City_Chiefs_KC_logo.svg | Public domain [trademarked] | #B40C3C #0C0C0C |
 | `KC_word.png` | Chiefs | CHIEFS wordmark | chest above number | 1017x223 | svg | commons:File:Kansas_City_Chiefs_wordmark.svg | Public domain [trademarked] | #E4243C |
 | `LV.png` | Raiders | primary logo | helmet; sleeve | 1020x1083 | svg | en:File:Las_Vegas_Raiders_logo.svg | Fair use (non-free) | #0C0C0C #FCFCFC #CCCCCC |

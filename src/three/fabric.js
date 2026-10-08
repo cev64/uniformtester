@@ -729,20 +729,48 @@ export function pantsDetail(meta, aniso = 8, loops = [0.3, 0.7]) {
   ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 0.08 * pxPerCm;
   for (const cm of [1.8, 2.3]) { ctx.beginPath(); ctx.moveTo(0, H - cm * pxPerCm); ctx.lineTo(W, H - cm * pxPerCm); ctx.stroke(); }
   ctx.restore();
-  // inseam (u = 0 / 1) and a seam down the back of the leg
-  for (const u of [0, 1]) seam(ctx, (g, off = 0) => { g.moveTo(u * W + off, 4 * pxPerCm); g.lineTo(u * W + off, H); }, pxPerCm, { rows: 2, gap: 0.6 });
-  // soft drape wrinkles behind the knee and across the hip
-  ctx.save();
-  ctx.globalAlpha = 0.12;
-  for (let i = 0; i < 6; i++) {
-    const y = H - (6 + i * 1.8) * pxPerCm;
-    const g = ctx.createLinearGradient(0, y - pxPerCm, 0, y + pxPerCm);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, '#fff'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    for (const cu of [0.0, 1.0]) ctx.fillRect(cu * W - 0.18 * W, y - pxPerCm, 0.36 * W, 2 * pxPerCm);
+  // u runs inseam (0) → front of the thigh (0.25) → outer side (0.5) → back (0.75) → inseam (1);
+  // y runs from the waist down to the knee hem.
+  // Pads under the stretch twill: the cloth is pulled taut over the moulded
+  // thigh and knee pads, so each reads as a soft plateau with a rounded edge.
+  // (added after the canvas pass: an 8-bit canvas cannot hold their height)
+  const Lcm = R.length * 100;
+  const pads = [
+    [0.25, Lcm * 0.5, 12, 18, 3.0],     // thigh pad, front of mid-thigh
+    [0.25, Lcm - 8.5, 10, 10, 3.0],     // knee pad, just above the hem
+  ].map(([u, yCm, wCm, hCm, a]) => ({ x: u * W, y: yCm * pxPerCm, rx: (wCm / 2) * pxX(1 - yCm / Lcm), ry: (hCm / 2) * pxPerCm, a }));
+  const addPads = (h) => {
+    for (const p of pads) {
+      for (let y = Math.max(0, Math.floor(p.y - p.ry)); y < Math.min(H, Math.ceil(p.y + p.ry)); y++) {
+        for (let x = Math.floor(p.x - p.rx); x < Math.ceil(p.x + p.rx); x++) {
+          const d = Math.hypot((x - p.x) / p.rx, (y - p.y) / p.ry);
+          if (d >= 1) continue;
+          const t = Math.min(1, (1 - d) / 0.4);
+          h[y * W + ((x % W) + W) % W] += p.a * t * t * (3 - 2 * t);
+        }
+      }
+    }
+  };
+  // inseam (u = 0 / 1) and the outer side seam (u = 0.5, under the stripe)
+  for (const u of [0, 0.5, 1]) seam(ctx, (g, off = 0) => { g.moveTo(u * W + off, 4 * pxPerCm); g.lineTo(u * W + off, H - 2.4 * pxPerCm); }, pxPerCm, { rows: 2, gap: 0.6 });
+  // tension wrinkles: soft horizontal folds behind the knee (and lighter on
+  // the inside of the knee), diagonal pulls from the crotch toward the hip
+  const fold = (x0, y0, x1, y1, wCm, a) => {
+    ctx.save(); ctx.globalAlpha = a; ctx.lineCap = 'round';
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = wCm * pxPerCm; ctx.filter = `blur(${(wCm * 0.45 * pxPerCm).toFixed(1)}px)`;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.restore();
+  };
+  for (let i = 0; i < 5; i++) {
+    const y = H - (5.5 + i * 2) * pxPerCm, j = (i % 2 ? 0.02 : -0.015) * W;
+    fold(0.66 * W + j, y + 0.4 * pxPerCm, 0.84 * W + j, y - 0.3 * pxPerCm, 0.7, 0.22);
+    for (const cu of [0, 1]) fold(cu * W - 0.1 * W, y, cu * W + 0.1 * W, y, 0.6, 0.1);
   }
-  ctx.restore();
-  return finish(hc, W, H, 2.4, aniso);
+  for (let i = 0; i < 3; i++) {
+    const y = (Lcm * 0.22 + i * 2.6) * pxPerCm;
+    fold(0.02 * W, y + 3 * pxPerCm, 0.16 * W, y - 1.5 * pxPerCm, 0.6, 0.13);
+    fold(0.98 * W, y + 3 * pxPerCm, 0.84 * W, y - 1.5 * pxPerCm, 0.6, 0.13);
+  }
+  return finish(hc, W, H, 2.4, aniso, 1, addPads);
 }
 
 export function collarDetail(meta, aniso = 8) {
