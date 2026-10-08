@@ -726,7 +726,7 @@ export class Player {
       this.lettering(torso, back((plateTop + plateBot) / 2), plateName.toUpperCase(), plateH,
         [jersey.plateColor || backColors[0], ...(jersey.plateOutline || [])], plate,
         { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
-          bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
+          bar: jersey.plateBar ? jersey.base : null });
     }
     const numTop = plateBot - plOut - 0.09 * Hout - numOut;
     // Width cap: real two-digit backs are about as wide as they are tall (MAHOMES 15: 0.94 H, WILLIAMS 18:

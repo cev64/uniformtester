@@ -599,7 +599,7 @@ export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tr
   const totalW = (arch ? adv.reduce((s, x) => s + x, 0) : whole) * sx;
   const rise = Math.abs(arch) * px;
   // a nameplate bar needs room round the letters
-  const pad = Math.ceil(Math.max(w1 + w2 + px * 0.12 + Math.abs(k) * px * 0.5, bar ? px * 0.8 : 0));
+  const pad = Math.ceil(Math.max(w1 + w2 + px * 0.12 + Math.abs(k) * px * 0.5, bar ? px * 0.35 : 0));
   const W = Math.ceil(totalW + Math.abs(k) * px + pad * 2), H = Math.ceil(px + rise + pad * 2);
   const asc = (m.actualBoundingBoxAscent / capH) * px;
   const baseY = pad + (arch > 0 ? rise : 0) + asc;
@@ -658,7 +658,9 @@ export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tr
     const c = cpuCanvas(W, H);
     const g = c.getContext('2d');
     g.fillStyle = '#000';
-    const x0 = pad * 0.2, y0 = pad * 0.42, r = px * 0.05;
+    // a snug strip: ~0.15 x the letter height above and below (about 8 mm), so it ends well above the
+    // number, and ~0.3 x at the ends
+    const x0 = Math.max(0, pad - px * 0.3), y0 = Math.max(0, pad - px * 0.15), r = px * 0.05;
     g.beginPath();
     g.roundRect ? g.roundRect(x0, y0, W - 2 * x0, H - 2 * y0, r) : g.rect(x0, y0, W - 2 * x0, H - 2 * y0);
     g.fill();
