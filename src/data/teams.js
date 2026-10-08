@@ -1035,7 +1035,7 @@ export const TEAMS = [
     // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
     const fwd = (s) => s && [[null, 3], ...s];
     const P = '#4F2683', GOLD = '#FFC62F', DP = '#33205C', DKP = '#2A1552';
-    const horn = (fill, stroke) => ({ t: 'horn', fill, stroke });
+    const horn = (fill, stroke) => ({ t: 'horn', fill, stroke, size: 0.24 });
     return {
       id: 'MIN', city: 'Minnesota', name: 'Vikings', conf: 'NFC', div: 'North',
       colors: [P, GOLD, W], font: 'vikings',
@@ -1291,7 +1291,7 @@ export const TEAMS = [
 
   (() => {
     const ROY = '#003594', SOL = '#FFD100', BK = '#0B0B0B';
-    const ramhorn = (fill) => ({ t: 'ramhorn', fill, stroke: fill });
+    const ramhorn = (fill) => ({ t: 'ramhorn', fill, stroke: fill, size: 0.2, at: [0.2, -0.1] });
     // horn sleeve: the sleeve in one colour (cap) with the horn curling round it in the other.
     // Royal and Midnight jerseys: royal sleeve, Sol horn. White jersey: Sol sleeve, royal horn.
     const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, loop: [[horn, 4]], loopPattern: 'horn', loopAt: 16 });
