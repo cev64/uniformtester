@@ -61,7 +61,8 @@ function nameplateTexture(bg = '#141517', fg = '#f4f4f4') {
   const g = ctx.createLinearGradient(0, 0, 0, c.height);
   g.addColorStop(0, 'rgba(255,255,255,0.06)'); g.addColorStop(0.5, 'rgba(255,255,255,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
-  wordmark(ctx, 256, 118, 104, fg);
+  // the wordmark sits in the upper part of the plate: the top bar crosses its lower third
+  wordmark(ctx, 256, 86, 92, fg);
   return canvasTexture(c);
 }
 
