@@ -442,7 +442,7 @@ export const TEAMS = [
     const logo = { img: 'HOU', faces: 'right', size: 0.14 };
     // chest wordmark: the club's wide squared sans, small, above the number
     // blackletter "H" helmet mark, typeset (not the logo artwork): wide H, red star off its front
-    const H = { t: 'text', s: 'H', font: 'blackletter', scaleX: 1.3, shift: [-0.07, 0.02], star: RED, starAt: [0.31, -0.04, 0.07], size: 0.19 };
+    const H = { t: 'text', s: 'H', font: 'blackletter', scaleX: 1.3, shift: [-0.05, 0.02], star: RED, starAt: [0.27, -0.05, 0.065], size: 0.19 };
     const TXN = (s, c) => ({ s, c, font: 'squareBlock', h: 0.023, tracking: s === 'HOUSTON' ? 0.18 : 0.12, scaleX: 1.2 });
     return {
       id: 'HOU', city: 'Houston', name: 'Texans', conf: 'AFC', div: 'South',

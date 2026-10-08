@@ -607,31 +607,37 @@ export class Player {
       const inv = helper.matrixWorld.clone().invert();
       // local [x, y] in the decal frame
       const local = (pts) => pts.map((q) => { const l = q.clone().applyMatrix4(inv); return [l.x, l.y]; });
-      // order each ring's points round the arm (sorting by screen x zig-zags where the ring turns
-      // back at the silhouette), smooth them, and run them from the outer side to the inner
-      const S = sx > 0 ? 'L' : 'R', sj = this.J[`upperarm01.${S}`], ej = this.J[`lowerarm01.${S}`];
-      const ax = ej.clone().sub(sj).normalize();
-      const e1 = new THREE.Vector3(0, 0, 1).projectOnPlane(ax).normalize(), e2 = ax.clone().cross(e1);
+      // the iso-lines seen along the axis run monotonically across the visible side of the arm:
+      // order them from the outer side to the inner and smooth out the mesh facets
       const ring = (pts) => {
-        const o = pts.map((q) => { const d = q.clone().sub(sj); return [Math.atan2(d.dot(e2), d.dot(e1)), q]; }).sort((a, b) => a[0] - b[0]);
-        const sm = o.map((_, i) => {
-          const w = o.slice(Math.max(0, i - 3), i + 4);
-          return w.reduce((a, [, q]) => a.add(q), new THREE.Vector3()).multiplyScalar(1 / w.length);
+        const all = local(pts).sort((a, b) => sx * (b[0] - a[0]));
+        const k = Math.floor(all.length * 0.03), o = all.slice(k, all.length - k);
+        // average into 30 bins across x, then smooth the bin heights
+        const x0 = o[0][0], x1 = o[o.length - 1][0], nb = 30, bins = Array.from({ length: nb }, () => [0, 0, 0]);
+        for (const [x, y] of o) { const b = bins[Math.min(nb - 1, Math.floor(((x - x0) / (x1 - x0)) * nb))]; b[0] += x; b[1] += y; b[2]++; }
+        const pts2 = bins.filter((b) => b[2]).map(([x, y, n]) => [x / n, y / n]);
+        return pts2.map((_, i) => {
+          const w = pts2.slice(Math.max(0, i - 3), i + 4);
+          return [pts2[i][0], w.reduce((a, q) => a + q[1], 0) / w.length];
         });
-        if (sm[0].x * sx < sm[sm.length - 1].x * sx) sm.reverse();
-        return local(sm);
       };
       const top = ring(rings.top), bot = ring(rings.bot);
       const It = top[top.length - 1], Ib = bot[bot.length - 1];
       const T = [It[0] - sx * tipIn, It[1] + tipUp];
-      // upper edge: along the band top for the outer part, then curving up to the tip; lower edge:
-      // along the band bottom a little further, then sweeping up to the tip. Inside of that the
-      // band stops: the front of the sleeve below the horn is the jersey colour.
+      // both edges leave the band level and curve up to the tip, the top edge early (it rises
+      // across most of the front), the bottom edge late and steeply; inside the bottom edge the
+      // band stops: the front of the sleeve below the horn is the jersey colour
       const cut = (pts, f) => pts.slice(0, Math.max(2, Math.round(pts.length * f)));
-      const tU = cut(top, 0.3), tL = cut(bot, 0.45);
+      const tU = cut(top, 0.15), tL = cut(bot, 0.5);
       const pU = tU[tU.length - 1], pL = tL[tL.length - 1];
-      const upper = resample([...tU, ...quad(pU, It, T)], 140);
-      const lower = resample([...tL, ...quad(pL, [(pL[0] + Ib[0]) / 2, Ib[1] + 0.01], T)], 140);
+      // each curve leaves its edge along the edge's own direction, so there's no kink
+      const along = (pts, p, k) => {
+        const q = pts[Math.max(0, pts.length - 4)], dx = p[0] - q[0], dy = p[1] - q[1];
+        const run = (T[0] - p[0]) * k;
+        return [p[0] + run, p[1] + (Math.abs(dx) > 1e-6 ? (dy / dx) * run : 0)];
+      };
+      const upper = resample([...tU, ...quad(pU, along(tU, pU, 0.6), T)], 140);
+      const lower = resample([...tL, ...quad(pL, along(tL, pL, 0.85), T)], 140);
       const c = document.createElement('canvas');
       c.width = Math.round(Wm * ppm); c.height = Math.round(Hm * ppm);
       const ctx = c.getContext('2d');
