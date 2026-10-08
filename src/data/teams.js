@@ -38,7 +38,8 @@
 //             left from the centre line and down from the neck joint; default [0.11, 0.16].
 //   chestLogoSize: chest logo / patch width in metres (default 0.07 logo, 0.075 patch).
 //   sleeveLogoSize: sleeve logo width in metres (default 0.075).
-//   neckTag: text on the back of the collar ({ s, c, bg, font, style, h, at })
+//   neckTag: text on the back of the collar ({ s, c, bg, font, style, h, at }), or a logo tag
+//             { img: logo key, w: width in metres (default 0.05), style } (outside only).
 //             h: letter height in metres (default 0.016, 0.012 over 12 characters).
 //             at: omitted = printed on the outside just under the back neck seam (real only for
 //             BUF, LAR, WAS, HOU logo tags: research/backs.md); an outside tag pushes the nameplate

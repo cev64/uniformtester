@@ -295,7 +295,7 @@ export class Player {
     const socks = team.socks.find((x) => x.id === sel.s) || team.socks[0];
 
     // Logos load asynchronously; fetch them before tearing down the current look
-    const logoKeys = [jersey.chestLogo, jersey.sleeveLogo, jersey.centerLogo, jersey.shoulder?.img, jersey.word?.img, pants.hipLogo, 'NFL_shield'].filter(Boolean);
+    const logoKeys = [jersey.chestLogo, jersey.sleeveLogo, jersey.centerLogo, jersey.shoulder?.img, jersey.word?.img, jersey.neckTag?.img, pants.hipLogo, 'NFL_shield'].filter(Boolean);
     const logos = Object.fromEntries(await Promise.all(logoKeys.map(async (k) => [k, await loadLogo(k)])));
     if (token !== this.token) return;
 
@@ -553,7 +553,7 @@ export class Player {
       const [band, accent] = jersey.panels.wing;
       spec = { shapes: [
         [band, [[0.27, -0.005], [0.37, -0.02], [0.37, -0.075], [0.285, -0.06]]],
-        [accent || band, [[0.235, 0.12], [0.37, 0.12], [0.37, 0.0], [0.29, 0.01]], 0.01],
+        [accent || band, [[0.255, 0.12], [0.37, 0.12], [0.37, 0.0], [0.295, 0.012]], 0.01],
       ] };
     }
     const x0 = 0.1, x1 = 0.42, yT = sh.y + 0.16, yB = sh.y - 0.14, ppm = 2600;
@@ -686,7 +686,11 @@ export class Player {
     const tag = jersey.neckTag, tagOut = tag && !tag.at;
     // Back collar tag. Default: on the outside just under the seam (real only for BUF, LAR, WAS, HOU);
     // at: 'inside' prints it on the inner back neck (most phrase tags); at: 'hidden' leaves it off.
-    if (tag && tag.at !== 'hidden') {
+    if (tag?.img && !tag.at) {
+      // a logo tag (e.g. the Bills' buffalo): an image key, w = width in metres (default 0.05)
+      const t = logos[tag.img], tw = tag.w || 0.05;
+      if (t?.image) this.image(torso, back(seam - 0.006 - (tw * t.image.height / t.image.width) / 2), tw, t, { style: tag.style || 'embroidered' });
+    } else if (tag && tag.at !== 'hidden' && tag.s) {
       const th = tag.h || (tag.s.length > 12 ? 0.012 : 0.016);
       const lopts = { tracking: 0.08, bg: tag.bg || null, style: tag.style || 'pressed' };
       if (tagOut) this.lettering(torso, back(seam - 0.006 - th / 2), tag.s, th, [tag.c], tag.font || 'block', lopts);
@@ -704,7 +708,8 @@ export class Player {
     const numOut = numH * ((backColors[1] ? numOpts.o1 : 0) + (backColors[2] ? numOpts.o2 : 0));
     const Hout = numH + 2 * numOut;
     const plOut = plateH * ((jersey.plateOutline?.[0] ? 0.07 : 0) + (jersey.plateOutline?.[1] ? 0.05 : 0));
-    const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.08 * Hout, (tag.h || 0.016) + 0.022) : 0.08 * Hout));
+    const tagH = tag?.img ? (tag.w || 0.05) * 0.6 : (tag?.h || 0.016);
+    const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.08 * Hout, tagH + 0.022) : 0.08 * Hout));
     const plateBot = plateTop - plateH * (1 + Math.max(0, arch));
     if (player.name) {
       this.lettering(torso, back((plateTop + plateBot) / 2), player.name.toUpperCase(), plateH,
