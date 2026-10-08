@@ -339,18 +339,19 @@ def t_arm(co, s): return (co - SH[s]).dot(ARM_AXIS[s])
 # pro silhouette with the sleeve wrapping the epaulet.
 SHZ = SH['L'].z
 SHX = abs(SH['L'].x)
-# Dimensions follow a modern low-profile skill-position pad on a 6'5" frame:
-# about 68 cm across the caps, the top a few centimetres over the traps,
-# chest and back plates standing 3-5 cm off the body down to the bottom of
-# the pecs / shoulder blades.
+# Dimensions follow a modern low-profile skill-position pad: thin plates
+# standing 2-3 cm off the upper chest and shoulder blades, rounded caps a few
+# centimetres over the deltoids, and a top that stays below the base of the
+# neck so the shoulder line slopes down from the traps (no flat shelf at chin
+# height; a strip of neck shows under the facemask).
 PAD_SHAPES = [
     # centre, (x-, x+), (front, back), (down, up), exponents (xz, y)
     # chest + back plates
-    (Vector((0, -0.024, SHZ - 0.07)), (0.218, 0.218), (0.196, 0.186), (0.165, 0.165), (4.2, 3.2)),
+    (Vector((0, -0.024, SHZ - 0.08)), (0.2, 0.2), (0.176, 0.164), (0.16, 0.115), (3.2, 2.8)),
 ]
 for s_ in (1, -1):
-    # arch over the shoulder ending in a rounded cap over the deltoid
-    PAD_SHAPES.append((Vector((s_ * (SHX + 0.012), -0.016, SHZ + 0.045)), (0.088, 0.142) if s_ < 0 else (0.142, 0.088), (0.106, 0.104), (0.092, 0.09), (4.6, 3.2)))
+    # rounded cap over the deltoid
+    PAD_SHAPES.append((Vector((s_ * (SHX - 0.005), -0.014, SHZ + 0.02)), (0.085, 0.097) if s_ < 0 else (0.097, 0.085), (0.092, 0.09), (0.085, 0.055), (3.0, 2.8)))
 
 def _sdf_one(p, shape):
     c, rx, ry, rz, (nxz, ny) = shape
@@ -744,11 +745,11 @@ def pad_snap(p, c, off=0.0045, band=0.012):
     return p.lerp(q, k)
 
 def pad_arch(bm):
-    """The pad arches rise round the sides and back of the neck almost to the
-    jaw, pushing the collar up: lift the fabric there into a raised rim that
-    hugs the neck, leaving the front V where it is."""
+    """Low-profile pads: the collar lies at the base of the neck. Lift the
+    fabric round the sides and back only enough for the collar band to hug
+    the neck there, leaving the front V where it is."""
     C = Vector((0, NECK.y + 0.005))
-    H_SIDE, H_BACK = SHZ + 0.135, SHZ + 0.122
+    H_SIDE, H_BACK = SHZ + 0.085, SHZ + 0.08
     NB = 72
     def ang(co):
         return math.atan2(co.x - C.x, -(co.y - C.y))
@@ -783,7 +784,7 @@ def pad_arch(bm):
             continue
         sd = smooth01(0.012, 0.085, d)
         # rounded lip on the inside of the arch
-        lip = 0.006 * (1 - smooth01(-0.004, 0.012, d))
+        lip = 0.002 * (1 - smooth01(-0.004, 0.012, d))
         zt = (H - lip) * (1 - sd) + co.z * sd
         if zt > co.z:
             co.z += f * (zt - co.z)
