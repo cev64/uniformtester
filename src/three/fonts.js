@@ -67,6 +67,9 @@ const LETTERS = {
   // NFC East + NFC North team styles
 
   // NFC South + NFC West team styles
+  falcons: 'squareBlock',
+  saints: 'plate',
+  bucs: 'plate',
 
 };
 export function letterFont(style) {
