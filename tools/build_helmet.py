@@ -350,15 +350,37 @@ LIP_W = 0.0016                              # width of the bevel at a vent lip
 STEP_W = 0.0014                             # and at the Flex panel's edge          # jaw-pad port, side projection (y, z), radius
 
 
+# The jaw extension is stepped: in front of a ridge that runs down from under
+# the temple clip, the shell is recessed a few millimetres, and the mask's
+# S-shaped side bar nests in that channel (side photos).
+RIDGE = [(0.008, -0.011), (0.0, -0.014), (-0.015, -0.020), (-0.041, -0.028), (-0.067, -0.036),
+         (-0.093, -0.039), (-0.14, -0.041)]          # (z, y) of the ridge, seen from the side
+JAW_RECESS, JAW_STEP = 0.0042, 0.0022
+
+
+def jaw_e(p):
+    """distance in front of the jaw ridge (side projection), None away from it"""
+    if abs(p.x) < 0.06 or p.y > 0.02 or p.z > 0.012 or p.z < -0.16:
+        return None
+    return interp(list(reversed(RIDGE)), p.z) - p.y
+
+
+def jaw_recess(p):
+    e = jaw_e(p)
+    if e is None:
+        return 0.0
+    return JAW_RECESS * smooth(0.0, JAW_STEP, e) * (1 - smooth(-0.006, 0.008, p.z))
+
+
 def displace_amount(p):
-    d = 0.0
+    d = -jaw_recess(p)
     e = panel_e(p)
     if e > -0.01:
         d -= panel_depth(p) * smooth(-STEP_W, 0.0, e)
     for v in VENTS:
         d -= v.scoop(p)
     # the lower back flares out to the rear bumper
-    d += 0.0075 * smooth(0.02, 0.14, p.y) * smooth(-0.06, -0.125, p.z)
+    d += 0.0075 * smooth(0.02, 0.14, p.y) * smooth(-0.045, -0.10, p.z)
     return d
 
 
@@ -375,12 +397,14 @@ def surf(o):
 # temple, then down the jaw extension a few mm ahead of the mask's S-shaped
 # side bar, so the frame lies over the shell between the clips; the jaw
 # extension reaches forward under the lower clip.
-EDGE_Y = [(-0.17, -0.097), (-0.14, -0.095), (-0.12, -0.090), (-0.10, -0.080), (-0.08, -0.066),
-          (-0.06, -0.064), (-0.04, -0.067), (-0.02, -0.068), (0.0, -0.075), (0.02, -0.085),
-          (0.035, -0.105), (0.05, -0.14)]
+EDGE_Y = [(-0.17, -0.097), (-0.14, -0.095), (-0.12, -0.090), (-0.10, -0.083), (-0.08, -0.078),
+          (-0.072, -0.071), (-0.06, -0.064), (-0.045, -0.068), (-0.03, -0.065), (-0.015, -0.060),
+          (-0.005, -0.056), (0.008, -0.070), (0.02, -0.082), (0.035, -0.105), (0.05, -0.14)]
 OPEN_HW = [(-0.16, 0.080), (-0.10, 0.083), (-0.06, 0.088), (0.0, 0.094), (0.05, 0.09)]  # half width of the opening from the front
-BOTTOM_Z = [(-0.2, -0.128), (-0.11, -0.134), (-0.06, -0.140), (-0.02, -0.143), (0.03, -0.138),
-            (0.07, -0.128), (0.12, -0.118), (0.2, -0.115)]         # lower edge by y
+# lower edge by y: low along the jaw extensions, rising steeply behind the ear
+# to the rear bumper at the base of the skull (side photos)
+BOTTOM_Z = [(-0.2, -0.128), (-0.11, -0.134), (-0.06, -0.138), (-0.02, -0.136), (0.02, -0.126),
+            (0.05, -0.114), (0.08, -0.104), (0.12, -0.098), (0.2, -0.095)]
 
 
 def brow_z(x):
@@ -448,6 +472,9 @@ def near_detail(p):
         return 2
     if min(v.sd(p) for v in VENTS) < 0.0035:
         return 1
+    e = jaw_e(p)
+    if e is not None and -0.003 < e < JAW_STEP + 0.003 and p.z < 0.006:
+        return 1
     return 0
 
 
@@ -513,6 +540,8 @@ for v in VENTS:
             split_contour(bm, lambda p, v=v, off=off: (lambda q: None if q is None else q + off)(v.lip_side(p)))
 for off in (0.0, STEP_W):
     split_contour(bm, lambda p, off=off: (lambda e: None if e < -0.006 else e + off)(panel_e(p)))
+for off in (0.0, -JAW_STEP):
+    split_contour(bm, lambda p, off=off: (lambda e: None if e is None or p.z > 0.004 else e + off)(jaw_e(p)))
 tick(f'lips split {len(bm.verts)}')
 
 # exact cut: split along the zero contour of the cut field, drop the negative side
@@ -996,10 +1025,10 @@ def plate_on_shell(name, outline, mat, thick_fn, rings=6, dirn=Vector((0, 1, 0))
     return ob
 
 
-np_outline = rounded_trapezoid(0.056, 0.046, BROW_Z + 0.002, NP_TOP, 0.012, 0.003)
+np_outline = rounded_trapezoid(0.056, 0.046, BROW_Z + 0.0025, NP_TOP, 0.012, 0.003)
 # the bumper is thickest in the middle and thins toward its ends
 nameplate = plate_on_shell('Nameplate', np_outline, 'bumper',
-                           lambda u, v: lerp(0.0062, 0.0048, v) * (1 - 0.3 * smooth(0.7, 1.0, abs(2 * u - 1))))
+                           lambda u, v: lerp(0.0062, 0.0048, v) * (1 - 0.5 * smooth(0.55, 1.0, abs(2 * u - 1))))
 
 # hard surface the facemask is fitted against: the finished shell and the bumper
 _hard_v, _hard_f = [], []
@@ -1191,23 +1220,36 @@ def build_mask(style):
     # then faired and kept at least 2 mm off
     solved = {}
     for i in top_ids:
-        s = solve_top(fr[i], TOP_GAP)
-        if s is not None:
-            solved[i] = s
+        if fr[i].x >= -1e-6:          # +x half; the -x half mirrors it
+            s = solve_top(fr[i], TOP_GAP)
+            if s is not None:
+                solved[i] = s
     ids = sorted(solved)
-    # fair along the bar (runs of consecutive solved samples)
-    for _ in range(4):
+    # drop outliers (a solve that caught the end of the bumper), then fair
+    # along the bar, never closer than 85% of the gap
+    for i in ids:
+        a, b = solved.get(i - 2), solved.get(i + 2)
+        if a is not None and b is not None and (solved[i] - (a + b) / 2).length > 0.0012:
+            solved[i] = (a + b) / 2
+    for _ in range(20):
         new = {}
         for i in ids:
             a, b = solved.get(i - 1), solved.get(i + 1)
             new[i] = (a + solved[i] * 2 + b) / 4 if a is not None and b is not None else solved[i]
         for i in ids:
             q = new[i]
-            sd = hard_dist(q)[0]
-            if sd < MR + 0.002:
-                _, hit, n = hard_dist(q)
-                q = hit + n * (MR + 0.002)
+            sd, hit, n = hard_dist(q)
+            if sd < MR + TOP_GAP * 0.85:
+                q = hit + n * (MR + TOP_GAP * 0.85)
             solved[i] = q
+    for i in top_ids:
+        if fr[i].x < -1e-6:
+            m = P(-fr[i].x, fr[i].y, fr[i].z)
+            k = min(ids, key=lambda j: (fr[j] - m).length)
+            if (fr[k] - m).length < 0.003:
+                q = solved[k]
+                solved[i] = P(-q.x, q.y, q.z)
+    ids = sorted(solved)
     # 2. the clips: the frame drops into the upper clip at the temple and sits in
     # the lower clip at its lower corner, both CLIP_BAR_H off the shell
     clips = []
@@ -1330,10 +1372,17 @@ def snap_welds(bars):
         dist, i, j = best
         if dist > 0.03:
             continue
+        # a bar that ends on another stops there (no tail past the joint)
+        if 0 < i < len(A) - 1 and min(i, len(A) - 1 - i) < len(A) * 0.2:
+            tail_end = i > len(A) / 2
+            A = A[:i + 1] if tail_end else A[i:]
+            i = len(A) - 1 if tail_end else 0
+            bars[a] = A
         # crossings: within 2 bar radii; ends: pull A's point onto B
-        if dist > MR * 1.2:
-            delta = B[j] - A[i]
-            delta = delta - delta.normalized() * MR * 1.2
+        # an end meets the other bar's centre line; crossing bars sit on each other
+        want = 0.0 if i in (0, len(A) - 1) else MR * 1.8
+        if dist > want + 1e-4:
+            delta = (B[j] - A[i]) * (1 - want / dist)
             # arc length from i
             acc = [0.0] * len(A)
             for k in range(i + 1, len(A)):
@@ -1583,10 +1632,10 @@ for s in (1, -1):
     hw_parts.append(sc)
 
     # lower strap: cup → under the jaw → cam buckle at the bottom edge → ratchet strip → anchor
-    cb, cbn = on_shell(sm(P(0.122, -0.030, -0.132)), 0.0)
-    an, ann = on_shell(sm(P(0.125, 0.072, -0.074)), 0.0)
+    cb, cbn = on_shell(sm(P(0.121, -0.010, -0.119)), 0.0)
+    an, ann = on_shell(sm(P(0.125, 0.044, -0.086)), 0.0)
     rs, rsn = on_shell(sm(P(0.125, 0.0, -0.106)), 0.0)
-    path = [CUP_C + sm(P(0.038, -0.013, -0.014)), sm(P(0.084, -0.102, -0.154)), sm(P(0.112, -0.062, -0.152)),
+    path = [CUP_C + sm(P(0.038, -0.013, -0.014)), sm(P(0.082, -0.100, -0.149)), sm(P(0.112, -0.052, -0.142)),
             cb + cbn * 0.006]
     path = catmull(path, 8)
     straps.append(ribbon(f'StrapLo{s}', path, 0.017, 0.0018, 'strap', lambda p: up_out(p)))
