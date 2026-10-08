@@ -314,7 +314,10 @@ export function paintSleeveTex(jersey, meta) {
     // lettering wrapped round the sleeve inside the stripes (Cardinals)
     const { s: text, c: col, at = 4.8, h = 2.4 } = sl.textBand;
     const circ = circAt(R, 0.15) * 100, pxPerCmX = W / circ;
+    // the sleeve UVs run u backwards round the arm, so draw it mirrored to read left to right
+    ctx.save(); ctx.translate(W, 0); ctx.scale(-1, 1);
     drawLettering(ctx, text, W / 2, rowCm(at), h * pxPerCmY, pxPerCmX / pxPerCmY, [col], 'squareSans', 0, 0, 0.12);
+    ctx.restore();
   }
 
   // hem binding

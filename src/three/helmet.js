@@ -16,8 +16,9 @@ import { loadLogo } from './logos.js';
 //   shell, finish ('gloss' | 'matte' | 'metallic' | 'chrome'), stripe, pattern,
 //   mask (facemask colour, null = no mask), maskStyle ('2BD' | '2EG' | '3BD'),
 //   chinstrap (strap colour),
-//   logo, numbers, numAt, nameplate: { bg, fg } (Riddell bumper colours,
-//   default black plate with a white wordmark), cup (chin cup colour).
+//   logo ({ img | t, size, at }; size and at also apply to drawn marks),
+//   numbers, numAt, nameplate: { bg, fg, text } (bumper colours and lettering,
+//   default black plate with a white Riddell wordmark), cup (chin cup colour).
 
 const URL = 'public/models/helmet.glb';
 const DETAIL_URL = asset('public/models/helmet_detail.png');
@@ -37,7 +38,7 @@ function canvasTexture(c, { srgb = true, flipY = false } = {}) {
 }
 
 // The Riddell wordmark: heavy upright geometric sans with a dotless i.
-function wordmark(ctx, x, y, h, fill) {
+function wordmark(ctx, x, y, h, fill, text = 'Rıddell') {
   ctx.save();
   ctx.fillStyle = fill;
   ctx.font = `900 ${h}px "Helvetica Neue", "Arial Black", Arial, sans-serif`;
@@ -46,12 +47,12 @@ function wordmark(ctx, x, y, h, fill) {
   ctx.translate(x, y);
   ctx.scale(1.02, 1);
   if ('letterSpacing' in ctx) ctx.letterSpacing = `${-h * 0.02}px`;
-  ctx.fillText('Rıddell', 0, 0);
+  ctx.fillText(text, 0, 0);
   ctx.restore();
 }
 
 // Nameplate bumper: UV u runs across the plate, v from its bottom to its top.
-function nameplateTexture(bg = '#141517', fg = '#f4f4f4') {
+function nameplateTexture(bg = '#141517', fg = '#f4f4f4', text) {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 224;
   const ctx = c.getContext('2d');
@@ -62,7 +63,7 @@ function nameplateTexture(bg = '#141517', fg = '#f4f4f4') {
   g.addColorStop(0, 'rgba(255,255,255,0.06)'); g.addColorStop(0.5, 'rgba(255,255,255,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
   // the wordmark sits in the upper part of the plate: the top bar crosses its lower third
-  wordmark(ctx, 256, 86, 92, fg);
+  wordmark(ctx, 256, 86, 92, fg, text || 'Rıddell');
   return canvasTexture(c);
 }
 
@@ -265,7 +266,7 @@ export class Helmet {
     this.mats.strap.color.set(helmet.chinstrap || '#18191b');
     const np = helmet.nameplate || {};
     this.mats.bumper.map?.dispose();
-    this.mats.bumper.map = nameplateTexture(np.bg, np.fg);
+    this.mats.bumper.map = nameplateTexture(np.bg, np.fg, np.text);
     this.mats.bumper.needsUpdate = true;
 
     this.group.updateMatrixWorld(true);
@@ -289,8 +290,8 @@ export class Helmet {
         const c = paintLogo(logo, facing);
         if (c) {
           const t = canvasTexture(c, { flipY: true }); this.textures.push(t);
-          const size = { wing: 0.23, ramhorn: 0.25, horn: 0.15, bolt: 0.17, horseshoe: 0.12, steelmark: 0.085 }[logo.t] || 0.11;
-          const at = logo.t === 'wing' ? [0.35, 0.25] : logo.t === 'ramhorn' ? [0.25, 0.2] : logo.at;
+          const size = logo.size ?? ({ wing: 0.23, ramhorn: 0.25, horn: 0.15, bolt: 0.17, horseshoe: 0.12, steelmark: 0.085 }[logo.t] || 0.11);
+          const at = logo.at ?? (logo.t === 'wing' ? [0.35, 0.25] : logo.t === 'ramhorn' ? [0.25, 0.2] : undefined);
           this.decal(shell, this.hitSide(sx, at), size, size, t, finish, false);
         }
       }
