@@ -1023,32 +1023,44 @@ export const TEAMS = [
 
   // ───────────────────────────── NFC SOUTH ─────────────────────────────
   (() => {
-    const R = '#A71930', BK = '#101010', SIL = '#A5ACAF';
+    const R = '#A71930', BK = '#0B0B0C', SIL = '#A5ACAF';
+    // 2026 stripe: silver | white | black | red | black | white | silver (red + black from the 1966 original, silver added)
+    const stripe26 = [[SIL, 0.8], [W, 0.5], [BK, 1.1], [R, 1.1], [BK, 1.1], [W, 0.5], [SIL, 0.8]];
     return {
       id: 'ATL', city: 'Atlanta', name: 'Falcons', conf: 'NFC', div: 'South',
-      colors: [R, BK, SIL], font: 'chamfer',
+      colors: [R, BK, SIL], font: 'falcons',
       helmets: [
-        { id: 'black', name: 'Black', tag: 'Primary', shell: BK, finish: 'gloss', mask: SIL, stripe: null, logo: { img: 'ATL', faces: 'right', size: 0.13 } },
-        { id: 'red', name: '1966 Red', tag: 'Throwback', shell: R, finish: 'gloss', mask: SIL, stripe: sym([BK, 1], [W, 0.8]), logo: { img: 'ATL_tb', faces: 'left', size: 0.1 } },
+        // low-gloss black shell, plain silver facemask (replaces the satin black / brushed nickel of 2020-25)
+        { id: 'black', name: 'Black', tag: 'Primary', shell: BK, finish: 'matte', mask: SIL, stripe: null, logo: { img: 'ATL', faces: 'right', size: 0.13 } },
+        // 1966 throwback: red shell, black centre stripe edged in white, silver mask
+        { id: 'red', name: '1966 Red', tag: 'Throwback', shell: R, finish: 'gloss', mask: SIL, stripe: sym([W, 0.5], [BK, 1.8]), logo: { img: 'ATL_tb', faces: 'left', size: 0.1 } },
       ],
       jerseys: [
-        { id: 'red', name: 'Red', tag: 'Home · New 2026', base: R, num: [W, BK], numO: [0.03, 0], tv: 'shoulder', word: { s: 'FALCONS', c: W, font: 'squareSans', tracking: 0.2 }, neckTag: { s: 'DIRTY BIRDS', c: R }, sleeveLogo: 'ATL' },
-        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [R, BK], numO: [0.03, 0], tv: 'shoulder', word: { s: 'ATLANTA', c: BK, font: 'squareSans', tracking: 0.2 }, neckTag: { s: 'DIRTY BIRDS', c: R }, sleeveLogo: 'ATL' },
-        { id: 'y1966', name: '1966 Black', tag: 'Throwback', base: BK, num: [W, R], numO: [0.03, 0], tv: 'shoulder', sleeveLogo: 'ATL_tb' },
+        { id: 'red', name: 'Red', tag: 'Home · New 2026', base: R, num: [W, BK], numO: [0.035, 0], tv: 'shoulder',
+          word: { s: 'FALCONS', c: W, font: 'squareBlock', h: 0.026, tracking: 0.16 },
+          neckTag: { s: 'DIRTY BIRDS', c: W }, sleeveLogo: 'ATL', swoosh: W,
+          plateFont: 'plate', plateTracking: 0.07 },
+        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [R, BK], numO: [0.035, 0], tv: 'shoulder',
+          word: { s: 'ATLANTA', c: BK, font: 'squareBlock', h: 0.026, tracking: 0.16 },
+          neckTag: { s: 'DIRTY BIRDS', c: R }, sleeveLogo: 'ATL', swoosh: R,
+          plateFont: 'plate', plateTracking: 0.07 },
+        { id: 'y1966', name: '1966 Black', tag: 'Throwback', base: BK, num: [W, R], numO: [0.03, 0], font: 'block', tv: 'shoulder', sleeveLogo: 'ATL_tb', swoosh: W },
       ],
       pants: [
-        { id: 'white', name: 'White', tag: 'New 2026', base: W, stripe: [[BK, 1], ['#C4C8CB', 1.4]] },
-        { id: 'black', name: 'Black', tag: 'New 2026', base: BK, stripe: [[W, 1], ['#9EA3A7', 1.4]] },
-        { id: 'tb', name: '1966 White', tag: 'Throwback', base: W, stripe: sym([BK, 0.8], [R, 1.2]) },
+        { id: 'white', name: 'White', tag: 'New 2026', base: W, stripe: stripe26, swoosh: R },
+        { id: 'black', name: 'Black', tag: 'New 2026', base: BK, stripe: stripe26, swoosh: W },
+        { id: 'tb', name: '1966 White', tag: 'Throwback', base: W, stripe: [[R, 1], [BK, 0.7]], swoosh: BK },
       ],
       socks: [
         { id: 'red', name: 'Red', base: R },
         { id: 'white', name: 'White', base: W },
-        { id: 'tb', name: 'Throwback', base: W, stripes: [[BK, 1.2], [W, 0.6], [R, 1.6], [W, 0.6], [BK, 1.2]], stripesFrom: 14 },
+        // official 2026 closet photo: black socks with a red / white ankle band
+        { id: 'tb', name: 'Throwback', base: BK, stripes: [[R, 1.6], [W, 0.9], [R, 1.6]], stripesFrom: 20 },
       ],
       looks: [
         { name: 'Home', h: 'black', j: 'red', p: 'white', s: 'red', status: 'worn' },
         { name: 'Road', h: 'black', j: 'white', p: 'black', s: 'white', status: 'worn' },
+        { name: 'Road (White Pants)', h: 'black', j: 'white', p: 'white', s: 'white', status: 'worn' },
         { name: '1966 Throwback', h: 'red', j: 'y1966', p: 'tb', s: 'tb', debut: '2026-10-25', note: 'vs SF, then Dec 6 vs DET' },
       ],
     };
@@ -1061,53 +1073,63 @@ export const TEAMS = [
       id: 'CAR', city: 'Carolina', name: 'Panthers', conf: 'NFC', div: 'South',
       colors: [BLUE, BK, SIL], font: 'chiefs',
       helmets: [
-        { id: 'silver', name: 'Silver', tag: 'Primary', shell: '#C4C6C8', finish: 'metallic', mask: BK, stripe: [[BLUE, 0.6], [BK, 0.6]], logo },
-        { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: [[BLUE, 0.6]], logo },
+        // metallic silver shell; thin process-blue centre stripe edged in black, black mask
+        { id: 'silver', name: 'Silver', tag: 'Primary', shell: '#C4C6C8', finish: 'metallic', mask: BK, stripe: sym([BK, 0.35], [BLUE, 0.6]), logo },
+        { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: [[BLUE, 0.8]], logo },
       ],
       jerseys: [
-        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W, BLUE], tv: 'shoulder', collar: [[BLUE, 3]], sleeveLogo: 'CAR', panels: { raglan: [BLUE, 3.4, [SIL, 0.5]] }, sleeve: { cap: BK } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, BLUE], tv: 'shoulder', collar: [[BK, 3]], sleeveLogo: 'CAR', panels: { raglan: [BLUE, 3.4, [SIL, 0.5]] } },
-        { id: 'blue', name: 'Process Blue', tag: 'Alternate', base: BLUE, num: [W, BK], tv: 'shoulder', collar: [[BK, 3]], sleeveLogo: 'CAR', panels: { raglan: [BK, 3.4, [SIL, 0.5]] } },
+        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W, BLUE], numO: [0.035, 0], tv: 'shoulder', collar: [[BLUE, 3]], sleeveLogo: 'CAR', swoosh: W,
+          panels: { raglan: [BLUE, 3.4, [SIL, 0.5]] }, sleeve: { cap: BK } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, BLUE], numO: [0.035, 0], tv: 'shoulder', collar: [[BK, 3]], sleeveLogo: 'CAR', swoosh: BK,
+          panels: { raglan: [BLUE, 3.4, [BK, 0.4]] } },
+        { id: 'blue', name: 'Process Blue', tag: 'Alternate', base: BLUE, num: [W, BK], numO: [0.035, 0], tv: 'shoulder', collar: [[BK, 3]], sleeveLogo: 'CAR', swoosh: W,
+          panels: { raglan: [BK, 3.4, [SIL, 0.5]] } },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: [[BK, 0.6], [BLUE, 1.4]] },
-        { id: 'silver', name: 'Silver', base: '#C9CACB', stripe: [[BK, 0.6], [BLUE, 1.4]] },
-        { id: 'blue', name: 'Process Blue', base: BLUE, stripe: [[SIL, 0.5], [BK, 1.4]] },
-        { id: 'black', name: 'Black', base: BK, stripe: [[SIL, 0.5], [BLUE, 1.4]] },
+        { id: 'white', name: 'White', base: W, stripe: [[BLUE, 1.4], [BK, 0.6]], swoosh: BK },
+        { id: 'silver', name: 'Silver', base: '#C9CACB', stripe: [[BLUE, 1.4], [BK, 0.6]], swoosh: BK },
+        { id: 'blue', name: 'Process Blue', base: BLUE, stripe: [[BK, 1.4], [SIL, 0.5]], swoosh: W },
+        { id: 'black', name: 'Black', base: BK, stripe: [[SIL, 0.5], [BLUE, 1.4]], swoosh: W },
       ],
       socks: [
         { id: 'black', name: 'Black', base: BK },
       ],
       looks: [
-        { name: 'Home', h: 'silver', j: 'black', p: 'white', s: 'black', status: 'worn' },
-        { name: 'Road', h: 'silver', j: 'white', p: 'silver', s: 'black', status: 'worn' },
+        { name: 'Home', h: 'silver', j: 'black', p: 'white', s: 'black', status: 'worn', note: 'Black jerseys: Weeks 4, 9, 11, 15, 17, 18' },
+        { name: 'Road', h: 'silver', j: 'white', p: 'silver', s: 'black', status: 'worn', note: 'All eight road games; no white at home in 2026' },
         { name: 'All Black', h: 'black', j: 'black', p: 'black', s: 'black', status: 'worn' },
-        { name: 'Process Blue', h: 'silver', j: 'blue', p: 'blue', s: 'black', status: 'worn' },
-        { name: 'Process Blue (Black Helmet)', h: 'black', j: 'blue', p: 'blue', s: 'black', status: 'worn', note: 'Sep 13 vs CHI' },
+        { name: 'Process Blue', h: 'silver', j: 'blue', p: 'blue', s: 'black', status: 'worn', note: 'Blue jerseys: Weeks 1, 7, 14' },
+        { name: 'Process Blue (Black Helmet)', h: 'black', j: 'blue', p: 'black', s: 'black', status: 'worn', note: 'Sep 13 vs CHI: blue jersey, black pants, black socks, black helmet' },
       ],
     };
   })(),
 
   (() => {
-    const GOLD = '#D3BC8D', BK = '#101820', DG = '#B39A3A';
+    const GOLD = '#D3BC8D', BK = '#101820', RG = '#C2A418';
+    const fleurGold = 'NO@#D3BC8D', fleurBlack = 'NO@#101820';
     return {
       id: 'NO', city: 'New Orleans', name: 'Saints', conf: 'NFC', div: 'South',
-      colors: [GOLD, BK, W], font: 'cowboys',
+      colors: [GOLD, BK, W], font: 'saints',
       helmets: [
-        { id: 'gold', name: 'Old Gold', tag: 'Primary', shell: GOLD, finish: 'metallic', mask: BK, stripe: null, logo: { img: 'NO', size: 0.1 } },
-        { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: null, pattern: { t: 'halftone', c: GOLD }, logo: { img: 'NO', size: 0.1 } },
-        { id: 'white', name: 'White', tag: 'Alternate', shell: W, finish: 'gloss', mask: DG, stripe: [[GOLD, 1.6]], logo: { img: 'NO', size: 0.1 } },
+        // metallic old gold, black fleur-de-lis; black centre stripe edged in white
+        { id: 'gold', name: 'Old Gold', tag: 'Primary', shell: GOLD, finish: 'metallic', mask: BK, stripe: sym([W, 0.4], [BK, 1.4]), logo: { img: 'NO', size: 0.1 } },
+        // black shell with gold dots thickening toward the back, gold fleur
+        { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: null, pattern: { t: 'halftone', c: GOLD }, logo: { img: fleurGold, size: 0.1 } },
+        // 2025 Color Rush white shell: gold facemask, gold-edged centre stripe, gold fleur
+        { id: 'white', name: 'White', tag: 'Color Rush', shell: W, finish: 'gloss', mask: RG, stripe: sym([BK, 0.3], [RG, 0.9]), logo: { img: 'NO@#CDB46A', size: 0.1 } },
       ],
       jerseys: [
-        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [GOLD, W], numO: [0.025, 0], tv: 'shoulder', collar: [[GOLD, 3]], sleeveLogo: 'NO' },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, GOLD], numO: [0.025, 0], tv: 'shoulder', collar: [[BK, 3]], sleeveLogo: 'NO' },
-        { id: 'gold', name: 'Gold', tag: 'Alternate', base: GOLD, num: [BK, W], numO: [0.025, 0], tv: 'shoulder', collar: [[BK, 3]], sleeveLogo: 'NO' },
-        { id: 'rush', name: 'Color Rush White', tag: 'Color Rush', base: W, num: [DG, BK], numO: [0.025, 0], tv: 'shoulder', sleeve: { stripes: [[BK, 1], [DG, 1], [BK, 1], [DG, 1]], from: 3 } },
+        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [GOLD, W], numO: [0.03, 0], tv: 'shoulder', collar: [[GOLD, 3.2]], sleeveLogo: fleurGold, swoosh: GOLD },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, GOLD], numO: [0.03, 0], tv: 'shoulder', collar: [[BK, 3.2]], sleeveLogo: 'NO', swoosh: BK },
+        { id: 'gold', name: 'Gold', tag: 'Alternate', base: GOLD, num: [BK, W], numO: [0.03, 0], tv: 'shoulder', collar: [[BK, 3.2]], sleeveLogo: fleurBlack, swoosh: BK },
+        // Color Rush: gold numbers edged in black, black / gold diagonal bars on the sleeves, plain white collar
+        { id: 'rush', name: 'Color Rush White', tag: 'Color Rush', base: W, num: [RG, BK], numO: [0.035, 0], tv: 'shoulder', swoosh: BK,
+          sleeve: { stripes: [[BK, 0.9], [RG, 0.9], [BK, 0.9], [RG, 0.9], [BK, 0.9]], from: 5 } },
       ],
       pants: [
-        { id: 'black', name: 'Black', base: BK, hipLogo: 'NO' },
-        { id: 'gold', name: 'Old Gold', base: GOLD, stripe: [[BK, 3.2]], hipLogo: 'NO' },
-        { id: 'white', name: 'White', base: W, stripe: [[BK, 0.4], [DG, 1.3], [BK, 0.4]] },
+        { id: 'black', name: 'Black', base: BK, hipLogo: fleurGold, swoosh: GOLD },
+        { id: 'gold', name: 'Old Gold', base: GOLD, stripe: [[BK, 3.2]], hipLogo: 'NO', swoosh: BK },
+        { id: 'white', name: 'Color Rush White', tag: 'Color Rush', base: W, stripe: sym([BK, 0.3], [RG, 1]), swoosh: BK },
       ],
       socks: [
         { id: 'black', name: 'Black', base: BK },
@@ -1123,41 +1145,44 @@ export const TEAMS = [
   })(),
 
   (() => {
-    const R = '#C8102E', PEW = '#34302B', BK = '#0A0A08', OR = '#FF7900', CREAM = '#F58426';
+    const R = '#A6192E', PEW = '#34302B', BK = '#0A0A08', OR = '#FF7900';
+    // chest wordmark: the red letter layer of the BUCCANEERS wordmark, tinted flat (the jersey lettering is one colour)
+    const word = (c) => ({ img: `TB_word_name@${c}`, h: 0.03 });
     return {
       id: 'TB', city: 'Tampa Bay', name: 'Buccaneers', conf: 'NFC', div: 'South',
-      colors: [R, PEW, OR], font: 'cowboys',
+      colors: [R, PEW, OR], font: 'bucs',
       helmets: [
-        { id: 'pewter', name: 'Pewter', tag: 'Primary', shell: '#3A3632', finish: 'metallic', mask: BK, stripe: null, logo: { img: 'TB', faces: 'left', size: 0.15 } },
-        { id: 'creamsicle', name: 'Creamsicle White', tag: 'Throwback', shell: W, finish: 'gloss', mask: OR, stripe: sym([OR, 0.8], [R, 1]),
+        { id: 'pewter', name: 'Pewter', tag: 'Primary', shell: PEW, finish: 'metallic', mask: BK, stripe: null, logo: { img: 'TB', faces: 'left', size: 0.15 } },
+        { id: 'creamsicle', name: 'Creamsicle White', tag: 'Throwback', shell: W, finish: 'gloss', mask: OR, stripe: sym([R, 0.4], [OR, 1.2]),
           logo: { img: 'TB_tb', faces: 'left', size: 0.13 } },
       ],
       jerseys: [
-        { id: 'red', name: 'Red', tag: 'Home', base: R, num: [W, BK, OR], numO: [0.025, 0.025], tv: 'shoulder', word: { s: 'BUCCANEERS', c: BK, font: 'condensed', tracking: 0.08 }, collar: [[BK, 1.2], [R, 0.5], [BK, 0.6]],
-          sleeve: { stripes: [[BK, 3]], from: 0 } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [R, BK, OR], numO: [0.025, 0.025], tv: 'shoulder', word: { s: 'BUCCANEERS', c: BK, font: 'condensed', tracking: 0.08 }, collar: [[BK, 1.2], [W, 0.5], [BK, 0.6]],
-          sleeve: { stripes: [[BK, 3]], from: 0 } },
-        { id: 'pewter', name: 'Pewter', tag: 'Alternate', debut: '2026-12-20', base: PEW, num: [W, R], numO: [0.03, 0], tv: 'shoulder', word: { s: 'BUCCANEERS', c: R, font: 'condensed', tracking: 0.08 },
-          collar: [[R, 1.2], [PEW, 0.5], [R, 0.6]], sleeve: { stripes: [[R, 3]], from: 0 } },
-        { id: 'creamwhite', name: 'Creamsicle White', tag: 'Throwback', debut: '2026-12-06', base: W, num: [OR, R], numO: [0.025, 0], font: 'block', tv: 'sleeve',
-          sleeve: { stripes: [[OR, 1.6]], from: 1 } },
+        // black bar in the V-neck trim, black sleeve cuffs, white numbers edged in orange then black
+        { id: 'red', name: 'Red', tag: 'Home', base: R, num: [W, OR, BK], numO: [0.025, 0.03], tv: 'shoulder', word: word(BK), sleeveLogo: 'TB', swoosh: W,
+          collar: [[R, 0.8], [BK, 1.2], [R, 1]], sleeve: { stripes: [[BK, 3]], from: 0 } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [R, OR, BK], numO: [0.025, 0.03], tv: 'shoulder', word: word(BK), sleeveLogo: 'TB', swoosh: R,
+          collar: [[W, 0.8], [BK, 1.2], [W, 1]], sleeve: { stripes: [[BK, 3]], from: 0 } },
+        { id: 'pewter', name: 'Pewter', tag: 'Alternate', debut: '2026-12-20', base: PEW, num: [W, R], numO: [0.03, 0], tv: 'shoulder', word: word(R), sleeveLogo: 'TB', swoosh: R,
+          collar: [[PEW, 0.8], [R, 1.2], [PEW, 1]], sleeve: { stripes: [[R, 3]], from: 0 } },
+        { id: 'creamwhite', name: 'Creamsicle White', tag: 'Throwback', debut: '2026-12-06', base: W, num: [OR, R], numO: [0.025, 0], font: 'block', tv: 'sleeve', swoosh: OR,
+          sleeve: { stripes: [[OR, 1.6], [R, 0.35]], from: 1 } },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: [[R, 0.8], [OR, 0.6], [BK, 0.9]] },
-        { id: 'pewter', name: 'Pewter', base: PEW, stripe: [[R, 0.8], [OR, 0.6], [BK, 0.9]] },
-        { id: 'pewteralt', name: 'Pewter (Red/White)', base: PEW, stripe: [[R, 0.8], [W, 0.6]] },
-        { id: 'creamsicle', name: 'Creamsicle White', tag: 'Throwback', base: W, stripe: [[OR, 1], [R, 0.8]] },
+        { id: 'white', name: 'White', base: W, stripe: [[R, 0.8], [OR, 0.6], [BK, 0.9]], swoosh: R },
+        { id: 'pewter', name: 'Pewter', base: PEW, stripe: [[R, 0.8], [OR, 0.6], [BK, 0.9]], swoosh: R },
+        { id: 'pewteralt', name: 'Pewter (Red/White)', base: PEW, stripe: [[W, 0.4], [R, 0.9]], swoosh: R },
+        { id: 'creamsicle', name: 'Creamsicle White', tag: 'Throwback', base: W, stripe: [[OR, 1], [R, 0.8]], swoosh: OR },
       ],
       socks: [
         { id: 'black', name: 'Black', base: BK },
         { id: 'pewter', name: 'Pewter', base: PEW },
-        { id: 'cream', name: 'Throwback', base: W, stripes: [[OR, 1.6], [R, 0.8]], stripesFrom: 16 },
+        { id: 'cream', name: 'Throwback', base: W, stripes: [[R, 0.35], [OR, 1.6], [R, 0.35]], stripesFrom: 16 },
       ],
       looks: [
         { name: 'Home', h: 'pewter', j: 'red', p: 'white', s: 'black', status: 'worn' },
         { name: 'Road', h: 'pewter', j: 'white', p: 'pewter', s: 'black', status: 'worn' },
-        { name: 'All Pewter', h: 'pewter', j: 'pewter', p: 'pewteralt', s: 'pewter', debut: '2026-12-20', note: 'vs NO' },
-        { name: 'Creamsicle Road', h: 'creamsicle', j: 'creamwhite', p: 'creamsicle', s: 'cream', debut: '2026-12-06', note: 'At LAC' },
+        { name: 'All Pewter', h: 'pewter', j: 'pewter', p: 'pewteralt', s: 'pewter', debut: '2026-12-20', note: 'vs NO; red / white pants stripe, solid pewter socks' },
+        { name: 'Creamsicle Road', h: 'creamsicle', j: 'creamwhite', p: 'creamsicle', s: 'cream', debut: '2026-12-06', note: 'vs LAC (the home version sits out 2026)' },
       ],
     };
   })(),
