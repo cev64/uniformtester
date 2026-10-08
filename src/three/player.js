@@ -118,8 +118,8 @@ const FINISH = {
 // plastic hot spot), the diagonal twill visible up close. The sheen is tinted
 // by the dye; silver (metallic) pants keep a little more lustre.
 const PANTS_FINISH = {
-  cloth: { microStrength: 0.75, cavity: 0.42, roughness: 0.68, specularIntensity: 0.55, sheen: 0.75, sheenRoughness: 0.5 },
-  metallic: { microStrength: 0.65, cavity: 0.36, roughness: 0.56, specularIntensity: 0.8, sheen: 0.95, sheenRoughness: 0.42 },
+  cloth: { microStrength: 0.75, cavity: 0.42, roughness: 0.8, specularIntensity: 0.4, sheen: 0.4, sheenRoughness: 0.7 },
+  metallic: { microStrength: 0.65, cavity: 0.36, roughness: 0.66, specularIntensity: 0.65, sheen: 0.7, sheenRoughness: 0.55 },
 };
 const isMetallicPants = (p) => {
   if (p.finish) return p.finish === 'metallic';
