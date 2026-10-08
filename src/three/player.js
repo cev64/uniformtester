@@ -675,8 +675,11 @@ export class Player {
 
     // Back layout, measured from straight-on photos (research/backs.md) as fractions of the back
     // number height H (outer edge of its outlines): name top 0.10 H below the back neck seam, name
-    // letters 0.21 H (0.055 m caps with a 0.25 m number plus outlines), name bottom to number top 0.07 H. The seam (top edge of the back collar seen from behind) is at
-    // neckY - 0.03 on this model (probed: collar band -0.044..-0.034, cloth edge -0.027).
+    // letters 0.21 H (0.055 m caps with a 0.25 m number plus outlines), name bottom to number top
+    // 0.07 H. The seam (top edge of the back collar seen from behind) is at neckY - 0.03 on this
+    // model (probed: collar band -0.044..-0.034, cloth edge -0.027). The offsets below (0.08 H,
+    // 0.09 H) are what lands on 0.10 H and 0.07 H in the `back` view: the upper back slopes, so
+    // decals there read shorter than they are.
     const seam = neckY - 0.03;
     const numH = jersey.numBackH || 0.25, plateH = jersey.plateH || 0.055;
     const backColors = jersey.numBack || colors;
@@ -701,7 +704,7 @@ export class Player {
     const numOut = numH * ((backColors[1] ? numOpts.o1 : 0) + (backColors[2] ? numOpts.o2 : 0));
     const Hout = numH + 2 * numOut;
     const plOut = plateH * ((jersey.plateOutline?.[0] ? 0.07 : 0) + (jersey.plateOutline?.[1] ? 0.05 : 0));
-    const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.1 * Hout, (tag.h || 0.016) + 0.022) : 0.1 * Hout));
+    const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.08 * Hout, (tag.h || 0.016) + 0.022) : 0.08 * Hout));
     const plateBot = plateTop - plateH * (1 + Math.max(0, arch));
     if (player.name) {
       this.lettering(torso, back((plateTop + plateBot) / 2), player.name.toUpperCase(), plateH,
@@ -709,7 +712,7 @@ export class Player {
         { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
           bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
     }
-    const numTop = plateBot - plOut - 0.07 * Hout - numOut;
+    const numTop = plateBot - plOut - 0.09 * Hout - numOut;
     this.lettering(torso, back(numTop - numH / 2), num, numH, backColors, font, numOpts);
     if (jersey.backShoulder || jersey.panels?.wing) this.backShoulderPanel(jersey, torso, sleeves);
 
