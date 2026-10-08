@@ -84,6 +84,7 @@ The app loads `public/logos/<KEY>.png`; `KEY@#hex` tints a mark one colour at ru
 | `DAL.png` | Cowboys | primary logo | helmet; sleeve; pants | 1018x968 | svg | commons:File:Dallas_Cowboys.svg | Public domain [trademarked] | #0C243C #FCFCFC |
 | `DAL_word.png` | Cowboys | COWBOYS wordmark | chest/sleeve (rare) | 1024x174 | thumb.php | commons:File:Cowboys_wordmark.svg | Public domain [trademarked] | #0C243C |
 | `NYG.png` | Giants | primary logo | helmet; chest (ny); sleeve | 1014x787 | svg | commons:File:New_York_Giants_logo.svg | Public domain [trademarked] | #0C246C #B4243C |
+| `NYG_white.png` | Giants | primary logo, white fill (blue fill of NYG.png recoloured white, red outline kept) | blue helmet decal | 1014x787 | svg | commons:File:New_York_Giants_logo.svg | Public domain [trademarked] | #FFFFFF #B4243C |
 | `NYG_word.png` | Giants | GIANTS wordmark | chest above number (Giants wear it on the chest of alternates) | 1024x395 | thumb.php | commons:File:New_York_Giants_wordmark.svg | Public domain [trademarked] | #0C246C |
 | `PHI.png` | Eagles | primary logo | helmet; sleeve | 1016x700 | svg | en:File:Philadelphia_Eagles_logo.svg | Fair use (non-free) | #FCFCFC #0C0C0C #9CB4B4 |
 | `PHI_tb.png` | Eagles | Kelly-green throwback eagle | throwback sleeve | 147x164 | recut from full-size uniform sheet | commons:File:Philadelphia_Eagles_Uniforms_(2026).png | CC BY 4.0 (uniform sheet); mark itself trademarked | #FCFCFC #0C0C0C |

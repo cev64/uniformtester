@@ -1279,6 +1279,21 @@
   "what": "primary logo",
   "worn": "helmet; chest (ny); sleeve"
  },
+ "NYG_white": {
+  "colors": "#FFFFFF #B4243C",
+  "file": "NYG_white.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1014,
+   787
+  ],
+  "source_title": "New York Giants logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Giants_logo.svg",
+  "team": "NYG",
+  "what": "primary logo, white fill (blue fill of NYG.png recoloured white, red outline kept)",
+  "worn": "blue helmet decal"
+ },
  "NYG_word": {
   "colors": "#0C246C",
   "file": "NYG_word.png",
