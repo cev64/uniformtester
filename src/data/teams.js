@@ -119,9 +119,9 @@ export const TEAMS = [
         { id: 'throwback', name: '1966 Throwback', tag: 'Throwback', shell: W, finish: 'gloss', mask: '#D9DCDF', stripe: sym([OR, 0.9], [null, 0.5], [AQUA, 1.4]), logo: { img: 'MIA_tb', faces: 'left', size: 0.12 } },
       ],
       jerseys: [
-        { id: 'aqua', name: 'Aqua', tag: 'Home', base: AQUA, num: [W, OR], font: 'dolphins', tv: 'shoulder', word: { img: 'MIA_word_name@white', h: 0.03 },
+        { id: 'aqua', name: 'Aqua', tag: 'Home', base: AQUA, num: [W, OR], font: 'dolphins', tv: 'shoulder', word: { img: 'MIA_word_name@white', h: 0.036 },
           neckTag: { s: 'MIAMI', c: OR }, sleeveLogo: 'MIA' },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [AQUA, OR], font: 'dolphins', tv: 'shoulder', word: { img: 'MIA_word_name', h: 0.03 },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [AQUA, OR], font: 'dolphins', tv: 'shoulder', word: { img: 'MIA_word_name', h: 0.036 },
           neckTag: { s: 'MIAMI', c: OR }, sleeveLogo: 'MIA' },
         { id: 'darkwater', name: 'Dark Water', tag: 'Rivalries', base: DARK, num: [AQUA, '#0A6E75'], numO: [0.025, 0], font: 'dolphins', tv: 'shoulder', word: { img: 'MIA_word_city@#FC4C02', h: 0.02 },
           collar: [[OR, 1.2]], neckTag: { s: 'GO FINS!', c: W, bg: OR }, sleeve: { fin: { c: AQUA, stripe: OR } }, swoosh: OR },
@@ -133,7 +133,7 @@ export const TEAMS = [
       pants: [
         { id: 'white', name: 'White', base: W, stripe: [[OR, 0.6], [AQUA, 1.6], [OR, 0.6]], swoosh: AQUA },
         { id: 'aqua', name: 'Aqua', base: AQUA, stripe: [[OR, 0.6], [W, 1.2], [OR, 0.6]], swoosh: W },
-        { id: 'black', name: 'Dark Water', tag: 'Rivalries', base: DARK, stripe: [[OR, 0.5], [AQUA, 2.4], [OR, 0.5]], stripeTaper: [0.2, 1.4], swoosh: OR },
+        { id: 'black', name: 'Dark Water', tag: 'Rivalries', base: DARK, stripe: [[OR, 0.5], [AQUA, 2.4], [OR, 0.5]], stripeTaper: [0.2, 1.4], swoosh: OR, belt: '#101218' },
         { id: 'tbwhite', name: '1966 White', tag: 'Throwback', base: W, stripe: sym([OR, 0.8], [AQUA, 1.4]), swoosh: OR },
       ],
       socks: [
@@ -222,7 +222,7 @@ export const TEAMS = [
         { id: 'green', name: 'Green', base: G, stripe: [[W, 2.6]], swoosh: W },
         { id: 'black', name: 'Black', base: K2, stripe: [[G, 2.6]], swoosh: W },
         { id: 'classic', name: 'Classic White', tag: 'Throwback', base: W, stripe: sym([CG, 0.5], [null, 0.5]), swoosh: CG },
-        { id: 'gotham', name: 'Gotham', tag: 'Rivalries', base: GOTHAM, stripe: [[GR, 1.2], [K2, 0.4]], swoosh: GR },
+        { id: 'gotham', name: 'Gotham', tag: 'Rivalries', base: GOTHAM, stripe: [[GR, 1.2], [K2, 0.4]], swoosh: GR, belt: '#232624' },
       ],
       socks: [
         { id: 'green', name: 'Green', base: G },
