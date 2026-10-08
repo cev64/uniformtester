@@ -184,11 +184,11 @@ The user still thinks the helmet needs work. The most visible problem is **a gap
 ### Step 2b: small engine fixes (one Opus subagent, or do them yourself)
 
 1. **Cleat knit collar** (`player.js`, `cleatknit` material): it renders greyish on black cleats. Make it follow the cleat colour. **Don't change the cleat geometry.**
-3. **Cleat swoosh decal** (`placeDecals` in player.js): it's 0.1 × 0.05 m with the same unmirrored texture on both shoes. Size it like the real lateral swoosh and mirror it so it points forward on both feet.
-4. **Jock tag:** it shows above the belt. On a tucked game jersey it sits under the pants. Lower it or hide it by default, and check against game photos.
-5. **Towel:** hidden by default (`ACCESSORIES.towel = false`) because it reads as a stiff board. Optional: drape it with Blender cloth simulation (pinned under the belt at the front-right hip, ~12×27 cm) and re-enable it only if it looks real.
-6. **Screenshot tool:** the stock `helmetside` view frames off the front of the mask. Widen it.
-7. **Low-res throwback crops** (`PHI_tb` is ragged; also `DEN_tb`, `JAX_tb`, `MIA_tb`, `ATL_tb`, `TB_tb`, `NYJ_classic`, `PIT_crest`): find better sources if any exist (see `research/logos.md` "not found").
+2. **Cleat swoosh decal** (`placeDecals` in player.js): it's 0.1 × 0.05 m with the same unmirrored texture on both shoes. Size it like the real lateral swoosh and mirror it so it points forward on both feet.
+3. **Jock tag:** it shows above the belt. On a tucked game jersey it sits under the pants. Lower it or hide it by default, and check against game photos.
+4. **Towel:** hidden by default (`ACCESSORIES.towel = false`) because it reads as a stiff board. Optional: drape it with Blender cloth simulation (pinned under the belt at the front-right hip, ~12×27 cm) and re-enable it only if it looks real.
+5. **Screenshot tool:** the stock `helmetside` view frames off the front of the mask. Widen it.
+6. **Low-res throwback crops** (`PHI_tb` is ragged; also `DEN_tb`, `JAX_tb`, `MIA_tb`, `ATL_tb`, `TB_tb`, `NYJ_classic`, `PIT_crest`): find better sources if any exist (see `research/logos.md` "not found").
 
 ### Step 3: final realism review (one Opus subagent)
 
