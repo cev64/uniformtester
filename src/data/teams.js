@@ -20,7 +20,11 @@
 //             'top' (crown of the cap like shoulder TV numbers, vertical axis running front to back),
 //             'outer' (outside of the upper sleeve under the cap), 'cuff' (outside of the sleeve at
 //             the hem, the mark's outer edge toward the hem).
-//   panels: { yoke, sides, vstripes }        word: chest wordmark
+//   panels: { yoke, sides, vstripes, wing }  word: chest wordmark
+//             wing: [band, accent] Seahawks wing panel: a band across the chest at the V that sweeps
+//             down the front of each sleeve to the hem, plus an accent wedge at the outer sleeve end
+//             (drawn in front view and projected over torso and sleeves; accent optional)
+//   collarFeathers: { c, n = 6 } chevrons of small feathers on the collar either side of the V (Seahawks)
 //   chestLogo / sleeveLogo / centerLogo: logo image keys (public/logos)
 //   neckTag: text on the back of the collar ({ s, c, bg, font, style })
 //
@@ -1410,13 +1414,15 @@ export const TEAMS = [
         { id: 'silver', name: '90s Silver', tag: 'Throwback', shell: '#C4C8CB', finish: 'gloss', mask: ROY, stripe: sym([G, 0.7], [ROY, 2.2]), logo },
       ],
       jerseys: [
-        // feather-chevron collar, wolf grey yoke bands, "12" tag inside the neck
-        { id: 'navy', name: 'College Navy', tag: 'Home', base: NAVY, num: [WG, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#A7ACB0' }, tv: 'shoulder', word: word(WG), swoosh: G,
-          neckTag: { s: '12', c: NAVY, bg: WG }, feathers: G, collar: [[NAVY, 2.6]], panels: { yoke: [WG, 11, 0] }, sleeve: { top: [WG, 14] } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [NAVY, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(NAVY), swoosh: G,
-          neckTag: { s: '12', c: W, bg: NAVY }, feathers: NAVY, collar: [[W, 2.6]], panels: { yoke: [NAVY, 11, 0] }, sleeve: { top: [NAVY, 14] } },
+        // twelve small feathers either side of the V collar, "12" tag at the neck; the wing panel crosses the
+        // chest at the V (wordmark on it) and sweeps down the front of each sleeve, with an accent wedge at the
+        // outer sleeve end; TV numbers on the shoulder tops above it
+        { id: 'navy', name: 'College Navy', tag: 'Home', base: NAVY, num: [WG, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#A7ACB0' }, tv: 'shoulder', word: word(NAVY), swoosh: G,
+          neckTag: { s: '12', c: NAVY, bg: WG }, collarFeathers: { c: G }, collar: [[NAVY, 2.6]], panels: { wing: [WG, G] } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [NAVY, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(W), swoosh: G,
+          neckTag: { s: '12', c: W, bg: NAVY }, collarFeathers: { c: NAVY }, collar: [[W, 2.6]], panels: { wing: [NAVY, NAVY] } },
         { id: 'green', name: 'Action Green', tag: 'Alternate', base: G, num: [NAVY, WG], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(W), swoosh: W,
-          neckTag: { s: '12', c: G, bg: NAVY }, feathers: NAVY, collar: [[G, 2.6]], panels: { yoke: [NAVY, 11, 0] }, sleeve: { top: [NAVY, 14] } },
+          neckTag: { s: '12', c: G, bg: NAVY }, collarFeathers: { c: NAVY }, collar: [[G, 2.6]], panels: { wing: [NAVY, NAVY] } },
         { id: 'wolf', name: 'Wolf Grey Rivalries', tag: 'Rivalries', base: '#C4C7C9', num: [G, NAVY], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#3E9A2A' },
           word: { img: 'SEA_word_name@#002244', h: 0.026 }, swoosh: NAVY, collar: [[NAVY, 2.6]], sleeve: { pattern: { t: 'feathers', c: G } } },
         { id: 'royal', name: '90s Royal', tag: 'Throwback', base: ROY, num: [W], font: 'chamfer', numStyle: 'twill', tv: 'shoulder', swoosh: W, collar: [[G, 0.6], [W, 0.5], [ROY, 1.2]], sleeveLogo: 'SEA' },

@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
-import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, paintCollar, letteringLayers, eyeCanvas, swooshCanvas, jockTagCanvas } from './garments.js';
+import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, paintCollar, letteringLayers, eyeCanvas, swooshCanvas, jockTagCanvas, wingCanvas } from './garments.js';
 import { fabricMaterial, torsoDetail, torsoZones, sleeveDetail, sleeveZones, pantsDetail, collarDetail } from './fabric.js';
 import { buildApplique, imageApplique } from './applique.js';
 import { Helmet } from './helmet.js';
@@ -351,9 +351,10 @@ export class Player {
   // Projects a decal onto the meshes at a hit. With `finish` (an appliqué
   // style) the decal gets the cloth material for that finish and `normal`
   // as its relief map; otherwise a plain printed material.
-  decal(meshes, hit, width, height, texture, { up = new THREE.Vector3(0, 1, 0), depth = 0.1, rough = 0.6, minDot = 0.35, finish = null, normal = null } = {}) {
+  // `axis` projects along a fixed world direction instead of the hit face's normal; `order` is the renderOrder.
+  decal(meshes, hit, width, height, texture, { up = new THREE.Vector3(0, 1, 0), depth = 0.1, rough = 0.6, minDot = 0.35, finish = null, normal = null, axis = null, order = 2 } = {}) {
     if (!hit || !texture) return;
-    const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+    const n = axis ? axis.clone().normalize() : hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
     const helper = new THREE.Object3D();
     helper.position.copy(hit.point);
     helper.up.copy(up);
@@ -371,7 +372,7 @@ export class Player {
       geo.applyMatrix4(inv);   // DecalGeometry is in world space
       const d = new THREE.Mesh(geo, mat);
       used = true;
-      d.renderOrder = 2;
+      d.renderOrder = order;
       d.receiveShadow = true;
       this.group.add(d);
       this.decals.push(d);
@@ -437,6 +438,37 @@ export class Player {
     this.decal(meshes, hit, widthM / (1 - 2 * px), hM / (1 - 2 * py), map, { ...opts, finish: style, normal });
   }
 
+  // The Seahawks-style wing panel (garments.js wingCanvas), fitted to the
+  // model: the chest band sits at the V-neck, and the sleeve part ends on the
+  // front of the hem (found from the sleeve mesh, whose exported UVs put the
+  // hem at v = 1). Projected straight from the front over torso and sleeves.
+  wingPanel(colors, yV, torso, sleeves) {
+    const sh = this.J['upperarm01.L'];
+    const v = new THREE.Vector3(), hem = [];
+    for (const m of sleeves) {
+      const p = m.geometry.attributes.position, uv = m.geometry.attributes.uv;
+      for (let i = 0; i < p.count; i++) {
+        if (uv.getY(i) < 0.97) continue;
+        v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld);
+        if (v.x > 0) hem.push(v.clone());
+      }
+    }
+    if (!hem.length) return;
+    const zc = hem.reduce((a, q) => a + q.z, 0) / hem.length;
+    const fr = hem.filter((q) => q.z >= zc);
+    const xi = Math.min(...fr.map((q) => q.x)), xo = Math.max(...fr.map((q) => q.x));
+    const yh = fr.reduce((a, q) => a + q.y, 0) / fr.length;
+    const yT = yV + 0.012, yB = yT - 0.062;
+    const g = { hx: xo + 0.08, yTop: yT + 0.01, yBot: yh - 0.04, x0: [0.05, 0.024], yT, yB, xbT: sh.x + 0.025, xbB: sh.x - 0.015, xi, xo, yh };
+    const t = new THREE.CanvasTexture(wingCanvas(colors, g));
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = this.aniso;
+    this.textures.push(t);
+    const hit = { point: new THREE.Vector3(0, (g.yTop + g.yBot) / 2, 0.05) };
+    this.decal([...torso, ...sleeves], hit, 2 * g.hx, g.yTop - g.yBot, t,
+      { axis: new THREE.Vector3(0, 0, 1), depth: 0.4, finish: 'print', minDot: 0.2, order: 1 });
+  }
+
   placeDecals(team, jersey, pants, player, logos, cleatColor) {
     this.group.updateMatrixWorld(true);
     const torso = this.meshes.jersey || [];
@@ -459,6 +491,9 @@ export class Player {
     const gs = meta.ground_shift || 0, z0 = meta.jersey.z0 + gs, z1 = meta.jersey.z1 + gs;
     const vV = meta.collar?.front_uv ? Math.min(...meta.collar.front_uv.map(([, v]) => v)) : null;
     const yV = vV != null ? z0 + vV * (z1 - z0) : neckY - 0.08;
+
+    // shoulder wing panel across the chest and down the sleeves, under the other decals
+    if (jersey.panels?.wing) this.wingPanel(jersey.panels.wing, yV, torso, sleeves);
 
     // Front: wordmark, number, NFL shield at the collar V
     const w = jersey.word;

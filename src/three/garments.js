@@ -723,10 +723,76 @@ export function paintCollar(jersey, meta) {
       }
     }
   }
+  if (jersey.collarFeathers) {
+    // small feathers set into the front of the collar either side of the V, in
+    // pairs that form chevrons pointing down to the V (Seahawks: 12 a side)
+    const { c: col, n = 6 } = jersey.collarFeathers;
+    const vu = meta.collar?.v_point_u ?? 0.5;
+    const per = (meta.collar?.perimeter || 0.77) * 100;
+    const pu = W / per, pv = H / wCm;                 // px per cm along / across the band
+    ctx.fillStyle = col;
+    for (const side of [-1, 1]) {
+      for (let k = 0; k < n; k++) {
+        const ax = (vu + side * (2.4 + k * 1.2) / per) * W, ay = H * 0.52;   // chevron point, nearest the V
+        for (const s of [-1, 1]) {
+          // one feather: a slim leaf from the point back and out toward the band edge
+          const tx = ax + side * 1.05 * pu, ty = ay + s * 0.72 * pv;
+          const mx = (ax + tx) / 2, my = (ay + ty) / 2;
+          const dx = (tx - ax) / pu, dy = (ty - ay) / pv, l = Math.hypot(dx, dy);
+          const nx = (-dy / l) * 0.21 * pu, ny = (dx / l) * 0.21 * pv;   // half-width 2 mm
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.quadraticCurveTo(mx + nx, my + ny, tx, ty);
+          ctx.quadraticCurveTo(mx - nx, my - ny, ax, ay);
+          ctx.fill();
+        }
+      }
+    }
+  }
   // knit ribs
   ctx.globalAlpha = 0.08;
   ctx.fillStyle = '#000';
   for (let x = 0; x < W; x += 4) ctx.fillRect(x, 0, 1.5, H);
   ctx.globalAlpha = 1;
+  return c;
+}
+
+// ─── shoulder wing panel ───────────────────────────────────────────────
+// The Seahawks' "thunderbird wing": a band across the upper chest from the
+// collar to the raglan seam that sweeps down the front of each sleeve to the
+// hem, with an accent wedge on the outer side of the sleeve end, set off from
+// the band by a stripe of jersey colour. It crosses the torso/sleeve seam, so
+// it is drawn in front-view world coordinates (metres, +x = player's left) and
+// projected onto both garments from the front (player.js wingPanel).
+// g: { hx, yTop, yBot: canvas extent; x0: [inner end x at the top, at the bottom]; yT / yB: band top / bottom on the chest;
+//      xbT / xbB: where the top / bottom edges turn down the sleeve; xi / xo / yh: front of the sleeve hem }
+export function wingCanvas([band, accent], g, pxPerM = 2600) {
+  const W = Math.round(2 * g.hx * pxPerM), H = Math.round((g.yTop - g.yBot) * pxPerM);
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  const poly = (pts, col) => {
+    ctx.fillStyle = col;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo']((side * x + g.hx) * pxPerM, (g.yTop - y) * pxPerM));
+      ctx.closePath();
+      ctx.fill();
+    }
+  };
+  // carry a sleeve line from (x1, y1) at the top through (x2, y2) on the hem a little past it
+  const past = ([x1, y1], [x2, y2], f = 1.3) => [x1 + (x2 - x1) * f, y1 + (y2 - y1) * f];
+  const w = g.xo - g.xi;
+  const gi = g.xi + 0.12 * w, go = g.xi + 0.62 * w;
+  const top = [g.xbT, g.yT], bot = [g.xbB, g.yB];
+  // inner end cut parallel to the sides of the V-neck
+  poly([[g.x0[0], g.yT], top, past(top, [go, g.yh]), past(bot, [gi, g.yh]), bot, [g.x0[1], g.yB]], band);
+  if (accent) {
+    // a wedge on the outer side of the sleeve end, parallel to the band and set off from it by
+    // a stripe of jersey colour, its point ~7 cm up the sleeve
+    const ga = go + 0.08 * w;
+    const dx = (go - g.xbT) / (g.yT - g.yh);          // run of the band's outer edge per metre of height
+    const tip = [ga - dx * 0.07, g.yh + 0.07];
+    poly([tip, [ga + dx * 0.03, g.yh - 0.03], [g.xo + 0.08, g.yh - 0.03], [g.xo + 0.08, g.yh + 0.01]], accent);
+  }
   return c;
 }
