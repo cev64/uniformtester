@@ -150,6 +150,20 @@ export function grain(ctx, W, H, strength = 0.035, seed = 7) {
 
 export const HELMET_R = { x: 0.126, yz: 0.14 };
 
+// Centre-line radius of the shell (m) at u = 0, 1/64, ... 1, from
+// tools/build_helmet.py (helmet.json centerline_r). Canvas y is the polar
+// angle around the x axis, so a stripe w cm wide spans w / (pi * r * 100) of
+// the canvas height at u: this keeps stripes at their real width from the
+// nameplate over the crown to the rear bumper.
+const HELMET_CL_R = [0.17, 0.1706, 0.1725, 0.1756, 0.1793, 0.183, 0.186, 0.1878, 0.1881, 0.1864, 0.1821, 0.1766, 0.1718, 0.1687, 0.1661, 0.1645, 0.164, 0.164, 0.1635, 0.1626, 0.1611, 0.1593, 0.1573, 0.1551, 0.153, 0.151, 0.1493, 0.1478, 0.1464, 0.1452, 0.144, 0.143, 0.1422, 0.1418, 0.1417, 0.1399, 0.1403, 0.1408, 0.1417, 0.1429, 0.1443, 0.1484, 0.1495, 0.1505, 0.1513, 0.1518, 0.152, 0.1521, 0.152, 0.1525, 0.1541, 0.1568, 0.16, 0.1635, 0.1672, 0.1706, 0.1734, 0.1754, 0.1763, 0.1762, 0.1752, 0.1737, 0.172, 0.1706, 0.17];
+
+function helmetPxPerCm(u, H) {
+  const t = (((u % 1) + 1) % 1) * 64;
+  const i = Math.min(63, Math.floor(t));
+  const r = HELMET_CL_R[i] + (HELMET_CL_R[i + 1] - HELMET_CL_R[i]) * (t - i);
+  return H / (Math.PI * r * 100);
+}
+
 export function paintHelmet(helmet) {
   const W = 2048, H = 1024;
   const c = makeCanvas(W, H);
@@ -213,17 +227,21 @@ export function paintHelmet(helmet) {
 
   if (helmet.stripe) {
     const total = stripeTotal(helmet.stripe);
-    let y = H / 2 - (total * pxPerCmY) / 2;
-    // stripeSpan: [start, end] around the shell (0.25 back, 0.5 crown, 0.72 brow)
+    // stripeSpan: [start, end] around the shell (0.25 back, 0.5 crown, 0.72 brow).
+    // The default runs from under the rear bumper to under the nameplate.
     const [s0, s1] = helmet.stripeSpan || [0.1, 0.725];
-    const x0 = s0 * W, x1 = s1 * W;
-    for (const [col, w] of helmet.stripe) {
-      const h = w * pxPerCmY;
-      if (col) {
-        ctx.fillStyle = col;
-        ctx.fillRect(x0, y, x1 - x0, h);
+    const step = 2;
+    for (let x = Math.floor(s0 * W); x < s1 * W; x += step) {
+      const k = helmetPxPerCm((x + step / 2) / W, H);
+      let y = H / 2 - (total * k) / 2;
+      for (const [col, w] of helmet.stripe) {
+        const h = w * k;
+        if (col) {
+          ctx.fillStyle = col;
+          ctx.fillRect(x, y, Math.min(step, s1 * W - x), h);
+        }
+        y += h;
       }
-      y += h;
     }
   }
 

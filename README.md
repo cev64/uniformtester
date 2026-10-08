@@ -44,14 +44,22 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
   pads are a blended signed-distance shell (chest and back plates plus
   epaulet arches) that the jersey is stretched over; the pants sit at the hip
   bones with thigh, knee, hip and tailbone pads under them; the knit collar
-  follows the real neckline; the cleats are swept from slices of the foot
-  (toe box, laced instep, open mid-cut collar, sole plate with toe spring).
+  follows the real neckline; the cleats (`tools/cleat.py`) are Nike
+  Vapor-style subdivision cages traced from product photos: sculpted upper,
+  sole plate with heel cup and lip, molded studs, knit sock collar, pull
+  loops and criss-crossed laces.
   `tools/fix_skin.py` evens out the baked lighting in the photo skin.
 - **Helmet**: `tools/build_helmet.py` models a Riddell SpeedFlex from its
-  product photography: the raised Flex panel from brow to crown with the
-  forehead slits, chevron and rear vents, jaw extensions, flared rear edge,
-  Riddell nameplate bumper, rubber trim, a SpeedFlex facemask on four clear
-  quick-release clips, chin strap with cup and buckles, and inner padding.
+  product photography: the hexagonal Flex panel cut into the front of the
+  shell (with a real gap along its free edges and a step at the hinge), the
+  scooped brow, crown, rear, jaw and lower-back vents, boxy jaw extensions,
+  the flared rear with its rubber bumper, the Riddell nameplate, rubber edge
+  trim, SpeedFlex facemasks traced from Riddell's SF-2BD-SW, SF-2EG-SW and
+  SF-3BD (`maskStyle` in the helmet data) on four clear quick-release clips,
+  a 4-point chin strap with hard cup, rockers, cam buckles and ratchet
+  strips, and the liner, jaw pads and SPEEDFLEX brow pad inside. Cuts are
+  made exactly along their outlines and the shell is shaded from its analytic
+  surface, so it holds up in chrome. Stripes are painted at true width.
 - **Numbers**: `src/three/numerals.js` draws jersey numbers as tackle-twill
   shapes rather than typing them in a font. Each team has a style (pro block,
   octagonal footed, round, Bears condensed, Steelers italic rounds, Vikings,

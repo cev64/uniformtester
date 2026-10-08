@@ -223,7 +223,13 @@ export class Player {
       skin: new THREE.MeshPhysicalMaterial({ roughness: 0.6, sheen: 0.25, sheenRoughness: 0.5, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.06, clearcoatRoughness: 0.55, normalMap: skinNormal(), normalScale: new THREE.Vector2(0.22, 0.22) }),
       // synthetic knit upper: soft sheen rather than a patent-leather shine
       cleat: new THREE.MeshPhysicalMaterial({ roughness: 0.55, clearcoat: 0.12, clearcoatRoughness: 0.5, sheen: 0.3, sheenRoughness: 0.5, normalMap: repeatNormal(getFabricNormal(), [1, 1]), normalScale: new THREE.Vector2(0.45, 0.45) }),
-      sole: new THREE.MeshPhysicalMaterial({ roughness: 0.55 }),
+      sole: new THREE.MeshPhysicalMaterial({ roughness: 0.38, metalness: 0.15, clearcoat: 0.3, clearcoatRoughness: 0.4 }),
+      // molded TPU studs: a little glossier than the plate
+      stud: new THREE.MeshPhysicalMaterial({ roughness: 0.3, clearcoat: 0.45, clearcoatRoughness: 0.3 }),
+      // round laces and pull loops: matte braided cord
+      lace: new THREE.MeshPhysicalMaterial({ roughness: 0.88, sheen: 0.5, sheenRoughness: 0.6, sheenColor: new THREE.Color(0.6, 0.6, 0.6) }),
+      // knit sock collar of the cleat
+      cleatknit: new THREE.MeshPhysicalMaterial({ roughness: 0.9, sheen: 0.6, sheenRoughness: 0.55, sheenColor: new THREE.Color(0.5, 0.5, 0.5), normalMap: repeatNormal(getFabricNormal(), [2, 1]), normalScale: new THREE.Vector2(0.8, 0.8) }),
       glove: new THREE.MeshPhysicalMaterial({ roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5 }),
       eye: new THREE.MeshPhysicalMaterial({ roughness: 0.08, clearcoat: 1, map: tex(eyeCanvas(), this.aniso) }),
       // accessories (separate meshes, see ACCESSORIES)
@@ -317,7 +323,11 @@ export class Player {
       ? (luminance(socks.base) > 0.5 ? '#F2F2F2' : '#151515')
       : player.cleats === 'white' ? '#F2F2F2' : player.cleats === 'black' ? '#151515' : team.colors[0];
     m.cleat.color.set(cleat);
-    m.sole.color.set(luminance(cleat) > 0.5 ? '#D9DADB' : '#1E1F21');
+    // light cleats get a silver plate (as Nike's white Vapors), dark ones a near-black plate
+    m.sole.color.set(luminance(cleat) > 0.5 ? '#B9BCC1' : '#1E1F21');
+    m.stud.color.set(luminance(cleat) > 0.5 ? '#A9ACB2' : '#18191B');
+    m.lace.color.set(cleat);
+    m.cleatknit.color.set(cleat);
 
     this.dressAccessories(team, pants);
     this.placeDecals(team, jersey, pants, player, logos, cleat);
