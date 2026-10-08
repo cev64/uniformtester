@@ -120,28 +120,25 @@ Done this round:
   over the waistband and hide it (user request).
 - README rewritten; Commons sheet licence corrected everywhere (CC BY / CC BY-SA 4.0, not CC0).
 
-Remaining punch list (priority order):
-1. **(Medium, engine)** A nameplate bar matching the jersey colour renders as a shaded, stitched box
-   (`letteringLayers` bar layer `thick 0.35, halo 0.3`); LAR road and DET home look boxy. Needs a subtler edge.
-2. **(Player model, report only so far)** The back collar dips toward the centre and bunches (KC, BUF,
-   PIT, NE, NO); real back necks are nearly flat. Needs a `build_player.py` change and rebuild.
-3. **(Small)** Faint grey patch at the front centre of the waistband where the hidden buckle sat (KC `hip`).
-4. **(Small, glyph)** Ravens 8 has no waist notch (`ravens` style `notch: 0`) and the 3 has squared
-   terminals; check against photos.
-5. **(Small, engine)** Charge streak is thickest at the front; the sheet has it thickest at the back
-   (`paint.js` case 'streak'). CHI "GSH" sleeve letters fixed at 0.065 m; real patch ~4 cm (`sleeveText.h`).
-6. **(Data, needs photos)** Digit widths unmeasured for packers, vikings, commanders (2026), patriots,
-   jaguars, titans, broncos, raiders, cardinals, seahawks (packers and vikings look wide). Front numbers
-   have no width cap; only the back does.
-7. **(Data)** NO nameplate arch 0.3 came from a Color Rush photo; NO's black number outline looks thicker
-   in photos (~0.045 vs 0.022); ARI road plate outline too heavy; NE shoulder stripes angled on the sheet
-   but flat on the cap; SEA outside "12" neck tag unconfirmed; KC white pants stripe order unconfirmed.
-8. **(Assets)** ATL 2026 "FALCONS" back plate (needs a `plateText` field and a game photo), WAS round crest
-   neck tag (no licensed PNG), JAX "904", 1983–2001 Seahawks logo, Saints 60th patch, Eagles wing feathers.
-9. **(Engine)** Back-of-helmet marks (HOU Rivalries "TEXANS" rear bumper, Battle Red rear bull head);
-   a top-down helmet view in `shoot.mjs` to measure stripe widths; DET Concrete carbon-fibre caps.
-10. **Unchanged from before:** towel off (needs a player rebuild); helmet jaw area shows some jagged
-    black pieces from the side (only if the user asks).
+Round 4 (also merged): nameplate bars are always the jersey colour and snug (about 8 mm round the
+letters, clear of the number; user request); front number width cap `numMaxW`; Ravens glyphs (`waist`,
+`topIn`, `termCut`); Charge streak thickest at the back; `sleeveText.h` (CHI GSH 4 cm); `plateText`;
+rear helmet marks (`nameplate.rear`, `rearLogo`; HOU Rivalries "TEXANS"); `helmettop` view and
+`--team "TEAM:Look@view+view,..."` specs in shoot.mjs; DET Concrete carbon caps (`loopWeave`);
+`plateO`; digit widths measured for packers, vikings, commanders, jaguars, cardinals; NO plate arch
+0.04; SEA "12" tag inside; KC white pants red-gold-red; NE shoulder stripes `sweep: { t: 'stripes' }`
+front and back; player rebuilt with a flat back neckline and a level waistband front.
+
+Remaining (all small or blocked on sources):
+1. A faint lighter rectangle and a slight V in the waistband stitch line at the front of the pants
+   (pants UVs measured along each thigh; measure the waistband UVs by height in build_player.py).
+2. Digit widths with no usable photo: raiders, titans, seahawks. Commanders and cardinals were set
+   from small/turned photos; re-measure from a straight-on 2026 back photo.
+3. Missing marks with no licensed source on Commons: JAX "904", 1983–2001 Seahawks logo, Saints 60th
+   patch, WAS round crest neck tag, Eagles wing feathers. Battle Red rear helmet logo unconfirmed.
+4. KC white pants stripe and SEA neck tag are moderate-confidence calls (one photo each).
+5. Unchanged: towel off (needs a player rebuild); helmet jaw shows some jagged black pieces from the
+   side (only if the user asks).
 
 ## 5. Rules to give every parallel subagent
 
