@@ -674,11 +674,11 @@ export class Player {
     }
 
     // Back layout, measured from straight-on photos (research/backs.md) as fractions of the back
-    // number height H: name top 0.10 H below the back neck seam, name letters 0.21 H, name bottom
-    // to number top 0.07 H. The seam (top edge of the back collar seen from behind) is at
+    // number height H (outer edge of its outlines): name top 0.10 H below the back neck seam, name
+    // letters 0.21 H (0.055 m caps with a 0.25 m number plus outlines), name bottom to number top 0.07 H. The seam (top edge of the back collar seen from behind) is at
     // neckY - 0.03 on this model (probed: collar band -0.044..-0.034, cloth edge -0.027).
     const seam = neckY - 0.03;
-    const numH = jersey.numBackH || 0.25, plateH = jersey.plateH || 0.05;
+    const numH = jersey.numBackH || 0.25, plateH = jersey.plateH || 0.055;
     const backColors = jersey.numBack || colors;
     const tag = jersey.neckTag, tagOut = tag && !tag.at;
     // Back collar tag. Default: on the outside just under the seam (real only for BUF, LAR, WAS, HOU);
@@ -697,7 +697,11 @@ export class Player {
     // Back: nameplate and number. plateAt = name top below the seam (m); an outside tag pushes it down.
     const plate = jersey.plateFont || jersey.plate || (font === 'script' ? 'plate' : letterFont(font));
     const arch = jersey.plateArch || 0;
-    const plateTop = seam - (jersey.plateAt ?? (tagOut ? Math.max(0.025, (tag.h || 0.016) + 0.022) : 0.1 * numH));
+    // the ratios are to the outer edges: add the outline widths (fractions of the letter height)
+    const numOut = numH * ((backColors[1] ? numOpts.o1 : 0) + (backColors[2] ? numOpts.o2 : 0));
+    const Hout = numH + 2 * numOut;
+    const plOut = plateH * ((jersey.plateOutline?.[0] ? 0.07 : 0) + (jersey.plateOutline?.[1] ? 0.05 : 0));
+    const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.1 * Hout, (tag.h || 0.016) + 0.022) : 0.1 * Hout));
     const plateBot = plateTop - plateH * (1 + Math.max(0, arch));
     if (player.name) {
       this.lettering(torso, back((plateTop + plateBot) / 2), player.name.toUpperCase(), plateH,
@@ -705,7 +709,7 @@ export class Player {
         { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
           bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
     }
-    const numTop = plateBot - 0.07 * numH;
+    const numTop = plateBot - plOut - 0.07 * Hout - numOut;
     this.lettering(torso, back(numTop - numH / 2), num, numH, backColors, font, numOpts);
     if (jersey.backShoulder || jersey.panels?.wing) this.backShoulderPanel(jersey, torso, sleeves);
 

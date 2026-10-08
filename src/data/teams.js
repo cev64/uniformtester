@@ -47,11 +47,12 @@
 //
 // Back of the jersey (defaults from research/backs.md; all optional per jersey):
 //   Layout, top down: back neck seam (neckY - 0.03 on the model) → nameplate top at 0.10 x the
-//   back number height → name letters (plateH) → gap 0.07 x number height → back number.
+//   back number height → name letters (plateH) → gap 0.07 x number height → back number
+//   (heights to the outer edge of the outlines).
 //   numBack: [fill, outline, outer outline] back number colours when they differ from the front
 //             (PIT 1933 throwback: white front, black back). Also the default nameplate colour.
 //   numBackH: back number height in metres, default 0.25 (10 in).
-//   plateAt: nameplate top below the back neck seam in metres (default 0.1 x numBackH = 0.025,
+//   plateAt: nameplate top below the back neck seam in metres (default 0.1 x the number's outer height,
 //             or below an outside neckTag). The number follows the plate.
 //   plateMaxW: widest the name may be, in metres (default 0.235, about half the shoulder width);
 //             longer names are condensed with plateScaleX, as on real jerseys.
@@ -75,7 +76,7 @@
 //              height (0.25 = middle letters ride 25% higher); default 0.
 //   plateTracking: letter spacing (fraction of font size), default 0.05.
 //   plateScaleX: horizontal scale of the name letters, default 1.
-//   plateH: name letter height in metres, default 0.05 (2 in).
+//   plateH: name letter height in metres, default 0.055 (about 0.21 x the back number's outer height).
 //   plateColor / plateOutline: name fill (default num[0]) / [outline, outer].
 //   plateStyle: finish of the name letters, default numStyle.
 //   plateBar: true (jersey colour) or a colour: a separate sewn-on nameplate strip.
