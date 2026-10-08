@@ -50,6 +50,8 @@ export const NUMBER_FONTS = {
   // NFC East + NFC North fonts
 
   // NFC South + NFC West fonts
+  // Falcons 2026 nameplate: tall, narrow, squared-off block (club type specimen)
+  falconsPlate: { family: '"Big Shoulders Display", "Arial Narrow", Impact, sans-serif', weight: 800, scaleX: 0.96 },
 
 };
 
@@ -69,9 +71,10 @@ const LETTERS = {
   giants: 'plate', commanders: 'plate', packers: 'plate', lions: 'plate',
 
   // NFC South + NFC West team styles
-  falcons: 'squareBlock',
+  falcons: 'falconsPlate',
   saints: 'plate',
   bucs: 'plate',
+  panthers: 'plate', cardinals: 'roundBlock', niners: 'plate', seahawks: 'plate',
 
 };
 export function letterFont(style) {
