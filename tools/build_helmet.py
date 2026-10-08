@@ -1613,13 +1613,13 @@ for s in (1, -1):
     sm = (lambda q: q) if s > 0 else (lambda q: P(-q.x, q.y, q.z))
     # upper strap: cup → up the front of the jaw flap, under the temple clip → rocker → tail
     # the rocker sits ~3 cm behind the temple clip, leaning back at the top
-    rk_top, _ = on_shell(sm(P(0.126, 0.022, 0.030)), 0.0)
-    rk_bot, _ = on_shell(sm(P(0.126, 0.006, -0.008)), 0.0)
+    rk_top, _ = on_shell(sm(P(0.126, 0.019, 0.023)), 0.0)
+    rk_bot, _ = on_shell(sm(P(0.126, 0.004, -0.013)), 0.0)
     rk_c, rk_n = on_shell((rk_top + rk_bot) / 2, 0.0)
     # (under the mask frame, between the jaw vent and the temple clip)
     path = [CUP_C + sm(P(0.037, -0.013, 0.012)), sm(P(0.074, -0.106, -0.096)),
             on_shell(sm(P(0.118, -0.058, -0.060)), STRAP_LIFT)[0], on_shell(sm(P(0.127, -0.036, -0.011)), STRAP_LIFT)[0],
-            rk_c + rk_n * 0.0045, on_shell(sm(P(0.125, 0.034, 0.046)), 0.0025)[0]]
+            rk_c + rk_n * 0.0045, on_shell(sm(P(0.126, 0.025, 0.031)), 0.0025)[0]]
     path = catmull(path, 8)
     path = [on_shell(q, STRAP_LIFT)[0] if q.y > -0.066 and q.z > -0.09 else q for q in path]
     straps.append(ribbon(f'StrapHi{s}', path, 0.017, 0.0018, 'strap', lambda p: on_shell(p)[1] if p.y > -0.1 else up_out(p)))
@@ -1670,7 +1670,7 @@ bm = bmesh.new(); bm.from_mesh(inner.data)
 
 def _open(c):
     q = c + c.normalized() * 0.0075
-    return min(f_face(q), f_bottom(q)) < 0.003
+    return min(f_face(q), f_bottom(q)) < 0.006     # the cut edge hides behind the shell wall
 
 
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if _open(f.calc_center_median())], context='FACES')
