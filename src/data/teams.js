@@ -697,20 +697,21 @@ export const TEAMS = [
 
   // ───────────────────────────── NFC EAST ─────────────────────────────
   (() => {
-    const NAVY = '#041E42', ROY = '#0D2F9F', SB = '#A9B4BE', GR = '#B4B8BC';
+    const NAVY = '#041E42', ROY = '#003594', SB = '#9CA7AE', GR = '#B4B8BC';
     const star = (fill) => ({ t: 'star', fill, stroke: fill, size: 0.085 });
     return {
       id: 'DAL', city: 'Dallas', name: 'Cowboys', conf: 'NFC', div: 'East',
-      colors: [NAVY, SB, W], font: 'block',
+      colors: [NAVY, SB, W], font: 'chiefs',
       helmets: [
         { id: 'silver', name: 'Metallic Silver-Blue', tag: 'Primary', shell: SB, finish: 'metallic', mask: GR, stripe: sym([NAVY, 0.9], [W, 0.9]), logo: { img: 'DAL', size: 0.1 } },
         { id: 'white', name: 'White', tag: 'Alternate', shell: W, finish: 'gloss', mask: GR, stripe: sym([NAVY, 0.9], [W, 0.9]), logo: { img: 'DAL', size: 0.1 } },
       ],
       jerseys: [
-        { id: 'white', name: 'White', tag: 'Home', base: W, num: [ROY], tv: 'shoulder', sleeve: { stripes: rep(ROY, 1.1, 0.7, 3, W), from: 2.5 } },
-        { id: 'navy', name: 'Navy', tag: 'Road', base: NAVY, num: [W, NAVY, W], numO: [0.03, 0.025], font: 'cowboys', tv: 'shoulder', word: { s: 'COWBOYS', c: W, font: 'slab', tracking: 0.04 },
-          collar: [[W, 0.6], [GR, 0.6], [W, 0.6], [GR, 0.6]], sleeve: { stripes: [[W, 0.3], [GR, 1.3], [W, 0.3]], from: 3 }, shoulder: star(W) },
-        { id: 'arctic', name: 'Arctic Cowboy', tag: 'Color Rush', base: W, num: [NAVY, W, NAVY], numO: [0.03, 0.025], font: 'cowboys', tv: 'sleeve', sleeve: { cap: NAVY, top: [NAVY, 0] }, shoulder: star(W) },
+        { id: 'white', name: 'White', tag: 'Home', base: W, num: [ROY], tv: 'shoulder', sleeve: { stripes: rep(ROY, 1.1, 0.7, 3, W), from: 1.2 } },
+        { id: 'navy', name: 'Navy', tag: 'Road', base: NAVY, num: [W, NAVY, W], numO: [0.03, 0.025], tv: 'shoulder',
+          word: { img: 'DAL_word@#FFFFFF', h: 0.027 },
+          collar: [[W, 0.6], [GR, 0.6], [W, 0.6], [GR, 0.6]], sleeve: { stripes: [[W, 0.3], [GR, 1.3], [W, 0.3]], from: 2 }, shoulder: star(W) },
+        { id: 'arctic', name: 'Arctic Cowboy', tag: 'Color Rush', base: W, num: [NAVY, W, NAVY], numO: [0.03, 0.025], tv: 'sleeve', sleeve: { cap: NAVY, top: [NAVY, 0] }, shoulder: star(W) },
         { id: '60s', name: '1960s', tag: 'Throwback', base: NAVY, num: [W], tv: 'sleeve', panels: { yoke: [W, 14, 0] }, sleeve: { cap: W }, shoulder: star(NAVY) },
       ],
       pants: [
@@ -738,7 +739,7 @@ export const TEAMS = [
     const B = '#0B2265', RED = '#A71930', ROY = '#1D4FB8', GR = '#B5B9BC';
     return {
       id: 'NYG', city: 'New York', name: 'Giants', conf: 'NFC', div: 'East',
-      colors: [B, RED, GR], font: 'block',
+      colors: [B, RED, GR], font: 'chiefs',
       helmets: [
         { id: 'blue', name: 'Blue', tag: 'Primary', shell: '#123C8C', finish: 'metallic', mask: GR, stripe: null, logo: { img: 'NYG', size: 0.11 }, numbers: W },
         { id: 'legacy', name: 'Legacy', tag: 'Throwback', shell: '#0A1640', finish: 'gloss', mask: GR, stripe: [[RED, 0.8]],
@@ -746,11 +747,11 @@ export const TEAMS = [
       ],
       jerseys: [
         { id: 'blue', name: 'Blue', tag: 'Home', base: B, num: [W], tv: 'shoulder', centerLogo: 'NYG@white' },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [RED], tv: 'shoulder', centerLogo: 'NYG', sleeve: { stripes: rep(RED, 0.9, 0.6, 4), from: 2.5 } },
-        { id: 'vintage', name: 'Vintage White', tag: 'Color Rush', base: W, num: [ROY, RED], tv: 'sleeve', centerLogo: 'NYG',
-          collar: [[RED, 0.7], [W, 0.5], [ROY, 0.8]], sleeve: { stripes: [[RED, 0.6], [ROY, 0.6]], from: 2 } },
-        { id: 'legacy', name: 'Legacy Blue', tag: 'Throwback', base: ROY, num: [W, RED], tv: 'sleeve', neckTag: { s: 'ONCE A GIANT, ALWAYS A GIANT', c: RED },
-          collar: [[RED, 0.7], [W, 0.5], [RED, 0.7]], sleeve: { stripes: [[RED, 0.6], [W, 0.6], [RED, 0.6]], from: 2 } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [RED], tv: 'shoulder', centerLogo: 'NYG@#A71930', sleeve: { stripes: rep(RED, 0.9, 0.6, 4), from: 1.2 } },
+        { id: 'vintage', name: 'Vintage White', tag: 'Color Rush', base: W, num: [ROY, RED], tv: 'sleeve', centerLogo: 'NYG@#1D4FB8', plateOutline: [RED],
+          collar: [[RED, 0.7], [W, 0.5], [ROY, 0.8]], sleeve: { stripes: [[RED, 0.6], [ROY, 0.6]], from: 1.2 } },
+        { id: 'legacy', name: 'Legacy Blue', tag: 'Throwback', base: ROY, num: [W, RED], tv: 'sleeve', plateOutline: [RED], neckTag: { s: 'ONCE A GIANT, ALWAYS A GIANT', c: RED },
+          collar: [[RED, 0.7], [W, 0.5], [RED, 0.7]], sleeve: { stripes: [[RED, 0.6], [W, 0.6], [RED, 0.6]], from: 1.2 } },
       ],
       pants: [
         { id: 'white', name: 'White', base: W, stripe: sym([RED, 0.6], [W, 0.3], [B, 1]) },
@@ -775,6 +776,7 @@ export const TEAMS = [
   (() => {
     const MG = '#004C54', SIL = '#A5ACAF', KG = '#2E8B47', BK = '#0B0B0B';
     const wing = (fill, stroke) => ({ t: 'wing', fill, stroke });
+    const eaglesJersey = { numO: [0.018, 0], plateFont: 'italic', plateTracking: 0.06, tv: 'shoulder', sleeveLogo: 'PHI' };
     return {
       id: 'PHI', city: 'Philadelphia', name: 'Eagles', conf: 'NFC', div: 'East',
       colors: [MG, SIL, BK], font: 'eagles',
@@ -784,17 +786,17 @@ export const TEAMS = [
         { id: 'kelly', name: 'Kelly Green', tag: 'Throwback', shell: KG, finish: 'gloss', mask: '#C0C3C6', stripe: null, logo: wing(W, '#C0C3C6') },
       ],
       jerseys: [
-        { id: 'green', name: 'Midnight Green', tag: 'Home', base: MG, num: [W, SIL], numO: [0.018, 0], numShadow: { color: BK, dx: 0.045, dy: 0.045 }, tv: 'shoulder', word: { s: 'EAGLES', c: W, font: 'italic' },
-          collar: [[BK, 2.8]], sleeveLogo: 'PHI', sleeve: { stripes: [[BK, 3]], from: 0 } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [MG, SIL], numO: [0.018, 0], numShadow: { color: BK, dx: 0.045, dy: 0.045 }, tv: 'shoulder', word: { s: 'EAGLES', c: BK, font: 'italic' },
-          collar: [[BK, 2.8]], sleeveLogo: 'PHI', sleeve: { stripes: [[BK, 3]], from: 0 } },
-        { id: 'black', name: 'Black', tag: 'Alternate', base: BK, num: [W, SIL], numO: [0.018, 0], numShadow: { color: MG, dx: 0.045, dy: 0.045 }, tv: 'shoulder', word: { s: 'EAGLES', c: W, font: 'italic' },
-          collar: [[MG, 2.8]], sleeveLogo: 'PHI', sleeve: { stripes: [[MG, 3]], from: 0 } },
-        { id: 'kelly', name: 'Kelly Green', tag: 'Throwback', base: KG, num: [W, BK], numO: [0.035, 0], font: 'block', tv: 'shoulder', sleeveLogo: 'PHI_tb' },
+        { id: 'green', name: 'Midnight Green', tag: 'Home', base: MG, num: [W, SIL], numShadow: { color: BK, dx: 0.045, dy: 0.045 }, ...eaglesJersey,
+          word: { img: 'PHI_word@#FFFFFF', h: 0.024 }, collar: [[BK, 2.8]], sleeve: { stripes: [[BK, 3]], from: 0 } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [MG, SIL], numShadow: { color: BK, dx: 0.045, dy: 0.045 }, ...eaglesJersey,
+          word: { img: 'PHI_word@#0B0B0B', h: 0.024 }, collar: [[BK, 2.8]], sleeve: { stripes: [[BK, 3]], from: 0 } },
+        { id: 'black', name: 'Black', tag: 'Alternate', base: BK, num: [W, SIL], numShadow: { color: MG, dx: 0.045, dy: 0.045 }, ...eaglesJersey,
+          word: { img: 'PHI_word@#FFFFFF', h: 0.024 }, collar: [[MG, 2.8]], sleeve: { stripes: [[MG, 3]], from: 0 } },
+        { id: 'kelly', name: 'Kelly Green', tag: 'Throwback', base: KG, num: [W, BK], numO: [0.035, 0], font: 'chiefs', tv: 'shoulder', sleeveLogo: 'PHI_tb', plateOutline: [BK] },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: [[BK, 0.6], ['#8A8D8F', 0.8]] },
-        { id: 'green', name: 'Midnight Green', base: MG, stripe: [[BK, 0.6], [SIL, 0.6]] },
+        { id: 'white', name: 'White', base: W, stripe: [[null, 1.4], ['#8A8D8F', 0.8], [BK, 0.6]] },
+        { id: 'green', name: 'Midnight Green', base: MG, stripe: [[null, 1.2], [SIL, 0.6], [BK, 0.6]] },
         { id: 'black', name: 'Black', base: BK, stripe: [[SIL, 0.8]] },
         { id: 'silver', name: 'Kelly Silver', tag: 'Throwback', base: '#C9CBCD', stripe: sym([KG, 0.9], [W, 0.6]) },
       ],
@@ -815,27 +817,33 @@ export const TEAMS = [
 
   (() => {
     const BUR = '#5A1414', GOLD = '#FFB612', BK = '#0B0B0B';
+    // 2026 redesign: Super Bowl-era burgundy and white as the primaries, solid
+    // block numerals with a gold outline, two-colour cuffs and two-stripe pants.
+    // Pants stripe widths run from the back of the leg to the front: the leading gap keeps both stripes on the
+    // front of the side seam, outer colour at the seam and the inner one next to it.
+    const sides = (inner, outer) => [[null, 1.8], [outer, 1.1], [inner, 0.7]];
+    const cuff = (c) => ({ stripes: [[GOLD, 1.1], [c, 0.8]], from: 0.3 });
     return {
       id: 'WAS', city: 'Washington', name: 'Commanders', conf: 'NFC', div: 'East',
       colors: [BUR, GOLD, W], font: 'chiefs',
       helmets: [
-        { id: 'burgundy', name: 'Burgundy', tag: 'Primary · New 2026', shell: BUR, finish: 'gloss', mask: GOLD, stripe: sym([GOLD, 0.9], [W, 0.9]), logo: { img: 'WAS', size: 0.12 } },
-        { id: 'black', name: 'Hail Raiser Black', tag: 'New 2026', debut: '2026-11-23', shell: BK, finish: 'gloss', mask: BK, stripe: [[BUR, 0.8]],
+        { id: 'burgundy', name: 'Burgundy', tag: 'Primary · New 2026', shell: BUR, finish: 'gloss', mask: GOLD, stripe: sym([W, 0.5], [null, 0.35], [GOLD, 1.3]), logo: { img: 'WAS', size: 0.12 } },
+        { id: 'black', name: 'Hail Raiser Black', tag: 'New 2026', debut: '2026-11-23', shell: BK, finish: 'matte', mask: BK, stripe: [[BUR, 0.8]],
           logo: { t: 'text', s: 'W', fill: BUR, stroke: GOLD, font: 'block', spear: GOLD } },
       ],
       jerseys: [
-        { id: 'burgundy', name: 'Burgundy', tag: 'Home · New 2026', base: BUR, num: [W, GOLD], numO: [0.03, 0], tv: 'sleeve', collar: [[BUR, 2.4], [K, 0.3]],
-          sleeve: { stripes: [[W, 0.6], [GOLD, 1.4]], from: 1.5 } },
-        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [BUR, GOLD], numO: [0.03, 0], tv: 'sleeve', collar: [[BUR, 2.8]],
-          sleeve: { stripes: [[GOLD, 0.6], [BUR, 1.4]], from: 1.5 } },
-        { id: 'hail', name: 'Hail Raiser', tag: 'New 2026', debut: '2026-11-23', base: BK, num: [BUR, GOLD], numO: [0.03, 0], tv: 'sleeve', collar: [[BK, 2.4], ['#333', 0.3]],
-          sleeve: { stripes: [[GOLD, 0.6], [BUR, 1.4]], from: 1.5 } },
+        { id: 'burgundy', name: 'Burgundy', tag: 'Home · New 2026', base: BUR, num: [W, GOLD], numO: [0.03, 0], plateOutline: [GOLD], tv: 'sleeve', collar: [[BUR, 2.6]],
+          sleeve: cuff(W) },
+        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [BUR, GOLD], numO: [0.03, 0], plateOutline: [GOLD], tv: 'sleeve', collar: [[BUR, 2.8]],
+          sleeve: cuff(BUR) },
+        { id: 'hail', name: 'Hail Raiser', tag: 'New 2026', debut: '2026-11-23', base: BK, num: [BUR, GOLD], numO: [0.03, 0], plateOutline: [GOLD], tv: 'sleeve', collar: [[BK, 2.6]],
+          sleeve: cuff(BUR) },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: [[BUR, 0.7], [GOLD, 1], [BUR, 0.7]] },
-        { id: 'burgundy', name: 'Burgundy', base: BUR, stripe: [[W, 0.6], [GOLD, 1], [W, 0.6]] },
-        { id: 'gold', name: 'Gold', base: GOLD, stripe: [[BUR, 0.8], [W, 0.6], [BUR, 0.8]] },
-        { id: 'black', name: 'Hail Raiser Black', debut: '2026-11-23', base: BK, stripe: [[BUR, 0.7], [GOLD, 1], [BUR, 0.7]] },
+        { id: 'white', name: 'White', base: W, stripe: sides(BUR, GOLD) },
+        { id: 'burgundy', name: 'Burgundy', base: BUR, stripe: sides(GOLD, W) },
+        { id: 'gold', name: 'Gold', base: GOLD, stripe: sides(W, BUR) },
+        { id: 'black', name: 'Hail Raiser Black', debut: '2026-11-23', base: BK, stripe: sides(BUR, GOLD) },
       ],
       socks: [
         { id: 'burgundy', name: 'Burgundy', base: BUR },
@@ -846,6 +854,7 @@ export const TEAMS = [
         { name: 'Home', h: 'burgundy', j: 'burgundy', p: 'white', s: 'burgundy', status: 'worn' },
         { name: 'Home Gold Pants', h: 'burgundy', j: 'burgundy', p: 'gold', s: 'burgundy', status: 'worn' },
         { name: 'Road', h: 'burgundy', j: 'white', p: 'burgundy', s: 'white', status: 'worn' },
+        { name: 'Road Gold Pants', h: 'burgundy', j: 'white', p: 'gold', s: 'white', status: 'worn' },
         { name: 'Hail Raiser', h: 'black', j: 'hail', p: 'black', s: 'black', debut: '2026-11-23', note: 'vs CIN, then Dec 20 vs ATL' },
       ],
     };
@@ -854,23 +863,26 @@ export const TEAMS = [
   // ───────────────────────────── NFC NORTH ─────────────────────────────
   (() => {
     const NAVY = '#0B162A', OR = '#E64100';
-    const hem = (a, b) => ({ stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], from: 3 });
+    const hem = (a, b) => ({ stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], from: 1.6 });
     const sock = (base, a, b) => ({ base, stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], stripesFrom: 13, lower: [W, 20] });
+    // the "GSH" (George Stanley Halas) memorial patch on the player's left sleeve
+    const gsh = (c) => ({ L: 'GSH', R: '', c, font: 'collegeSlab' });
     return {
       id: 'CHI', city: 'Chicago', name: 'Bears', conf: 'NFC', div: 'North',
       colors: [NAVY, OR, W], font: 'bears',
       helmets: [
         { id: 'navy', name: 'Navy', tag: 'Primary', shell: NAVY, finish: 'gloss', mask: NAVY, stripe: null, logo: { img: 'CHI', size: 0.12 } },
-        { id: 'orange', name: 'Orange', tag: 'New 2026', debut: '2026-12-25', shell: OR, finish: 'gloss', mask: NAVY, stripe: null, logo: { img: 'CHI', size: 0.12 } },
+        { id: 'orange', name: 'Orange', tag: 'New 2026', debut: '2026-12-25', shell: OR, finish: 'gloss', mask: NAVY, stripe: null, logo: { img: 'CHI@#0B162A', size: 0.12 } },
         { id: 'throwback', name: '1936 Navy', tag: 'Throwback', shell: NAVY, finish: 'gloss', mask: NAVY, stripe: [[OR, 3], [NAVY, 1.4], [OR, 3]], logo: { t: 'none' } },
       ],
       jerseys: [
-        { id: 'navy', name: 'Navy', tag: 'Home', base: NAVY, num: [W, OR], tv: 'shoulder', sleeve: hem(OR, W) },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [NAVY, OR], tv: 'shoulder', sleeve: hem(NAVY, OR) },
-        { id: 'orange', name: 'Orange', tag: 'Alternate', base: OR, num: [W, NAVY], tv: 'shoulder', sleeve: hem(NAVY, W) },
-        { id: 'throwback', name: '1936', tag: 'Throwback', base: W, num: [NAVY], font: 'block', loop: [[NAVY, 1], [OR, 0.8], [NAVY, 1], [OR, 0.8], [NAVY, 1]], loopAt: 18 },
-        { id: 'monsters', name: 'Monsters Rivalries', tag: 'Rivalries · New', debut: '2026-12-25', base: NAVY, num: [OR, W], numO: [0.04, 0], font: 'block',
-          chestPatch: { t: 'football', s: 'GHS', fill: OR, text: NAVY }, sleeve: { vbars: { stripes: [[OR, 1.4], [null, 1.2], [W, 0.5], [null, 1.2], [OR, 1.4]], len: 10 } } },
+        { id: 'navy', name: 'Navy', tag: 'Home', base: NAVY, num: [W, OR], tv: 'shoulder', plateOutline: [OR], sleeve: hem(OR, W), sleeveText: gsh([W, OR]) },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [NAVY, OR], tv: 'shoulder', plateOutline: [OR], sleeve: hem(NAVY, OR), sleeveText: gsh([NAVY, OR]) },
+        { id: 'orange', name: 'Orange', tag: 'Alternate', base: OR, num: [W, NAVY], tv: 'shoulder', plateOutline: [NAVY], sleeve: hem(NAVY, W), sleeveText: gsh([W, NAVY]) },
+        { id: 'throwback', name: '1936', tag: 'Throwback', base: W, num: [NAVY], font: 'chiefs', loop: [[NAVY, 1], [OR, 0.8], [NAVY, 1], [OR, 0.8], [NAVY, 1]], loopAt: 18 },
+        { id: 'monsters', name: 'Monsters Rivalries', tag: 'Rivalries · New', debut: '2026-12-25', base: NAVY, num: [OR, W], numO: [0.04, 0], font: 'chiefs', plateOutline: [W],
+          neckTag: { s: 'MONSTERS OF THE MIDWAY', c: OR },
+          chestPatch: { t: 'football', s: 'GSH', fill: OR, text: NAVY }, sleeve: { vbars: { stripes: [[OR, 1.4], [null, 1.2], [W, 0.5], [null, 1.2], [OR, 1.4]], len: 10 } } },
       ],
       pants: [
         { id: 'white', name: 'White', base: W, stripe: sym([OR, 0.7], [NAVY, 0.9]) },
@@ -894,23 +906,24 @@ export const TEAMS = [
   })(),
 
   (() => {
-    const HB = '#0076B6', SIL = '#B0B7BC', BK = '#0D0D0D', CON = '#DADCDD';
+    const HB = '#0076B6', SIL = '#B0B7BC', BK = '#0D0D0D', CON = '#DADCDD', LB = '#3F8FD0';
     return {
       id: 'DET', city: 'Detroit', name: 'Lions', conf: 'NFC', div: 'North',
-      colors: [HB, SIL, BK], font: 'cowboys',
+      colors: [HB, SIL, BK], font: 'chiefs',
       helmets: [
         { id: 'silver', name: 'Silver', tag: 'Primary', shell: '#BCC2C6', finish: 'metallic', mask: HB, stripe: null, logo: { img: 'DET', faces: 'right', size: 0.15 } },
-        { id: 'blue', name: 'Honolulu Blue', tag: 'Alternate', shell: HB, finish: 'gloss', mask: BK, stripe: null, logo: { img: 'DET', faces: 'right', size: 0.15 } },
+        { id: 'blue', name: 'Honolulu Blue', tag: 'Alternate', shell: HB, finish: 'matte', mask: BK, stripe: null, logo: { img: 'DET@#0D0D0D', faces: 'right', size: 0.15 } },
         { id: 'throwback', name: 'Throwback Silver', tag: 'Throwback', shell: '#C4C8CB', finish: 'gloss', mask: '#C4C8CB', stripe: null, logo: { t: 'none' } },
       ],
       jerseys: [
-        { id: 'blue', name: 'Honolulu Blue', tag: 'Home', base: HB, num: [W, '#D5D9DC'], numO: [0.02, 0], tv: 'shoulder', sleeve: { stripes: [[SIL, 1], [W, 0.6], [SIL, 1]], from: 3 } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [HB, SIL], tv: 'shoulder', word: { s: 'DETROIT', c: HB, font: 'italic' }, collar: [[HB, 2.6]],
-          sleeve: { stripes: [[HB, 1], [W, 0.6], [HB, 1]], from: 3 } },
-        { id: 'black', name: 'Black', tag: 'Alternate', base: BK, num: [HB, SIL], tv: 'shoulder', word: { s: 'LIONS', c: HB, font: 'italic' }, collar: [[HB, 2.6]],
-          sleeve: { stripes: [[HB, 1], [BK, 0.6], [HB, 1]], from: 3 } },
-        { id: 'throwback', name: 'Throwback', tag: 'Throwback', base: HB, num: [SIL], font: 'block' },
-        { id: 'concrete', name: 'Concrete Rivalries', tag: 'Rivalries · New', debut: '2026-11-01', base: CON, num: ['#202225', HB], numO: [0.035, 0], numPattern: { t: 'lines', c: '#3A3D42', step: 0.03, w: 0.5 }, tv: 'shoulder', word: { s: 'DETROIT', c: HB, font: 'italic' },
+        { id: 'blue', name: 'Honolulu Blue', tag: 'Home', base: HB, num: [W, '#D5D9DC'], numO: [0.02, 0], tv: 'shoulder', plateOutline: ['#D5D9DC'], sleeve: { stripes: [[SIL, 1], [W, 0.6], [SIL, 1]], from: 1.6 } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [HB, SIL], tv: 'shoulder', plateOutline: [SIL], word: { s: 'DETROIT', c: HB, font: 'italic' }, collar: [[HB, 2.6]],
+          sleeve: { stripes: [[HB, 1], [W, 0.6], [HB, 1]], from: 1.6 } },
+        { id: 'black', name: 'Black', tag: 'Alternate', base: BK, num: [HB, SIL], tv: 'shoulder', plateOutline: [SIL], word: { img: 'DET_word@#0076B6', h: 0.03 }, collar: [[HB, 2.6]],
+          sleeve: { stripes: [[HB, 1], [BK, 0.6], [HB, 1]], from: 1.6 } },
+        { id: 'throwback', name: 'Throwback', tag: 'Throwback', base: HB, num: [SIL], font: 'chiefs' },
+        { id: 'concrete', name: 'Concrete Rivalries', tag: 'Rivalries · New', debut: '2026-11-01', base: CON, num: ['#202225', HB], numO: [0.035, 0], font: 'lionsItalic', numPattern: { t: 'lines', c: '#3A3D42', step: 0.03, w: 0.5 }, tv: 'shoulder', plateOutline: [HB], word: { s: 'DETROIT', c: HB, font: 'italic' },
+          neckTag: { s: 'DEFEND THE DEN', c: HB },
           collar: [[HB, 2.6]], loop: [[HB, 1], [BK, 2.4]], loopAt: 18 },
       ],
       pants: [
@@ -939,21 +952,22 @@ export const TEAMS = [
     const G = '#203731', GOLD = '#FFB612', DS = '#3F4E45', ALB = '#ECE3D3', NAVY = '#1E2A4A', RUST = '#B8653A';
     return {
       id: 'GB', city: 'Green Bay', name: 'Packers', conf: 'NFC', div: 'North',
-      colors: [G, GOLD, W], font: 'cowboys',
+      colors: [G, GOLD, W], font: 'chiefs',
       helmets: [
         { id: 'gold', name: 'Gold', tag: 'Primary', shell: GOLD, finish: 'gloss', mask: G, stripe: sym([G, 1.1], [W, 1.1]), logo: { img: 'GB', size: 0.12 } },
         { id: 'leather', name: '1923 Leather', tag: 'Throwback · New', debut: '2026-12-13', shell: '#7A4A2A', finish: 'matte', mask: K, stripe: null, pattern: { t: 'leather' }, logo: { t: 'none' } },
-        { id: 'alabaster', name: 'Alabaster', tag: 'Rivalries · New', debut: '2026-10-11', shell: ALB, finish: 'gloss', mask: DS, stripe: sym([DS, 0.9], [GOLD, 0.9]), logo: { img: 'GB', size: 0.12 } },
+        { id: 'alabaster', name: 'Alabaster', tag: 'Rivalries · New', debut: '2026-10-11', shell: ALB, finish: 'gloss', mask: DS, stripe: [[GOLD, 1.2]], logo: { img: 'GB', size: 0.12 } },
       ],
       jerseys: [
         { id: 'green', name: 'Green', tag: 'Home', base: G, num: [W], tv: 'shoulder', collar: [[GOLD, 0.5], [W, 1.4], [GOLD, 0.6]],
-          sleeve: { stripes: [[GOLD, 1.2], [W, 1.2], [GOLD, 1.2]], from: 3 } },
+          sleeve: { stripes: [[GOLD, 1.2], [W, 1.2], [GOLD, 1.2]], from: 1.6 } },
         { id: 'white', name: 'White', tag: 'Road', base: W, num: [G], tv: 'shoulder', collar: [[G, 0.4], [GOLD, 1.4], [G, 0.5]],
-          sleeve: { stripes: [[G, 1.2], [GOLD, 1.2], [G, 1.2]], from: 3 } },
-        { id: 'y1923', name: '1923', tag: 'Throwback · New', debut: '2026-12-13', base: NAVY, num: ['#F2A33A'], font: 'block',
-          sleeve: { stripes: rep('#F2A33A', 0.6, 0.9, 3), from: 5 } },
-        { id: 'riv', name: 'Stock Certificate', tag: 'Rivalries · New', debut: '2026-10-11', base: DS, num: [ALB, GOLD], numO: [0.03, 0], font: 'serifNum', tv: 'shoulder',
-          collar: [[GOLD, 0.5], [ALB, 1.4], [GOLD, 0.6]], chestPatch: { t: 'text', s: 'GB', fill: GOLD, stroke: DS, font: 'serifNum' }, sleeve: { stripes: [[ALB, 1], [GOLD, 1], [ALB, 1]], from: 3 } },
+          sleeve: { stripes: [[G, 1.2], [GOLD, 1.2], [G, 1.2]], from: 1.6 } },
+        { id: 'y1923', name: '1923', tag: 'Throwback · New', debut: '2026-12-13', base: NAVY, num: ['#F2A33A'], font: 'chiefs',
+          sleeve: { stripes: rep('#F2A33A', 0.6, 0.9, 3), from: 4 } },
+        { id: 'riv', name: 'Stock Certificate', tag: 'Rivalries · New', debut: '2026-10-11', base: DS, num: [ALB, GOLD], numO: [0.03, 0], font: 'serifNum', tv: 'shoulder', plateOutline: [GOLD],
+          neckTag: { s: 'MAKING HISTORY SINCE 1919', c: GOLD },
+          collar: [[GOLD, 0.5], [ALB, 1.4], [GOLD, 0.6]], chestPatch: { t: 'text', s: 'GB', fill: GOLD, stroke: DS, font: 'serifNum' }, sleeve: { stripes: [[ALB, 1], [GOLD, 1], [ALB, 1]], from: 1.6 } },
       ],
       pants: [
         { id: 'gold', name: 'Gold', base: GOLD, stripe: sym([G, 0.9], [W, 0.9]) },
@@ -988,14 +1002,14 @@ export const TEAMS = [
         { id: 'riv', name: 'Rivalries', tag: 'New 2026', debut: '2026-12-20', shell: DP, finish: 'metallic', mask: '#A68A4E', stripe: [[GOLD, 0.8]], logo: horn('#EFE6CF', '#A68A4E') },
       ],
       jerseys: [
-        { id: 'purple', name: 'Purple', tag: 'Home', base: P, num: [W], tv: 'shoulder', word: { s: 'VIKINGS', c: GOLD, font: 'roman', tracking: 0.08 },
-          sleeve: { stripes: [[GOLD, 1.6], [W, 0.6]], from: 3.5 } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [P], tv: 'shoulder', word: { s: 'VIKINGS', c: P, font: 'roman', tracking: 0.08 },
-          sleeve: { stripes: [[GOLD, 1.6], [P, 0.6]], from: 3.5 } },
+        { id: 'purple', name: 'Purple', tag: 'Home', base: P, num: [W], tv: 'shoulder', word: { img: 'MIN_word@#FFC62F', h: 0.034 },
+          sleeve: { stripes: [[GOLD, 1.6], [W, 0.6]], from: 1.4 } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [P], tv: 'shoulder', word: { img: 'MIN_word@#4F2683', h: 0.034 },
+          sleeve: { stripes: [[GOLD, 1.6], [P, 0.6]], from: 1.4 } },
         { id: 'winter', name: 'Winter Warrior', tag: 'Alternate', base: W, num: [P, '#C0C4C8'], numO: [0.02, 0], numShadow: { color: '#B9BEC3', dx: 0.04, dy: 0.04 }, word: { s: 'VIKINGS', c: '#A9AEB2', font: 'squareSans', tracking: 0.15 },
-          sleeve: { stripes: [['#C9CDD1', 1.6], [P, 0.6]], from: 3.5 } },
-        { id: 'classic', name: 'Purple People Eater', tag: 'Throwback', base: DKP, num: [GOLD, W], font: 'block', tv: 'shoulder',
-          sleeve: { stripes: [[W, 0.9], [GOLD, 0.9], [W, 0.9], [GOLD, 0.9]], from: 3 } },
+          sleeve: { stripes: [['#C9CDD1', 1.6], [P, 0.6]], from: 1.4 } },
+        { id: 'classic', name: 'Purple People Eater', tag: 'Throwback', base: DKP, num: [GOLD, W], font: 'chiefs', tv: 'shoulder',
+          sleeve: { stripes: [[W, 0.9], [GOLD, 0.9], [W, 0.9], [GOLD, 0.9]], from: 1.4 } },
         { id: 'riv', name: 'Rivalries Deep Purple', tag: 'Rivalries · New', debut: '2026-12-20', base: DP, num: [W, '#A68A4E'], numO: [0.03, 0], word: { s: 'VIKINGS', c: W, font: 'condensed', tracking: 0.12 },
           sleeve: { knot: { c: '#A68A4E' } } },
       ],

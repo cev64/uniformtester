@@ -51,7 +51,7 @@ export const NUMERAL_STYLES = {
   // Chargers: round block set italic
   chargers: { ro: 0.2, ri: 0.1, rt: 0.05, th: 0.19, tv: 0.21, one: { flag: 0.17, base: false }, slant: 0.17 },
   // Bears: condensed with round corners
-  bears: { W: 0.5, th: 0.17, tv: 0.18, ro: 0.2, ri: 0.1, rt: 0.05, hook: 0.18, one: { flag: 0.13, base: false }, gap: 0.07 },
+  bears: { W: 0.44, th: 0.13, tv: 0.145, ro: 0.2, ri: 0.1, rt: 0.05, hook: 0.16, one: { flag: 0.11, base: false }, gap: 0.09 },
   // Steelers: Futura-like, fully round bowls
   futura: { W: 0.55, th: 0.19, tv: 0.21, ro: 0.275, ri: 0.18, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0 },
   // Steelers: the same rounds, set italic and a touch narrower
@@ -59,7 +59,7 @@ export const NUMERAL_STYLES = {
   // Sharp, angular sets with notched waists (Vikings, Titans, Panthers, Broncos, Cardinals)
   angular: { cut: 'chamfer', ro: 0.17, ri: 0.03, rt: 0.02, notch: 0.6, one: { flag: 0.2, base: false }, slant: 0.04 },
   // Eagles: angular, slightly italic
-  eagles: { cut: 'chamfer', ro: 0.1, ri: 0.03, rt: 0.02, slant: 0.03, one: { flag: 0.18, base: true } },
+  eagles: { cut: 'chamfer', ro: 0.1, ri: 0.03, rt: 0.02, W: 0.58, slant: 0.05, one: { flag: 0.24, base: true } },
   // Ravens: tall, narrow, angular cuts
   ravens: { W: 0.5, th: 0.16, tv: 0.2, ro: 0.25, ri: 0.14, rt: 0.02, notch: 0, one: { flag: 0.16, base: false } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
@@ -70,6 +70,8 @@ export const NUMERAL_STYLES = {
   // ── team styles: AFC South + AFC West ──
 
   // ── team styles: NFC East + NFC North ──
+  // Lions Rivalries: chamfered pro block leaning forward ("italicised numerals")
+  lionsItalic: { cut: 'chamfer', ro: 0.12, ri: 0.04, rt: 0.02, slant: 0.2, one: { flag: 0.17, base: true } },
 
   // ── team styles: NFC South + NFC West ──
 
