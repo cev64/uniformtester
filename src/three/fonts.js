@@ -40,6 +40,8 @@ export const NUMBER_FONTS = {
   // rounded condensed (Bears, Rams, Dolphins plates)
   roundBlock: { family: '"Barlow Condensed", "Arial Narrow", Impact, sans-serif', weight: 800, scaleX: 1.04 },
   // AFC East + AFC North fonts
+  // Dolphins nameplate: wide, slanted geometric sans (matches the MIAMI collar wordmark)
+  dolphinsPlate: { family: '"Jost", "Futura", "Century Gothic", sans-serif', weight: 700, skew: -0.2, scaleX: 1.12 },
 
   // AFC South + AFC West fonts
 
@@ -54,6 +56,8 @@ const LETTERS = {
   block: 'plate', blockRound: 'plate', square: 'squareSans', chamfer: 'squareSans', titans: 'angular', chiefs: 'plate', cowboys: 'plate', vikings: 'squareBlock', rams: 'roundBlock', chargers: 'italic', angular: 'angular',
   round: 'roundBlock', bengals: 'roundSans', bears: 'roundBlock', futura: 'futuraCond', steelers: 'futuraCond', eagles: 'squareSans', ravens: 'plate', italic: 'italic',
   // AFC East + AFC North team styles
+  jets: 'squareBlock', gotham: 'roundBlock',
+  dolphins: 'dolphinsPlate',
 
   // AFC South + AFC West team styles
 
