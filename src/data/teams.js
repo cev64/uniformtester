@@ -1132,11 +1132,11 @@ export const TEAMS = [
         { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: [[BLUE, 1.2]], logo },
       ],
       jerseys: [
-        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W, BLUE], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BLUE, 4.2]], sleeveLogo: 'CAR', swoosh: W,
+        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W, BLUE], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BLUE, 4.2]], neckTag: { s: 'KEEP POUNDING', c: W }, sleeveLogo: 'CAR', swoosh: W,
           panels: { raglan: [BLUE, 2.8, [SIL, 0.5]] }, sleeve: { cap: BK } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, BLUE], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 4.2]], sleeveLogo: 'CAR', swoosh: BK,
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, BLUE], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 4.2]], neckTag: { s: 'KEEP POUNDING', c: BK }, sleeveLogo: 'CAR', swoosh: BK,
           panels: { raglan: [BLUE, 2.8, [BK, 0.4]] } },
-        { id: 'blue', name: 'Process Blue', tag: 'Alternate', base: BLUE, num: [W, BK], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 4.2]], sleeveLogo: 'CAR', swoosh: W,
+        { id: 'blue', name: 'Process Blue', tag: 'Alternate', base: BLUE, num: [W, BK], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 4.2]], neckTag: { s: 'KEEP POUNDING', c: W }, sleeveLogo: 'CAR', swoosh: W,
           panels: { raglan: [BK, 2.8, [SIL, 0.5]] } },
       ],
       pants: [
@@ -1244,7 +1244,7 @@ export const TEAMS = [
   // ───────────────────────────── NFC WEST ─────────────────────────────
   (() => {
     const R = '#97233F', BK = '#101010', SAND = '#F1E2CE', OR = '#E8702A', GR = '#A5ACAF', BAND = '#D9DADC';
-    const logo = { img: 'ARI', faces: 'right', size: 0.155 };
+    const logo = { img: 'ARI', faces: 'right', size: 0.155, at: [0.42, 0.22] };
     // "CARDINALS" lettering band wrapped round the sleeve between two red pinstripe pairs
     const cuff = (mid, text) => ({ stripes: [[R, 0.5], [null, 0.4], [R, 0.5], [mid, 3.4], [R, 0.5], [null, 0.4], [R, 0.5]], from: 1.5, textBand: { s: 'CARDINALS', c: text, at: 4.9 } });
     const spots = { t: 'spots', c: '#9C8B74' };
@@ -1263,7 +1263,7 @@ export const TEAMS = [
         { id: 'black', name: 'Black', tag: 'Alternate', base: BK, num: [R, GR], numO: [0.03, 0], numStyle: 'twill', swoosh: W, neckTag: { s: 'BIRD GANG', c: R }, sleeve: cuff(W, BK) },
         // Rivalries: sandstorm-speckled jersey, red numbers with a copper offset shadow, Arizona flag on the sleeves
         { id: 'desert', name: 'Desert Rivalries', tag: 'Rivalries', base: SAND, num: [R, OR], numO: [0.03, 0], numShadow: { color: OR, dx: 0.04, dy: 0.04 }, numStyle: 'twill', swoosh: R,
-          word: { img: 'ARI_word_city@#97233F', h: 0.034 }, pattern: spots, sleevePatch: { t: 'azflag' } },
+          word: { img: 'ARI_word_city@#97233F', h: 0.034 }, pattern: spots, sleevePatch: { t: 'azflag' }, neckTag: { s: '★', c: OR, font: 'block' } },
       ],
       pants: [
         { id: 'red', name: 'Red', base: R, swoosh: W },
@@ -1290,7 +1290,7 @@ export const TEAMS = [
     const ramhorn = (fill) => ({ t: 'ramhorn', fill, stroke: fill });
     // horn sleeve: the sleeve in one colour (cap) with the horn curling round it in the other.
     // Royal and Midnight jerseys: royal sleeve, Sol horn. White jersey: Sol sleeve, royal horn.
-    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, loop: [[horn, 3.2]], loopPattern: 'horn', loopAt: 6 });
+    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, loop: [[horn, 4]], loopPattern: 'horn', loopAt: 16 });
     // 2026: a Sol "LA" monogram on royal backing sits over the back of the collar
     const neck = { s: 'LA', c: SOL, bg: ROY, font: 'block' };
     return {
@@ -1308,7 +1308,7 @@ export const TEAMS = [
         { id: 'midnight', name: 'Midnight Mode', tag: 'Rivalries', base: BK, num: [W, ROY], numO: [0.02, 0], numPattern: { t: 'dots', c: '#C9CED6', step: 0.035, r: 0.18 }, swoosh: W, ...rams(ROY, SOL) },
         // Fearsome Foursome tribute: royal horns over the shoulders, TV numbers on the sleeves, black names
         { id: 'fearsome', name: 'Fearsome White', tag: 'New 2026', debut: '2026-11-25', base: W, num: [ROY, BK], numO: [0.03, 0], font: 'block', numStyle: 'twill', tv: 'sleeve', swoosh: BK,
-          plateColor: BK, plateOutline: [], loop: [[ROY, 3.2]], loopPattern: 'horn', loopAt: 13 },
+          plateColor: BK, plateOutline: [], loop: [[ROY, 4]], loopPattern: 'horn', loopAt: 16 },
         // 1951 championship tribute: royal satin triple stripes on a Sol jersey
         { id: 'sol', name: 'Classic Sol', tag: '75th Anniversary', base: SOL, num: [ROY], font: 'block', numStyle: 'twill', neckTag: neck, swoosh: ROY, sleeve: { stripes: rep(ROY, 1, 0.7, 3), from: 3 } },
       ],
@@ -1337,9 +1337,10 @@ export const TEAMS = [
 
   (() => {
     const SC = '#AA0000', GOLD = '#B3995D', BK = '#0B0B0B';
-    const logo = { img: 'SF', size: 0.14 };
+    const logo = { img: 'SF', size: 0.14, at: [0.46, 0.2] };
     const four = (c) => ({ stripes: rep(c, 0.9, 0.6, 4), from: 2.5 });
-    const word = (c) => ({ img: `SF_word@${c}`, h: 0.021 });
+    // the chest 49ERS is a small flat slab-serif wordmark; the logo PNG (outlined italic) fills in when tinted flat, so it is typeset
+    const word = (c) => ({ s: '49ERS', c, font: 'slab', h: 0.021, tracking: 0.1 });
     return {
       id: 'SF', city: 'San Francisco', name: '49ers', conf: 'NFC', div: 'West',
       colors: [SC, GOLD, BK], font: 'niners',
@@ -1377,7 +1378,7 @@ export const TEAMS = [
 
   (() => {
     const NAVY = '#002244', G = '#69BE28', WG = '#A5ACAF', ROY = '#1E4DB7';
-    const logo = { img: 'SEA', faces: 'right', size: 0.15 };
+    const logo = { img: 'SEA', faces: 'right', size: 0.15, at: [0.44, 0.2] };
     // SEAHAWKS wordmark on the player's left chest, one colour
     const word = (c) => ({ img: `SEA_word_name@${c}`, h: 0.017, at: 'left' });
     return {
