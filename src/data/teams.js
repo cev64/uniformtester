@@ -462,7 +462,7 @@ export const TEAMS = [
         { id: 'white', name: 'White', tag: 'Primary', shell: W, finish: 'gloss', mask: W, stripe: [[B, 2.4]], logo: { img: 'IND', size: 0.12 } },
         { id: 'nights', name: 'Indiana Nights', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: [[B, 1.4]], logo: { img: 'IND', size: 0.12 } },
         { id: 'anvil', name: 'Anvil Metallic Blue', tag: 'Rivalries · New', debut: '2026-09-27', shell: '#123E86', finish: 'metallic', mask: BK, stripe: null,
-          logo: { t: 'horseshoe', fill: W } },
+          logo: { img: 'IND@#FFFFFF', size: 0.105 } },
       ],
       jerseys: [
         // two UCLA stripes over each shoulder, TV numbers on the outside of the sleeves, plain same-colour V collar
