@@ -48,6 +48,9 @@
 //   of the hip logos, default 'pressed').
 // Helmet logo: { img: key, faces: 'left'|'right' } uses the real team mark;
 // `faces` says which way it points so it can face forward on both sides.
+// Helmet logo size (decal width in metres) and at ([up, back] on the shell)
+//   apply to image and drawn marks (t: 'horn', 'ramhorn', 'wing', ...) alike.
+// Helmet nameplate: { bg, fg, text } colours the front bumper; text replaces 'Riddell'.
 
 const W = '#FFFFFF';
 const K = '#0E0F11';
