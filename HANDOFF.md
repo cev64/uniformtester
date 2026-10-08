@@ -101,12 +101,17 @@ Team pass highlights (all merged):
 Done in this session, in `tools/build_player.py`, with the player model rebuilt:
 - **Pads:** low-profile rounded caps over the deltoids (centre `SHX - 0.005`, rounder exponents, wider
   inward taper so they blend into the trapezius slope), thinner plates. The upper chest stand-off went
-  from 8 cm to about 1–3 cm. The jersey is 64 cm across, down from 67; most of the width is the body's
+  from 8 cm to about 1–2 cm. The jersey is 64 cm across, down from 67; most of the width is the body's
   own deltoids, which the user is happy with. The shoulder line now slopes down from the neck instead
   of a flat shelf at chin height.
-- **Collar:** the `pad_arch()` lift is cut from "almost to the jaw" to the base of the neck. The
-  neckline edge heights are smoothed (40 passes) so the collar bands run evenly, and the V is narrow and
-  visible under the facemask.
+- **Collar:** the neck opening (`R_NECK`) is widened from 0.086 to 0.10 m to match the thick base of
+  the neck, so the jersey no longer runs up the neck like a turtleneck. The `pad_arch()` lift is cut to
+  the neck base, and the neckline heights are smoothed (40 passes). The collar is now one clean band at
+  the base of the neck, with the V below the chin cup. Don't delete faces by radius to lower the
+  neckline: that splits the neckline into several loops and breaks the collar builder (`neck_loop`).
+- **Shape:** the old "crisp cap" step that snapped fabric back onto the pad shell left a crease round
+  the cap, so it's replaced by plain smoothing. The chest plate is slimmer (front radius 0.16, top at
+  `SHZ + 0.01`).
 - **TV numbers on the shoulder** (`player.js`) are now projected onto the crown of the sloped cap from
   above and outside, so they no longer stretch.
 - The cleats came out identical (same vertex count and bounds). `player.glb` is 1.9 MB.

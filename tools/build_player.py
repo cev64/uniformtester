@@ -347,7 +347,7 @@ SHX = abs(SH['L'].x)
 PAD_SHAPES = [
     # centre, (x-, x+), (front, back), (down, up), exponents (xz, y)
     # chest + back plates
-    (Vector((0, -0.024, SHZ - 0.08)), (0.2, 0.2), (0.176, 0.164), (0.16, 0.115), (3.2, 2.8)),
+    (Vector((0, -0.024, SHZ - 0.09)), (0.2, 0.2), (0.16, 0.16), (0.16, 0.1), (3.0, 2.6)),
 ]
 for s_ in (1, -1):
     # rounded cap over the deltoid
@@ -592,7 +592,7 @@ def solidify(ob, thickness):
     bpy.ops.object.modifier_apply(modifier='Solidify')
 
 # ─── jersey ───
-R_NECK = 0.086
+R_NECK = 0.1      # the opening sits round the thick base of the neck, not up its sides
 NECK_XY = Vector((NECK.x, NECK.y + 0.012))
 def neck_d(c):
     # elliptical neck opening, a little narrower front-to-back
@@ -709,14 +709,11 @@ def jersey_drape(bm):
             v.co.x *= k
             v.co.y = YC0 + (v.co.y - YC0) * k
     pad_arch(bm)
-    # crisp pad caps: after smoothing, put the fabric over the shoulders back
-    # on the pad shell so the epaulet keeps a defined edge above the arm
+    # soft pad caps: relax the fabric over the shoulders so the cap blends into
+    # the chest and arm without a crease
     cap = [v for v in bm.verts if abs(v.co.x) > 0.09 and v.co.z > SHZ - 0.14 and not v.is_boundary]
-    for it in range(5):
-        for v in cap:
-            v.co = pad_snap(v.co, info_at(v.co))
-        if it < 4:
-            bmesh.ops.smooth_vert(bm, verts=cap, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+    for it in range(4):
+        bmesh.ops.smooth_vert(bm, verts=cap, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
 
 def pad_snap(p, c, off=0.0045, band=0.012):
     """move a point within `band` of the pad shell onto the shell + `off`"""
@@ -749,7 +746,7 @@ def pad_arch(bm):
     fabric round the sides and back only enough for the collar band to hug
     the neck there, leaving the front V where it is."""
     C = Vector((0, NECK.y + 0.005))
-    H_SIDE, H_BACK = SHZ + 0.085, SHZ + 0.08
+    H_SIDE, H_BACK = SHZ + 0.07, SHZ + 0.075
     NB = 72
     def ang(co):
         return math.atan2(co.x - C.x, -(co.y - C.y))
