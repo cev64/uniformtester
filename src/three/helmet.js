@@ -15,7 +15,7 @@ import { loadLogo } from './logos.js';
 // Helmet data used here (src/data/teams.js):
 //   shell, finish ('gloss' | 'matte' | 'metallic' | 'chrome'), stripe, pattern,
 //   mask (facemask colour, null = no mask), maskStyle ('2BD' | '2EG' | '3BD'),
-//   chinstrap (strap colour),
+//   chinstrap (strap colour; default white, like the stock SpeedFlex strap),
 //   logo ({ img | t, size, at }; size and at also apply to drawn marks),
 //   numbers, numAt, nameplate: { bg, fg, text } (bumper colours and lettering,
 //   default black plate with a white Riddell wordmark), cup (chin cup colour),
@@ -70,21 +70,16 @@ function nameplateTexture(bg = '#141517', fg = '#f4f4f4', text) {
   return canvasTexture(c);
 }
 
-// Brow pad inside the front of the shell, "SPEEDFLEX" in grey on black vinyl.
+// Brow pad inside the front of the shell: black vinyl, only its lower ~1 cm
+// shows under the shell edge, with a stitched seam along the bottom.
 function browTexture() {
   const c = document.createElement('canvas');
   c.width = 1024; c.height = 128;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#18191b';
+  ctx.fillStyle = '#1c1d20';
   ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = '#8d9096';
-  ctx.font = '700 46px "Helvetica Neue", Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.save(); ctx.translate(512, 100); ctx.scale(1.05, 1); ctx.fillText('SPEEDFLEX', 0, 0); ctx.restore();
-  ctx.fillStyle = '#b5352d';
-  ctx.font = '800 22px "Helvetica Neue", Arial, sans-serif';
-  ctx.fillText('Rıddell', 512, 64);
+  ctx.strokeStyle = '#3a3c40'; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+  ctx.beginPath(); ctx.moveTo(0, 116); ctx.lineTo(c.width, 116); ctx.stroke();
   return canvasTexture(c);
 }
 
@@ -95,16 +90,16 @@ function browTexture() {
 // moulded name (Texans Rivalries "TEXANS").
 function backplateTexture(rear = null) {
   const c = document.createElement('canvas');
-  c.width = 1024; c.height = 96;
+  c.width = 1024; c.height = 78;
   const ctx = c.getContext('2d');
   ctx.fillStyle = rear?.bg || '#141517';
   ctx.fillRect(0, 0, c.width, c.height);
   ctx.save();
-  ctx.translate(512, 52); ctx.scale(-1, 1);
+  ctx.translate(512, 42); ctx.scale(-1, 1);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (rear?.text) {
     ctx.fillStyle = rear.fg || '#f4f4f4';
-    ctx.font = '900 58px "Helvetica Neue", "Arial Black", Arial, sans-serif';
+    ctx.font = '900 50px "Helvetica Neue", "Arial Black", Arial, sans-serif';
     if ('letterSpacing' in ctx) ctx.letterSpacing = '8px';
     ctx.fillText(rear.text, 0, 0);
   } else {
@@ -192,7 +187,7 @@ export class Helmet {
       bumper: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.3 }),
       backplate: new THREE.MeshPhysicalMaterial({ color: '#141517', roughness: 0.55, clearcoat: 0.15 }),
       cup: new THREE.MeshPhysicalMaterial({ color: '#f2f2f2', roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.2 }),
-      strap: new THREE.MeshStandardMaterial({ color: '#18191b', roughness: 0.75 }),
+      strap: new THREE.MeshStandardMaterial({ color: '#e9eaec', roughness: 0.7 }),
       pad: new THREE.MeshStandardMaterial({ color: '#1b1c1f', roughness: 0.9, side: THREE.DoubleSide }),
       cuppad: new THREE.MeshStandardMaterial({ color: '#d9dadc', roughness: 0.85, side: THREE.DoubleSide }),
       browpad: new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6 }),
@@ -276,7 +271,7 @@ export class Helmet {
     for (const o of this.parts.mask || []) o.visible = hasMask && o.userData.maskStyle === style;
     if (hasMask) this.mats.mask.color.set(helmet.mask);
     this.mats.cup.color.set(helmet.cup || '#f2f2f2');
-    this.mats.strap.color.set(helmet.chinstrap || '#18191b');
+    this.mats.strap.color.set(helmet.chinstrap || '#e9eaec');
     const np = helmet.nameplate || {};
     this.mats.bumper.map?.dispose();
     this.mats.bumper.map = nameplateTexture(np.bg, np.fg, np.text);
