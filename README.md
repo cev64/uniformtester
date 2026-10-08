@@ -79,7 +79,8 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
   collar are rib knit. Numbers, names and wordmarks are built as tackle
   twill (stacked cloth layers with zig-zag stitched edges, each layer
   shading the one below) or heat-pressed film (`numStyle`), the shield and
-  swooshes as embroidery, plus the woven jock tag.
+  swooshes as embroidery, plus the woven jock tag (hidden under the tucked
+  pants unless a jersey sets `jockTag`).
 - **Reference**: `research/uniforms/` holds each team's uniform sheet from
   Wikimedia Commons (CC0) that the data was built from, with notes in
   `research/notes.md`. Team logos in `public/logos/` come from Wikimedia;

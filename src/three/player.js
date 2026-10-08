@@ -227,9 +227,10 @@ export class Player {
       // molded TPU studs: a little glossier than the plate
       stud: new THREE.MeshPhysicalMaterial({ roughness: 0.3, clearcoat: 0.45, clearcoatRoughness: 0.3 }),
       // round laces and pull loops: matte braided cord
-      lace: new THREE.MeshPhysicalMaterial({ roughness: 0.88, sheen: 0.5, sheenRoughness: 0.6, sheenColor: new THREE.Color(0.6, 0.6, 0.6) }),
+      lace: new THREE.MeshPhysicalMaterial({ roughness: 0.88, sheen: 0.5, sheenRoughness: 0.6 }),
       // knit sock collar of the cleat
-      cleatknit: new THREE.MeshPhysicalMaterial({ roughness: 0.9, sheen: 0.6, sheenRoughness: 0.55, sheenColor: new THREE.Color(0.5, 0.5, 0.5), normalMap: repeatNormal(getFabricNormal(), [2, 1]), normalScale: new THREE.Vector2(0.8, 0.8) }),
+      // (sheen colour set per uniform from the cleat colour)
+      cleatknit: new THREE.MeshPhysicalMaterial({ roughness: 0.9, sheen: 0.5, sheenRoughness: 0.55, normalMap: repeatNormal(getFabricNormal(), [2, 1]), normalScale: new THREE.Vector2(0.8, 0.8) }),
       glove: new THREE.MeshPhysicalMaterial({ roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5 }),
       eye: new THREE.MeshPhysicalMaterial({ roughness: 0.08, clearcoat: 1, map: tex(eyeCanvas(), this.aniso) }),
       // accessories (separate meshes, see ACCESSORIES)
@@ -326,8 +327,13 @@ export class Player {
     // light cleats get a silver plate (as Nike's white Vapors), dark ones a near-black plate
     m.sole.color.set(luminance(cleat) > 0.5 ? '#B9BCC1' : '#1E1F21');
     m.stud.color.set(luminance(cleat) > 0.5 ? '#A9ACB2' : '#18191B');
-    m.lace.color.set(cleat);
-    m.cleatknit.color.set(cleat);
+    // laces and the knit sock collar are dyed to match the upper: their sheen
+    // follows the cleat colour (a fixed grey sheen washed black knit out to grey)
+    const dark = luminance(cleat) < 0.5;
+    for (const k of ['lace', 'cleatknit']) {
+      m[k].color.set(cleat);
+      m[k].sheenColor.set(cleat).lerp(new THREE.Color(1, 1, 1), dark ? 0.06 : 0);
+    }
 
     this.dressAccessories(team, pants);
     this.placeDecals(team, jersey, pants, player, logos, cleat);
@@ -502,8 +508,10 @@ export class Player {
       if (c) this.canvasDecal(torso, front(neckY - 0.16, 0.11), 0.075, c, { key: JSON.stringify(jersey.chestPatch) });
     }
     // Jock tag: the woven label on the front hem, just left of centre (the
-    // player's left). Shown where it peeks out above the pants.
-    if (jersey.jockTag !== false && logos.NFL_shield) {
+    // player's left). A game jersey is tucked, so the tag sits under the pants
+    // and isn't seen: it's drawn only when a jersey opts in (jockTag: true or
+    // { size, bg, fg }), placed where it peeks out above the belt.
+    if (jersey.jockTag && logos.NFL_shield) {
       const jt = jersey.jockTag || {};
       const bg = jt.bg || '#121314', fg = jt.fg || '#D9DBDE';
       const c = jockTagCanvas(logos.NFL_shield.image, { size: jt.size || null, bg, fg });
@@ -597,14 +605,46 @@ export class Player {
       }
     }
 
-    // Cleats: a contrasting swoosh on the outside of each shoe
-    const cs = new THREE.CanvasTexture(swooshCanvas(luminance(cleatColor) > 0.5 ? '#161616' : '#f2f2f2'));
-    cs.colorSpace = THREE.SRGBColorSpace; this.textures.push(cs);
+    // Cleats: a contrasting swoosh on the outside of each shoe. On a Nike
+    // Vapor the lateral swoosh is ~14 cm long (about 45% of the outsole): the
+    // hook sits low at the midfoot just above the plate, leading toward the
+    // toe, and the tail sweeps back and up toward the heel counter. The
+    // artwork is mirrored on the right shoe so it reads that way on both feet.
+    const csCol = luminance(cleatColor) > 0.5 ? '#161616' : '#f2f2f2';
+    const studs = this.meshes.stud || [];
+    const v = new THREE.Vector3();
     for (const s of ['L', 'R']) {
-      const f = this.J[`foot.${s}`];
-      const sx = Math.sign(f.x);
-      const hit = this.raycast(cleats, new THREE.Vector3(sx * 0.6, 0.05, f.z + 0.03), new THREE.Vector3(-sx, 0, 0));
-      this.decal(cleats, hit, 0.1, 0.05, cs, { minDot: 0.2 });
+      const sx = Math.sign(this.J[`foot.${s}`].x);
+      // heel, toe and turf of this shoe from its vertices (the feet toe out a little)
+      let heel = null, toe = null, turf = Infinity;
+      for (const mesh of [...cleats, ...studs]) {
+        const pos = mesh.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+          if (Math.sign(v.x) !== sx) continue;
+          turf = Math.min(turf, v.y);
+          if (!cleats.includes(mesh)) continue;
+          if (!heel || v.z < heel.z) heel = v.clone();
+          if (!toe || v.z > toe.z) toe = v.clone();
+        }
+      }
+      if (!heel) continue;
+      const fwd = new THREE.Vector3(toe.x - heel.x, 0, toe.z - heel.z);
+      const len = fwd.length();
+      fwd.normalize();
+      const out = new THREE.Vector3(fwd.z, 0, -fwd.x);   // lateral side
+      if (out.x * sx < 0) out.negate();
+      const artLen = 0.45 * len;                 // tip of the tail to the front of the hook
+      const canvas = swooshCanvas(csCol, 256, { mirror: sx < 0 });
+      const t = new THREE.CanvasTexture(canvas);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = this.aniso; this.textures.push(t);
+      // the artwork spans 24/26 of the canvas's 2.08 × px width (see swooshCanvas)
+      const wM = artLen / ((2 * 24 / 26) / 2.08), hM = wM * canvas.height / canvas.width;
+      // centre ~36% of the way from the heel, hook ~1 cm above the plate lip
+      const at = heel.clone().addScaledVector(fwd, 0.36 * len);
+      at.y = turf + 0.033 + hM / 2;
+      const hit = this.raycast(cleats, at.clone().addScaledVector(out, 0.4), out.clone().negate());
+      this.decal(cleats, hit, wM, hM, t, { minDot: 0.15, depth: 0.08 });
     }
   }
 }

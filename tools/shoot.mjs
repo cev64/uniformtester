@@ -33,7 +33,8 @@ const VIEWS = {
   side: { theta: Math.PI / 2, phi: 1.43, r: 5.3, target: [0, 0.98, 0] },
   back: { theta: Math.PI, phi: 1.43, r: 5.3, target: [0, 0.98, 0] },
   helmet: { theta: 0.75, phi: 1.45, r: 1.25, target: [0, 1.72, 0] },
-  helmetside: { theta: Math.PI / 2, phi: 1.5, r: 1.1, target: [0, 1.72, 0] },
+  // centred forward of the shell so the facemask stays in frame
+  helmetside: { theta: Math.PI / 2, phi: 1.5, r: 1.25, target: [0, 1.73, 0.1] },
   helmetfront: { theta: 0, phi: 1.5, r: 1.1, target: [0, 1.72, 0] },
   helmetback: { theta: Math.PI * 0.8, phi: 1.35, r: 1.1, target: [0, 1.72, 0] },
   chest: { theta: 0.2, phi: 1.5, r: 2.0, target: [0, 1.35, 0] },
@@ -41,8 +42,9 @@ const VIEWS = {
   shoulder: { theta: 1.1, phi: 1.2, r: 1.6, target: [0.15, 1.45, 0] },
   pants: { theta: 0.5, phi: 1.5, r: 2.4, target: [0, 0.75, 0] },
   feet: { theta: 0.7, phi: 1.3, r: 1.5, target: [0, 0.2, 0] },
-  // cleat close-ups: lateral side of the left shoe, and a 3/4 from the front-outside
+  // cleat close-ups: lateral side of the left shoe (and of the right), and a 3/4 from the front-outside
   cleatside: { theta: Math.PI / 2, phi: 1.53, r: 0.62, target: [0.12, 0.065, 0.02] },
+  cleatsideR: { theta: -Math.PI / 2, phi: 1.53, r: 0.62, target: [-0.12, 0.065, 0.02] },
   cleat34: { theta: 0.85, phi: 1.2, r: 0.7, target: [0.12, 0.06, 0.03] },
   towel: { theta: -0.35, phi: 1.5, r: 1.1, target: [-0.08, 0.88, 0] },
   // close-ups for cloth, stitching and branding detail

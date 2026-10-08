@@ -93,7 +93,8 @@ J('LAR_word_alt', 'LA Rams wordmark.svg', 'LOS ANGELES / RAMS block wordmark', '
 J('PHI_word_wing', 'Philadelphia Eagles wordmark.svg', 'winged EAGLES wordmark', 'chest')
 J('MIN_word_1982', 'Minnesota Vikings wordmark (1982 - 2003).svg', 'VIKINGS wordmark (1982-2003)', 'throwback')
 
-LEGACY = {  # cut from the CC0 uniform sheets earlier; cleaned (specks, fringe) but not re-sourced
+LEGACY = {  # cut from the Commons uniform sheets earlier; cleaned (specks, fringe) but not re-sourced
+          # (the keys in recut_marks.RECUT were re-cut from the full-size sheets)
  'ATL_tb': ('ATL', '1966 black falcon (throwback)', 'throwback helmet / sleeve', 'Atlanta Falcons Uniforms 2026.png'),
  'BAL_dark': ('BAL', 'Darkness raven head', 'Darkness helmet', 'Baltimore Ravens Uniforms (2026).png'),
  'DEN_tb': ('DEN', 'classic D with bucking horse', 'throwback helmet / sleeve', 'Denver Broncos Uniforms 2024-Present.png'),
@@ -104,6 +105,14 @@ LEGACY = {  # cut from the CC0 uniform sheets earlier; cleaned (specks, fringe) 
  'PHI_tb': ('PHI', 'Kelly-green throwback eagle', 'throwback sleeve', 'Philadelphia Eagles Uniforms (2026).png'),
  'PIT_crest': ('PIT', '1933 crest', '1933 throwback chest', 'Pittsburgh Steelers Uniforms 2025.png'),
  'TB_tb': ('TB', 'Bucco Bruce (1976-96)', 'throwback helmet', 'Tampa Bay Buccaneers Uniforms (2026).png')}
+
+# licence of each uniform sheet as stated on its Commons file page (checked Oct 2026; the earlier
+# 'CC0' label was wrong for these)
+SHEET_LICENSE = {
+ 'Philadelphia Eagles Uniforms (2026).png': 'CC BY 4.0', 'Jacksonville Jaguars Uniforms (2026).png': 'CC BY 4.0',
+ 'Tampa Bay Buccaneers Uniforms (2026).png': 'CC BY 4.0', 'New York Jets Uniforms (2026).png': 'CC BY 4.0',
+ 'Denver Broncos Uniforms 2024-Present.png': 'CC BY-SA 4.0', 'Miami Dolphins Uniforms 2025.png': 'CC BY-SA 4.0',
+ 'Atlanta Falcons Uniforms 2026.png': 'CC BY-SA 4.0', 'Pittsburgh Steelers Uniforms 2025.png': 'CC BY-SA 4.0'}
 
 
 def clean_specks(im, frac=0.004):
@@ -221,8 +230,11 @@ def main(only):
             im = clamp_alpha(defringe(clean_specks(im, 0.08 if key in ('DEN_tb', 'TB_tb', 'PIT_crest', 'PHI_tb') else 0.004)))
             save_png(im, dest)
         pg = 'https://commons.wikimedia.org/wiki/File:' + sheet.replace(' ', '_')
-        man[key] = dict(file=key + '.png', what=what, worn=worn, size=list(im.size), render='cut from uniform sheet', source_title=sheet,
-                        source_url=pg, license='CC0 (uniform sheet); mark itself trademarked', colors=colours(im), team=t, cleaned=True)
+        from recut_marks import RECUT
+        render = 'recut from full-size uniform sheet' if key in RECUT else 'cut from uniform sheet'
+        lic = SHEET_LICENSE.get(sheet, 'see sheet page (unverified)') + ' (uniform sheet); mark itself trademarked'
+        man[key] = dict(file=key + '.png', what=what, worn=worn, size=list(im.size), render=render, source_title=sheet,
+                        source_url=pg, license=lic, colors=colours(im), team=t, cleaned=True)
     json.dump(man, open(MAN, 'w'), indent=1, sort_keys=True)
 
 
