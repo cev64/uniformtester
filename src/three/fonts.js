@@ -65,6 +65,7 @@ const LETTERS = {
   colts: 'plate', jaguars: 'squareSans', broncos: 'angular',
 
   // NFC East + NFC North team styles
+  giants: 'plate', commanders: 'plate', packers: 'plate', lions: 'plate',
 
   // NFC South + NFC West team styles
   falcons: 'squareBlock',
