@@ -63,7 +63,7 @@ export const NUMERAL_STYLES = {
   eagles: { cut: 'chamfer', ro: 0.1, ri: 0.03, rt: 0.02, W: 0.58, slant: 0.05, one: { flag: 0.24, base: true } },
   // Ravens: tall, narrow, angular cuts
   // (Ravens sheet: thick sides, hairline-thin tops and bottoms, elliptical bowls, footed 1 with a long flag)
-  ravens: { W: 0.5, th: 0.105, tv: 0.215, ro: 0.25, ri: 0.2, rt: 0.02, notch: 0, hook: 0.16, one: { flag: 0.15, base: true } },
+  ravens: { W: 0.55, th: 0.12, tv: 0.18, ro: 0.27, ri: 0.14, rt: 0.02, notch: 0, hook: 0.2, one: { flag: 0.15, base: true } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
 

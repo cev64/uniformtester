@@ -109,7 +109,7 @@ export const TEAMS = [
 
   (() => {
     const AQUA = '#008E97', OR = '#FC4C02', DARK = '#0E111C';
-    const logo = { img: 'MIA', faces: 'left', size: 0.14 };
+    const logo = { img: 'MIA', faces: 'left', size: 0.17 };
     return {
       id: 'MIA', city: 'Miami', name: 'Dolphins', conf: 'AFC', div: 'East',
       colors: [AQUA, OR, '#005778'], font: 'round',
@@ -329,9 +329,9 @@ export const TEAMS = [
       id: 'CLE', city: 'Cleveland', name: 'Browns', conf: 'AFC', div: 'North',
       colors: [BR, OR, W], font: 'browns',
       helmets: [
-        { id: 'orange', name: 'Orange', tag: 'Primary', shell: OR, finish: 'gloss', mask: '#E4E6E8', stripe: sym([BR, 1], [W, 1.2]), logo: { t: 'none' } },
-        { id: 'brown', name: 'Alpha Dawg', tag: 'Alternate', shell: BR, finish: 'matte', mask: BR, stripe: sym([OR, 0.9], [BR, 1.2]), logo: { t: 'none' } },
-        { id: 'white', name: 'White', tag: 'Throwback', shell: W, finish: 'gloss', mask: BR, stripe: sym([OR, 1], [BR, 1.2]), logo: { t: 'none' } },
+        { id: 'orange', name: 'Orange', tag: 'Primary', shell: OR, finish: 'gloss', mask: '#E4E6E8', stripe: sym([BR, 2.0], [W, 2.6]), logo: { t: 'none' } },
+        { id: 'brown', name: 'Alpha Dawg', tag: 'Alternate', shell: BR, finish: 'matte', mask: BR, stripe: sym([OR, 1.8], [BR, 2.6]), logo: { t: 'none' } },
+        { id: 'white', name: 'White', tag: 'Throwback', shell: W, finish: 'gloss', mask: BR, stripe: sym([OR, 1.8], [BR, 2.6]), logo: { t: 'none' } },
       ],
       jerseys: [
         { id: 'brown', name: 'Brown', tag: 'Home', numStyle: 'twill', base: BR, num: [W], tv: 'shoulder', neckTag: { s: '=1946=', c: OR }, swoosh: OR,
