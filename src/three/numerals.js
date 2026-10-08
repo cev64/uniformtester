@@ -80,6 +80,8 @@ export const NUMERAL_STYLES = {
   broncos: { W: 0.54, th: 0.15, tv: 0.17, ro: 0.2, ri: 0.07, rt: 0.04, notch: 0, one: { flag: 0.12, base: false } },
   // Jaguars: squared counters inside clipped outer corners, flagged 1 without a foot
   jaguars: { cut: 'chamfer', ro: 0.12, ri: 0.0, rt: 0.01, th: 0.19, tv: 0.215, one: { flag: 0.12, base: false }, seven: 'stem' },
+  // Titans Rivalries (Music City): rounded neon-tube numerals with a white inline stripe in every stroke
+  titansNeon: { W: 0.52, th: 0.21, tv: 0.21, ro: 0.26, ri: 0.13, rt: 0.07, notch: 0, one: { flag: 0.14, base: true }, inline: { c: '#FFFFFF', d: 0.09 } },
   // Raiders: heavy squared block, clipped outer corners, sharp square counters, footed 1 (2021 and 2025 game photos)
   raiders: { cut: 'chamfer', W: 0.6, th: 0.18, tv: 0.215, ro: 0.11, ri: 0.0, rt: 0.01, one: { flag: 0.17, base: true } },
 
@@ -359,6 +361,12 @@ export function numeralLayers(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, s
   if (w2) layers.push({ alpha: aOuter, sd: offset(w1 + w2), mask: maskCanvas(aOuter, W, H), color: c2 });
   if (w1) { const a = grow(sd, w1); layers.push({ alpha: a, sd: offset(w1), mask: maskCanvas(a, W, H), color: c1 }); }
   const face = tint(mask, fill);
+  if (S.inline) {
+    // neon-tube numerals: a thin inline stripe down the middle of every stroke (the face eroded by d)
+    const hex = S.inline.c.replace('#', '');
+    const rgb = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    face.getContext('2d').drawImage(maskCanvas(grow(sd, -S.inline.d * px), W, H, rgb), 0, 0);
+  }
   if (fillPattern) fillPattern(face.getContext('2d'), W, H, px);
   layers.push({ alpha: a0, sd, mask, color: fill, face });
   return { layers, W, H, aspect: W / H, inkHeight: px / H, px };

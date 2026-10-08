@@ -546,13 +546,13 @@ export const TEAMS = [
       id: 'TEN', city: 'Tennessee', name: 'Titans', conf: 'AFC', div: 'South',
       colors: [LB, RED, NAVY], font: 'titans',
       helmets: [
-        { id: 'white', name: 'White', tag: 'Primary · New 2026', shell: W, finish: 'gloss', mask: W, stripe: sym([RED, 0.6], [W, 0.3], [LB, 1.4]), logo: { img: 'TEN', size: 0.11 } },
-        { id: 'blue', name: 'Music City Blue', tag: 'Rivalries · New', debut: '2026-11-15', shell: LB, finish: 'gloss', mask: NAVY, stripe: strings(NAVY, W, 4), logo: { img: 'TEN', size: 0.11 } },
+        { id: 'white', name: 'White', tag: 'Primary · New 2026', shell: W, finish: 'gloss', mask: W, stripe: sym([RED, 0.6], [W, 0.3], [LB, 1.4]), logo: { img: 'TEN', size: 0.125 } },
+        { id: 'blue', name: 'Music City Blue', tag: 'Rivalries · New', debut: '2026-11-15', shell: LB, finish: 'gloss', mask: NAVY, stripe: strings(NAVY, W, 4), logo: { img: 'TEN', size: 0.125 } },
       ],
       jerseys: [
-        { id: 'blue', name: 'Titans Blue', tag: 'Home · New 2026', base: LB, num: [W, RED], tv: 'shoulder', word: { s: 'TITANS', c: W, font: 'slab', tracking: 0.1 }, swoosh: NAVY, sleeve: sleeveStrings(LB) },
-        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [LB, RED], tv: 'shoulder', word: { s: 'TENNESSEE', c: LB, font: 'squareBlock', tracking: 0.14, scaleX: 1.2 }, swoosh: NAVY, sleeve: { stripes: [[RED, 0.7], [W, 0.5], ...rep(NAVY, 0.3, 0.45, 6, LB)], from: 2 } },
-        { id: 'music', name: 'Music City', tag: 'Rivalries · New', debut: '2026-11-15', base: NAVY, num: [LB, W], numO: [0.02, 0], numShadow: { color: '#2F6FB5', dx: 0.05, dy: 0.04 }, tv: 'shoulder', word: { s: 'Music City', c: W, script: true },
+        { id: 'blue', name: 'Titans Blue', tag: 'Home · New 2026', base: LB, num: [W, RED], numO: [0.028, 0], numStyle: 'twill', tv: 'shoulder', word: { s: 'TITANS', c: W, font: 'slab', h: 0.021, tracking: 0.16 }, swoosh: NAVY, sleeve: sleeveStrings(LB) },
+        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [LB, RED], numO: [0.028, 0], numStyle: 'twill', tv: 'shoulder', word: { s: 'TENNESSEE', c: LB, font: 'squareBlock', h: 0.021, tracking: 0.24, scaleX: 1.2 }, swoosh: NAVY, sleeve: { stripes: [[RED, 0.7], [W, 0.5], ...rep(NAVY, 0.3, 0.45, 6, LB)], from: 2 } },
+        { id: 'music', name: 'Music City', tag: 'Rivalries · New', debut: '2026-11-15', base: NAVY, num: [LB], font: 'titansNeon', numStyle: 'pressed', numShadow: { color: '#2F6FB5', dx: 0.04, dy: 0.035 }, tv: 'shoulder', word: { s: 'Music City', c: W, script: true },
           sleeve: { stripes: [[W, 0.5], ...rep(LB, 0.3, 0.45, 6, NAVY)], from: 2 } },
       ],
       pants: [

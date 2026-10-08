@@ -62,7 +62,7 @@ const LETTERS = {
   dolphins: 'dolphinsPlate',
 
   // AFC South + AFC West team styles
-  colts: 'plate', jaguars: 'squareSans', broncos: 'angular', raiders: 'plate',
+  colts: 'plate', jaguars: 'squareSans', broncos: 'angular', raiders: 'plate', titansNeon: 'angular',
 
   // NFC East + NFC North team styles
 
