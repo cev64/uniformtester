@@ -44,8 +44,10 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
   pads are a blended signed-distance shell (chest and back plates plus
   epaulet arches) that the jersey is stretched over; the pants sit at the hip
   bones with thigh, knee, hip and tailbone pads under them; the knit collar
-  follows the real neckline; the cleats are swept from slices of the foot
-  (toe box, laced instep, open mid-cut collar, sole plate with toe spring).
+  follows the real neckline; the cleats (`tools/cleat.py`) are Nike
+  Vapor-style subdivision cages traced from product photos: sculpted upper,
+  sole plate with heel cup and lip, molded studs, knit sock collar, pull
+  loops and criss-crossed laces.
   `tools/fix_skin.py` evens out the baked lighting in the photo skin.
 - **Helmet**: `tools/build_helmet.py` models a Riddell SpeedFlex from its
   product photography: the raised Flex panel from brow to crown with the
