@@ -697,6 +697,8 @@ export const TEAMS = [
 
   // ───────────────────────────── NFC EAST ─────────────────────────────
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const NAVY = '#041E42', ROY = '#003594', SB = '#9CA7AE', GR = '#B4B8BC';
     const star = (fill) => ({ t: 'star', fill, stroke: fill, size: 0.085 });
     return {
@@ -715,9 +717,9 @@ export const TEAMS = [
         { id: '60s', name: '1960s', tag: 'Throwback', base: NAVY, num: [W], tv: 'sleeve', panels: { yoke: [W, 14, 0] }, sleeve: { cap: W }, shoulder: star(NAVY) },
       ],
       pants: [
-        { id: 'silver', name: 'Silver-Green', base: '#C8D3D3', stripe: sym([ROY, 1], [W, 0.7]) },
-        { id: 'gray', name: 'Silver', base: '#C4C6C8', stripe: sym([NAVY, 1], [W, 0.7]) },
-        { id: 'white', name: 'White', base: W, stripe: sym([NAVY, 1], [W, 0.6]) },
+        { id: 'silver', name: 'Silver-Green', base: '#C8D3D3', stripe: fwd(sym([ROY, 1], [W, 0.7])) },
+        { id: 'gray', name: 'Silver', base: '#C4C6C8', stripe: fwd(sym([NAVY, 1], [W, 0.7])) },
+        { id: 'white', name: 'White', base: W, stripe: fwd(sym([NAVY, 1], [W, 0.6])) },
       ],
       socks: [
         { id: 'royal', name: 'Royal', base: ROY, lower: [W, 20] },
@@ -736,6 +738,8 @@ export const TEAMS = [
   })(),
 
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const B = '#0B2265', RED = '#A71930', ROY = '#1D4FB8', GR = '#B5B9BC';
     return {
       id: 'NYG', city: 'New York', name: 'Giants', conf: 'NFC', div: 'East',
@@ -754,9 +758,9 @@ export const TEAMS = [
           collar: [[RED, 0.7], [W, 0.5], [RED, 0.7]], sleeve: { stripes: [[RED, 0.6], [W, 0.6], [RED, 0.6]], from: 1.2 } },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: sym([RED, 0.6], [W, 0.3], [B, 1]) },
-        { id: 'whitered', name: 'White (Red Stripes)', base: W, stripe: [[RED, 0.9], [null, 0.7], [RED, 0.9]] },
-        { id: 'legacy', name: 'Legacy White', tag: 'Throwback', base: W, stripe: sym([RED, 0.7], [ROY, 1]) },
+        { id: 'white', name: 'White', base: W, stripe: fwd(sym([RED, 0.6], [W, 0.3], [B, 1])) },
+        { id: 'whitered', name: 'White (Red Stripes)', base: W, stripe: fwd([[RED, 0.9], [null, 0.7], [RED, 0.9]]) },
+        { id: 'legacy', name: 'Legacy White', tag: 'Throwback', base: W, stripe: fwd(sym([RED, 0.7], [ROY, 1])) },
       ],
       socks: [
         { id: 'blue', name: 'Blue', base: B },
@@ -774,6 +778,8 @@ export const TEAMS = [
   })(),
 
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const MG = '#004C54', SIL = '#A5ACAF', KG = '#2E8B47', BK = '#0B0B0B';
     const wing = (fill, stroke) => ({ t: 'wing', fill, stroke });
     const eaglesJersey = { numO: [0.018, 0], plateFont: 'italic', plateTracking: 0.06, tv: 'shoulder', sleeveLogo: 'PHI' };
@@ -795,10 +801,10 @@ export const TEAMS = [
         { id: 'kelly', name: 'Kelly Green', tag: 'Throwback', base: KG, num: [W, BK], numO: [0.035, 0], font: 'chiefs', tv: 'shoulder', sleeveLogo: 'PHI_tb', plateOutline: [BK] },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: [[null, 1.4], ['#8A8D8F', 0.8], [BK, 0.6]] },
-        { id: 'green', name: 'Midnight Green', base: MG, stripe: [[null, 1.2], [SIL, 0.6], [BK, 0.6]] },
-        { id: 'black', name: 'Black', base: BK, stripe: [[SIL, 0.8]] },
-        { id: 'silver', name: 'Kelly Silver', tag: 'Throwback', base: '#C9CBCD', stripe: sym([KG, 0.9], [W, 0.6]) },
+        { id: 'white', name: 'White', base: W, stripe: fwd([['#8A8D8F', 0.8], [BK, 0.6]]) },
+        { id: 'green', name: 'Midnight Green', base: MG, stripe: fwd([[SIL, 0.6], [BK, 0.6]]) },
+        { id: 'black', name: 'Black', base: BK, stripe: fwd([[SIL, 0.8]]) },
+        { id: 'silver', name: 'Kelly Silver', tag: 'Throwback', base: '#C9CBCD', stripe: fwd(sym([KG, 0.9], [W, 0.6])) },
       ],
       socks: [
         { id: 'white', name: 'White', base: W },
@@ -816,12 +822,13 @@ export const TEAMS = [
   })(),
 
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const BUR = '#5A1414', GOLD = '#FFB612', BK = '#0B0B0B';
     // 2026 redesign: Super Bowl-era burgundy and white as the primaries, solid
     // block numerals with a gold outline, two-colour cuffs and two-stripe pants.
-    // Pants stripe widths run from the back of the leg to the front: the leading gap keeps both stripes on the
-    // front of the side seam, outer colour at the seam and the inner one next to it.
-    const sides = (inner, outer) => [[null, 1.8], [outer, 1.1], [inner, 0.7]];
+    // Pants stripe widths run from the back of the leg to the front: outer colour at the seam, the inner one in front of it.
+    const sides = (inner, outer) => [[outer, 1.1], [inner, 0.7]];
     const cuff = (c) => ({ stripes: [[GOLD, 1.1], [c, 0.8]], from: 0.3 });
     return {
       id: 'WAS', city: 'Washington', name: 'Commanders', conf: 'NFC', div: 'East',
@@ -840,10 +847,10 @@ export const TEAMS = [
           sleeve: cuff(BUR) },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: sides(BUR, GOLD) },
-        { id: 'burgundy', name: 'Burgundy', base: BUR, stripe: sides(GOLD, W) },
-        { id: 'gold', name: 'Gold', base: GOLD, stripe: sides(W, BUR) },
-        { id: 'black', name: 'Hail Raiser Black', debut: '2026-11-23', base: BK, stripe: sides(BUR, GOLD) },
+        { id: 'white', name: 'White', base: W, stripe: fwd(sides(BUR, GOLD)) },
+        { id: 'burgundy', name: 'Burgundy', base: BUR, stripe: fwd(sides(GOLD, W)) },
+        { id: 'gold', name: 'Gold', base: GOLD, stripe: fwd(sides(W, BUR)) },
+        { id: 'black', name: 'Hail Raiser Black', debut: '2026-11-23', base: BK, stripe: fwd(sides(BUR, GOLD)) },
       ],
       socks: [
         { id: 'burgundy', name: 'Burgundy', base: BUR },
@@ -862,6 +869,8 @@ export const TEAMS = [
 
   // ───────────────────────────── NFC NORTH ─────────────────────────────
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const NAVY = '#0B162A', OR = '#E64100';
     const hem = (a, b) => ({ stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], from: 1.6 });
     const sock = (base, a, b) => ({ base, stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], stripesFrom: 13, lower: [W, 20] });
@@ -885,9 +894,9 @@ export const TEAMS = [
           chestPatch: { t: 'football', s: 'GSH', fill: OR, text: NAVY }, sleeve: { vbars: { stripes: [[OR, 1.4], [null, 1.2], [W, 0.5], [null, 1.2], [OR, 1.4]], len: 10 } } },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: sym([OR, 0.7], [NAVY, 0.9]) },
-        { id: 'navy', name: 'Navy', base: NAVY, stripe: sym([OR, 0.7], [W, 0.9]) },
-        { id: 'orange', name: 'Orange', tag: 'New 2026', debut: '2026-12-25', base: OR, stripe: sym([W, 0.6], [NAVY, 0.9]) },
+        { id: 'white', name: 'White', base: W, stripe: fwd(sym([OR, 0.7], [NAVY, 0.9])) },
+        { id: 'navy', name: 'Navy', base: NAVY, stripe: fwd(sym([OR, 0.7], [W, 0.9])) },
+        { id: 'orange', name: 'Orange', tag: 'New 2026', debut: '2026-12-25', base: OR, stripe: fwd(sym([W, 0.6], [NAVY, 0.9])) },
       ],
       socks: [
         { id: 'navy', name: 'Navy', ...sock(NAVY, OR, W) },
@@ -906,6 +915,8 @@ export const TEAMS = [
   })(),
 
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const HB = '#0076B6', SIL = '#B0B7BC', BK = '#0D0D0D', CON = '#DADCDD', LB = '#3F8FD0';
     return {
       id: 'DET', city: 'Detroit', name: 'Lions', conf: 'NFC', div: 'North',
@@ -931,7 +942,7 @@ export const TEAMS = [
         { id: 'white', name: 'White', base: W },
         { id: 'black', name: 'Black', base: BK },
         { id: 'silver', name: 'Silver', base: '#C9CCCE' },
-        { id: 'concrete', name: 'Concrete', tag: 'Rivalries', debut: '2026-11-01', base: '#E4E5E6', stripe: [[BK, 1.2]], stripeTaper: [0.4, 1.4] },
+        { id: 'concrete', name: 'Concrete', tag: 'Rivalries', debut: '2026-11-01', base: '#E4E5E6', stripe: fwd([[BK, 1.2]]), stripeTaper: [0.4, 1.4] },
       ],
       socks: [
         { id: 'blue', name: 'Blue', base: HB },
@@ -949,6 +960,8 @@ export const TEAMS = [
   })(),
 
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const G = '#203731', GOLD = '#FFB612', DS = '#3F4E45', ALB = '#ECE3D3', NAVY = '#1E2A4A', RUST = '#B8653A';
     return {
       id: 'GB', city: 'Green Bay', name: 'Packers', conf: 'NFC', div: 'North',
@@ -970,9 +983,9 @@ export const TEAMS = [
           collar: [[GOLD, 0.5], [ALB, 1.4], [GOLD, 0.6]], chestPatch: { t: 'text', s: 'GB', fill: GOLD, stroke: DS, font: 'serifNum' }, sleeve: { stripes: [[ALB, 1], [GOLD, 1], [ALB, 1]], from: 1.6 } },
       ],
       pants: [
-        { id: 'gold', name: 'Gold', base: GOLD, stripe: sym([G, 0.9], [W, 0.9]) },
+        { id: 'gold', name: 'Gold', base: GOLD, stripe: fwd(sym([G, 0.9], [W, 0.9])) },
         { id: 'rust', name: '1923 Rust', tag: 'Throwback', debut: '2026-12-13', base: RUST },
-        { id: 'alabaster', name: 'Alabaster', tag: 'Rivalries', debut: '2026-10-11', base: ALB, stripe: sym([GOLD, 0.9], [DS, 0.9]) },
+        { id: 'alabaster', name: 'Alabaster', tag: 'Rivalries', debut: '2026-10-11', base: ALB, stripe: fwd(sym([GOLD, 0.9], [DS, 0.9])) },
       ],
       socks: [
         { id: 'green', name: 'Green', base: G },
@@ -990,6 +1003,8 @@ export const TEAMS = [
   })(),
 
   (() => {
+    // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
+    const fwd = (s) => s && [[null, 3], ...s];
     const P = '#4F2683', GOLD = '#FFC62F', DP = '#33205C', DKP = '#2A1552';
     const horn = (fill, stroke) => ({ t: 'horn', fill, stroke });
     return {
@@ -1014,11 +1029,11 @@ export const TEAMS = [
           sleeve: { knot: { c: '#A68A4E' } } },
       ],
       pants: [
-        { id: 'white', name: 'White', base: W, stripe: [[P, 0.6], [GOLD, 1]] },
-        { id: 'purple', name: 'Purple', base: P, stripe: [[W, 0.6], [GOLD, 1]] },
-        { id: 'winter', name: 'Winter White', base: W, stripe: [[P, 0.6], ['#C0C4C8', 1]] },
-        { id: 'classic', name: 'Throwback White', tag: 'Throwback', base: W, stripe: sym([GOLD, 0.6], [DKP, 1]) },
-        { id: 'riv', name: 'Rivalries Purple', debut: '2026-12-20', base: DP, stripe: [[W, 0.6], ['#A68A4E', 0.6]] },
+        { id: 'white', name: 'White', base: W, stripe: fwd([[P, 0.6], [GOLD, 1]]) },
+        { id: 'purple', name: 'Purple', base: P, stripe: fwd([[W, 0.6], [GOLD, 1]]) },
+        { id: 'winter', name: 'Winter White', base: W, stripe: fwd([[P, 0.6], ['#C0C4C8', 1]]) },
+        { id: 'classic', name: 'Throwback White', tag: 'Throwback', base: W, stripe: fwd(sym([GOLD, 0.6], [DKP, 1])) },
+        { id: 'riv', name: 'Rivalries Purple', debut: '2026-12-20', base: DP, stripe: fwd([[W, 0.6], ['#A68A4E', 0.6]]) },
       ],
       socks: [
         { id: 'purple', name: 'Purple', base: P },
