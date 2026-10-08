@@ -144,25 +144,22 @@ Then stop.
    - Fix: make the yoke a shaped shoulder panel that matches the sheet outline, continuous across torso
      and sleeve, with the green edge accent. Redraw the collar feathers as the real small feather trim,
      not spikes. The road (navy yoke on white) and Action Green (navy on green) versions follow.
-2. **Panthers shoulders (CAR, all jerseys that use `panels.raglan`).**
-   - Now: `garments.js` ~line 72 (`p.raglan`) draws a constant-width stroke on the **torso** texture along
-     hard-coded `lines`, so it reads as a thin blue arc across the chest.
-   - Real: a tapered blue (or black/silver) panel on the **outer shoulder and sleeve**, running from the
-     collar along the raglan seam to the underarm, widest at the shoulder and narrowing toward the armpit,
-     with a thin edge line.
-   - Fix: draw it as a filled tapered polygon, continuous across the torso and sleeve textures (or as a
-     projected decal over the shoulder cap), with positions overridable from data. Remove the chest arc.
-3. **Rams shoulder horn (LAR primaries, plus Fearsome White / Classic Sol if they carry it).**
-   - Now: `loop` + `loopPattern: 'horn'` (`garments.js` ~line 285) paints a flat horizontal band
-     across the shoulder.
-   - Real 2026: a horn curl starting at the collar/shoulder top, sweeping over the shoulder cap and
-     tapering to a point down the outer sleeve (gold on royal; royal on white).
-   - Fix: a shaped horn graphic that follows the sheet and photos, spanning the shoulder and sleeve
-     (a projected canvas decal over the shoulder, using the decal machinery in `player.js`, is likely
-     the simplest way to cross the torso/sleeve seam). Don't use the helmet `ramhorn` shape: it's the
-     helmet curl, not the sleeve horn.
+2. **DONE: Panthers shoulders (CAR).** New `sweep: { t: 'raglan', c, edge }` (`sweepPanel` in
+   `player.js`): a tapered panel along the raglan seam from the collar to the underarm, with an edge
+   line. It's drawn per side in front-view world metres and projected from the front, angled outward,
+   across the torso/sleeve seam. The old torso `panels.raglan` stroke is no longer used by CAR.
+3. **Rams shoulder horn (LAR): IN PROGRESS, needs the real 2026 design.** The flat `loopPattern: 'horn'`
+   band is replaced by `sweep: { t: 'horn', c }` (set in the `rams()` helper, so all LAR jerseys using
+   it get it). It draws a crescent from the collar over the cap and down the sleeve. **The user points
+   out that the Rams updated the horn on all their jerseys for 2026**, and the current curve is a guess,
+   not traced from it. Find official 2026 Rams uniform photos (team site / unveiling, Apr 2026) of
+   Home, Road and the alternates. Then trace the horn's outline, where it starts at the collar, how it
+   wraps the cap, and where its point ends on the sleeve, and redraw the `horn` branch of `sweepPanel`
+   from that (add more control points as needed; the projection axis is the `axis` in the decal call).
+   Check that every LAR jersey uses the right horn colour and that Fearsome White / Classic Sol match photos.
 4. **Texans sleeve horns (HOU road white and Battle Red jerseys).** Same `loopPattern: 'horn'` flat-band
-   problem. The real sleeves carry a horn crescent with a red line. Fix with the same mechanism as item 3.
+   problem. The real sleeves carry a horn crescent with a red line. Fix by adding a branch to
+   `sweepPanel` (traced from photos), as for items 2 and 3.
 5. **Texans alternate helmet logos (HOU).** Research each against team photos:
    - **Battle Red helmet:** now `{ t: 'horn' }`, which is the *Vikings* horn shape, so it's wrong. Find
      the real mark on the 2024+ Battle Red helmet. If it's the bull-head logo, use the `HOU` PNG (tinted

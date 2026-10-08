@@ -469,6 +469,65 @@ export class Player {
       { axis: new THREE.Vector3(0, 0, 1), depth: 0.4, finish: 'print', minDot: 0.2, order: 1 });
   }
 
+  // Shoulder sweeps that cross the torso/sleeve seam, drawn per side in front-view world metres
+  // (+x = the player's left) and projected from the front, angled out so they reach the outer sleeve:
+  //   { t: 'raglan', c, edge }: a tapered panel along the raglan seam from the collar to the underarm (Panthers)
+  //   { t: 'horn', c }: a horn from the collar over the cap, curling down the outer sleeve to a point (Rams)
+  sweepPanel(spec, torso, sleeves) {
+    const sh = this.J['upperarm01.L'], neckY = this.J.neck01.y;
+    const v = new THREE.Vector3(), hem = [];
+    for (const m of sleeves) {
+      const p = m.geometry.attributes.position, uv = m.geometry.attributes.uv;
+      for (let i = 0; i < p.count; i++) {
+        if (uv.getY(i) < 0.97) continue;
+        v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld);
+        if (v.x > 0) hem.push(v.clone());
+      }
+    }
+    if (!hem.length) return;
+    const zc = hem.reduce((a, q) => a + q.z, 0) / hem.length;
+    const fr = hem.filter((q) => q.z >= zc);
+    const xi = Math.min(...fr.map((q) => q.x)), xo = Math.max(...fr.map((q) => q.x));
+    const yh = fr.reduce((a, q) => a + q.y, 0) / fr.length;
+    const x0 = 0.03, x1 = xo + 0.07, yT = neckY + 0.02, yB = yh - 0.04, ppm = 2600;
+    for (const sx of [1, -1]) {
+      const W = Math.round((x1 - x0) * ppm), H = Math.round((yT - yB) * ppm);
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      // left-side metres → canvas pixels (mirrored for the right side)
+      const P = ([x, y]) => [(sx > 0 ? x - x0 : x1 - x) * ppm, (yT - y) * ppm];
+      const M = (q) => ctx.moveTo(...P(q)), L = (q) => ctx.lineTo(...P(q)), Q = (k, q) => ctx.quadraticCurveTo(...P(k), ...P(q));
+      if (spec.t === 'raglan') {
+        const C = [0.125, neckY - 0.035], A = [xi + 0.004, yh + 0.004];
+        const d = [A[0] - C[0], A[1] - C[1]], len = Math.hypot(...d), n = [-d[1] / len, d[0] / len];
+        const at = (t, off) => [C[0] + d[0] * t + n[0] * off, C[1] + d[1] * t + n[1] * off];
+        const shape = (grow) => {
+          ctx.beginPath();
+          M(at(0, -grow)); Q(at(0.5, -0.008 - grow), at(1, -grow * 0.5));
+          L(at(1.02, 0.004 + grow)); Q(at(0.45, 0.032 + grow), at(0, 0.058 + grow));
+          ctx.closePath(); ctx.fill();
+        };
+        if (spec.edge) { ctx.fillStyle = spec.edge; shape(0.005); }
+        ctx.fillStyle = spec.c; shape(0);
+      } else if (spec.t === 'horn') {
+        ctx.fillStyle = spec.c;
+        ctx.beginPath();
+        M([0.13, neckY - 0.025]);
+        Q([sh.x + 0.03, sh.y + 0.07], [xo + 0.012, sh.y - 0.015]);
+        Q([xo + 0.026, yh + 0.04], [xo - 0.012, yh + 0.01]);
+        Q([xo - 0.012, sh.y - 0.03], [0.19, neckY - 0.06]);
+        Q([0.145, neckY - 0.045], [0.13, neckY - 0.025]);
+        ctx.closePath(); ctx.fill();
+      }
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = this.aniso;
+      this.textures.push(t);
+      const hit = { point: new THREE.Vector3(sx * (x0 + x1) / 2, (yT + yB) / 2, 0.05) };
+      this.decal([...torso, ...sleeves], hit, x1 - x0, yT - yB, t,
+        { axis: new THREE.Vector3(sx * (spec.t === 'horn' ? 0.6 : 0.35), 0.12, 1), depth: 0.5, finish: 'print', minDot: 0.12, order: 1 });
+    }
+  }
+
   placeDecals(team, jersey, pants, player, logos, cleatColor) {
     this.group.updateMatrixWorld(true);
     const torso = this.meshes.jersey || [];
@@ -494,6 +553,7 @@ export class Player {
 
     // shoulder wing panel across the chest and down the sleeves, under the other decals
     if (jersey.panels?.wing) this.wingPanel(jersey.panels.wing, yV, torso, sleeves);
+    if (jersey.sweep) this.sweepPanel(jersey.sweep, torso, sleeves);
 
     // Front: wordmark, number, NFL shield at the collar V
     const w = jersey.word;

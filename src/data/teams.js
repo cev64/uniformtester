@@ -51,6 +51,8 @@
 //              Text wordmarks also take word.arch and word.scaleX.
 //   swoosh: sleeve swoosh colour, or false; default white on dark jerseys,
 //              the number colour on light ones.
+//   sweep: { t: 'raglan', c, edge } | { t: 'horn', c }: shoulder graphic across the
+//              torso/sleeve seam (Panthers raglan panel, Rams horn).
 //   jockTag: true or { size, bg, fg } opts in to the woven tag at the lower left
 //              front; off by default (a tucked game jersey hides it).
 // Optional pants fields: swoosh (colour of the hip swoosh), hipStyle (finish
@@ -1155,11 +1157,11 @@ export const TEAMS = [
       ],
       jerseys: [
         { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [W, BLUE], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BLUE, 4.2]], neckTag: { s: 'KEEP POUNDING', c: W }, sleeveLogo: 'CAR', swoosh: W,
-          panels: { raglan: [BLUE, 2.8, [SIL, 0.5]] }, sleeve: { cap: BK } },
+          sweep: { t: 'raglan', c: BLUE, edge: SIL }, sleeve: { cap: BK } },
         { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, BLUE], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 4.2]], neckTag: { s: 'KEEP POUNDING', c: BK }, sleeveLogo: 'CAR', swoosh: BK,
-          panels: { raglan: [BLUE, 2.8, [BK, 0.4]] } },
+          sweep: { t: 'raglan', c: BLUE, edge: BK } },
         { id: 'blue', name: 'Process Blue', tag: 'Alternate', base: BLUE, num: [W, BK], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 4.2]], neckTag: { s: 'KEEP POUNDING', c: W }, sleeveLogo: 'CAR', swoosh: W,
-          panels: { raglan: [BK, 2.8, [SIL, 0.5]] } },
+          sweep: { t: 'raglan', c: BK, edge: SIL } },
       ],
       pants: [
         { id: 'white', name: 'White', base: W, stripe: [[BLUE, 1.4], [BK, 0.6]], swoosh: BK },
@@ -1312,7 +1314,7 @@ export const TEAMS = [
     const ramhorn = (fill) => ({ t: 'ramhorn', fill, stroke: fill, size: 0.2, at: [0.2, -0.1] });
     // horn sleeve: the sleeve in one colour (cap) with the horn curling round it in the other.
     // Royal and Midnight jerseys: royal sleeve, Sol horn. White jersey: Sol sleeve, royal horn.
-    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, loop: [[horn, 4]], loopPattern: 'horn', loopAt: 16 });
+    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, sweep: { t: 'horn', c: horn } });
     // 2026: a Sol "LA" monogram on royal backing sits over the back of the collar
     const neck = { s: 'LA', c: SOL, bg: ROY, font: 'block' };
     return {
