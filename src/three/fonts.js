@@ -44,6 +44,8 @@ export const NUMBER_FONTS = {
   dolphinsPlate: { family: '"Jost", "Futura", "Century Gothic", sans-serif', weight: 700, skew: -0.2, scaleX: 1.12 },
 
   // AFC South + AFC West fonts
+  // blackletter H (Texans H-Town helmet)
+  blackletter: { family: '"UnifrakturCook", "Old English Text MT", Georgia, serif', weight: 700 },
 
   // NFC East + NFC North fonts
 
@@ -60,6 +62,7 @@ const LETTERS = {
   dolphins: 'dolphinsPlate',
 
   // AFC South + AFC West team styles
+  colts: 'plate', jaguars: 'squareSans', broncos: 'angular',
 
   // NFC East + NFC North team styles
 

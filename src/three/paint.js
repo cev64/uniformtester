@@ -374,6 +374,41 @@ export function paintLogo(logo, facing, size = 512) {
       fillStroke(ctx, (g) => { path(g); g.closePath(); }, logo.fill, logo.stroke, S * 0.035);
       break;
     }
+    case 'bars': {
+      // UCLA shoulder stripes (Colts): parallel bars running front to back over
+      // the shoulder. stripes: [[colour|null, width as a fraction of the canvas], ...]
+      // centred left to right, len = fraction of the canvas height, skew = lean (x per y)
+      const total = logo.stripes.reduce((a, [, w]) => a + w, 0);
+      const len = logo.len ?? 0.9, sk = logo.skew ?? 0;
+      let x = -total / 2;
+      for (const [col, w] of logo.stripes) {
+        if (col) {
+          ctx.fillStyle = col;
+          const x0 = (x * dirX) * S + cx, x1 = ((x + w) * dirX) * S + cx;
+          const t = -len / 2 * S, b = len / 2 * S, d = sk * len * S / 2 * dirX;
+          ctx.beginPath();
+          ctx.moveTo(x0 + d, cy + t); ctx.lineTo(x1 + d, cy + t); ctx.lineTo(x1 - d, cy + b); ctx.lineTo(x0 - d, cy + b);
+          ctx.closePath(); ctx.fill();
+        }
+        x += w;
+      }
+      break;
+    }
+    case 'peak': {
+      // Broncos shoulder graphic: a wedge of colour over the shoulder with a
+      // jagged "mountain" spike under it. Outer edge of the arm is +x for 'right'.
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(dirX, 1);
+      const P = (pts) => (g) => { pts.forEach(([x, y], i) => (i ? g.lineTo(x * S, y * S) : g.moveTo(x * S, y * S))); g.closePath(); };
+      const wedge = P([[0.46, -0.46], [-0.34, -0.46], [-0.1, -0.2], [0.46, 0.1]]);
+      fillStroke(ctx, wedge, logo.fill, logo.fill, S * 0.01);
+      const sp = logo.spike || logo.stroke || logo.fill;
+      fillStroke(ctx, P([[0.46, -0.02], [-0.36, -0.28], [0.46, 0.22]]), sp, sp, S * 0.01);
+      fillStroke(ctx, P([[0.46, 0.16], [0.08, 0.16], [0.46, 0.5]]), sp, sp, S * 0.01);
+      ctx.restore();
+      break;
+    }
     case 'wing': {
       // Sweeps from the forehead back over the ear with feather cuts
       ctx.save();
