@@ -508,8 +508,10 @@ export class Player {
       if (c) this.canvasDecal(torso, front(neckY - 0.16, 0.11), 0.075, c, { key: JSON.stringify(jersey.chestPatch) });
     }
     // Jock tag: the woven label on the front hem, just left of centre (the
-    // player's left). Shown where it peeks out above the pants.
-    if (jersey.jockTag !== false && logos.NFL_shield) {
+    // player's left). A game jersey is tucked, so the tag sits under the pants
+    // and isn't seen: it's drawn only when a jersey opts in (jockTag: true or
+    // { size, bg, fg }), placed where it peeks out above the belt.
+    if (jersey.jockTag && logos.NFL_shield) {
       const jt = jersey.jockTag || {};
       const bg = jt.bg || '#121314', fg = jt.fg || '#D9DBDE';
       const c = jockTagCanvas(logos.NFL_shield.image, { size: jt.size || null, bg, fg });
