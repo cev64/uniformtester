@@ -76,6 +76,8 @@ git clone --depth 1 https://github.com/makehumancommunity/makehuman <dir>   # CC
 | Towel | Still off (`ACCESSORIES.towel = false`); a real drape needs a player rebuild. Low priority. | |
 | Helmet | **Rebuilt, accepted by the user as good enough; don't rework.** Subdivision-cage shell traced from Riddell photos; SF-2BD-SW mask fitted to the shell (top bar 2.8–4.0 mm under the bumper along its length); smaller chin cup behind the chin bar; new clips. Known leftover: from the side, the jaw area shows some jagged black pieces (recess, vent, trim). Only touch it if the user asks. GLB 1.6 MB. | `tools/build_helmet.py`, `src/three/helmet.js` |
 | Team accuracy | Second pass done on all 32 teams (details below). | `src/data/teams.js`, `numerals.js`, `fonts.js` |
+| Shoulder graphics on the new pad cap | Done. `jersey.shoulder.at` = `'front'` (default) / `'top'` / `'outer'` / `'cuff'` places the mark on the rounded cap (documented in the `teams.js` header). DAL Road star on the outer sleeve, clear of the TV number; DAL Arctic/1960s stars on the cap crown; LAC bolt 22 cm, upright down the front of the shoulder; IND UCLA bars over the crown front to back; DEN peak at the sleeve cuff. BUF/LV shoulder TV numbers and sleeve-TV teams checked, unchanged. | `player.js` (`if (jersey.shoulder)`) |
+| Seahawks shoulders | Done (Home, Road, Action Green). `panels.wing: [band, accent]`: band across the chest at the V (wordmark on it) sweeping down the front of each sleeve, accent wedge at the outer sleeve end set off by a base-colour stripe; drawn in front view and projected over torso + sleeves (`wingCanvas`, `wingPanel`; `decal()` gained `axis`/`order`). `collarFeathers: { c, n }` draws 6 feather chevrons (12 feathers) a side on the collar; the old torso `feathers` spikes stay for BAL only. TV numbers sit on the navy/white/green cap above the band, as on the sheet. | `garments.js`, `player.js`, SEA block |
 
 Team pass highlights (all merged):
 - **numStyle** set on every jersey of every team: `twill` for on-field jerseys; `pressed` for
@@ -115,10 +117,8 @@ Done in this session, in `tools/build_player.py`, with the player model rebuilt:
 - **TV numbers on the shoulder** (`player.js`) are now projected onto the crown of the sloped cap from
   above and outside, so they no longer stretch.
 - The cleats came out identical (same vertex count and bounds). `player.glb` is 1.9 MB.
-- Not re-checked yet: shoulder decals (DAL stars, LAC bolts, IND bars), the SEA yoke, and the TV-number
-  size on every team. Look at these in P1/P5 renders and adjust `jersey.shoulder` placement in
-  `player.js` (aimed from above and in front at `sh + (-sx*0.02, 0.05, 0)`) if any of them sit off the
-  new cap.
+- Shoulder decals (DAL, LAC, IND, DEN) and the SEA shoulders are now fitted to the new cap (§3). Still not
+  re-checked: the TV-number size on every team (BUF and LV look right); do it in P5.
 
 ### P1: the user's "glaring problems" (do these first)
 
@@ -127,7 +127,10 @@ shoulder/sleeve graphics), with the reference sheet and real 2025/2026 game phot
 Verify each at `chest`, `shoulder`, `sleeve`, `three` and `back`, with a render next to the reference.
 Then stop.
 
-1. **Seahawks shoulders (SEA, all three jerseys).**
+1. **DONE: Seahawks shoulders (SEA, all three jerseys)** (see §3). Note: the reference sheet puts the TV
+   numbers on the jersey-colour cap *above* the band, not on the grey, so that's how it's built. Back is
+   plain (the sheet shows the front only; check a back photo in P5). The "12" tag stays on the back neck.
+   Original brief, for reference:
    - Now: `panels: { yoke: [WG, 11, 0] }` plus `sleeve.top`, and `feathers: G` draws green spikes around
      the collar that read as a spiky fringe.
    - Real (sheet + photos): a wolf-grey band runs over the top of each shoulder from the collar to the
