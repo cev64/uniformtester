@@ -817,258 +817,30 @@ socks = make_garment('Socks',
     socks_cuts, lambda co, c: 0.0045, smooth_iters=2)
 
 # ─── cleats ───
-# A modern molded football cleat (Nike Vapor-style mid), built as a shoe last
-# rather than cut from the foot. The foot is measured in slices from heel to
-# toe (width, centre line, instep height) and swept into:
-#   upper:  rounded cross-sections with a firm heel counter, a tapered toe box
-#           with toe spring and an open throat round the ankle,
-#   collar: a knit mid-cut collar hugging the ankle (from the leg surface),
-#   laces:  flat laces arched over the instep,
-#   plate:  a thin TPU sole plate standing a few millimetres proud of the upper,
-#   studs:  bladed studs under the forefoot and conical ones under the heel.
-# Everything sits on the 'cleat' (upper, collar, laces) and 'sole' (plate,
-# studs) materials.
-STUD_H = 0.0145         # stud length
-STUD_SINK = 0.2        # fraction of the studs pressed into the turf
-PLATE_T = 0.0075
-def plate_t(t):
-    # a little heel wedge under the plate
-    return PLATE_T + 0.0045 * (1 - smooth01(0.15, 0.5, t))
-COLLAR_TOP = ANK['L'].z + 0.024
-
-def _ring_faces(nrings, nr, closed=True, base=0):
-    faces = []
-    for i in range(nrings - 1):
-        for k in range(nr if closed else nr - 1):
-            a, b = base + i * nr + k, base + i * nr + (k + 1) % nr
-            faces.append((a, b, b + nr, a + nr))
-    return faces
-
-def _stud(center, rx, ry, rot, top_z, h, seg=12):
-    """a tapered stud from the plate (top_z) down h; elliptical, rotated in xy"""
-    verts = []
-    for ring, (sc, z) in enumerate(((1.0, top_z + 0.001), (0.92, top_z - h * 0.55), (0.62, top_z - h))):
-        for k in range(seg):
-            a = 2 * math.pi * k / seg
-            x, y = math.cos(a) * rx * sc, math.sin(a) * ry * sc
-            verts.append(center + rot[0] * x + rot[1] * y + Vector((0, 0, z - center.z)))
-    faces = _ring_faces(3, seg)
-    faces.append(tuple(range(2 * seg, 3 * seg))[::-1])
-    faces = [f[::-1] for f in faces[:-1]] + [faces[-1]]
-    return verts, faces
-
-def build_cleat(side):
-    sg = SIGN[side]
-    pts = [v.co.copy() for v, c in zip(bdata.vertices, cls) if c['side'] == side and c['leg'] and v.co.z < ANK[side].z + 0.01]
-    foot = [p for p in pts if p.z < ANK[side].z - 0.02]
-    heel = max(foot, key=lambda p: p.y)
-    toe = min(foot, key=lambda p: p.y)
-    ax = Vector((toe.x - heel.x, toe.y - heel.y, 0)).normalized()
-    lat = Vector((-ax.y, ax.x, 0)) * (1 if (-ax.y) * sg > 0 else -1)   # toward the outside of the foot
-    L = (toe - heel).dot(ax)
-    z_in = min(p.z for p in pts) - 0.003          # insole: bottom of the upper, top of the plate
-    NS, NR = 52, 40
-    ts = [i / (NS - 1) for i in range(NS)]
-    cen, wid, top = [], [], []
-    for t in ts:
-        sl = [p for p in pts if abs((p - heel).dot(ax) / L - t) < 0.03] or pts
-        ls = [(p - heel).dot(lat) for p in sl]
-        cen.append((max(ls) + min(ls)) / 2)
-        wid.append((max(ls) - min(ls)) / 2 + 0.0035)
-        top.append(max(p.z for p in sl) + 0.009)
-    for arr in (cen, wid, top):
-        for _ in range(8):
-            arr[:] = [arr[0]] + [(arr[i - 1] + 2 * arr[i] + arr[i + 1]) / 4 for i in range(1, NS - 1)] + [arr[-1]]
-    T_OPEN = 0.27
-    for i, t in enumerate(ts):
-        # tapered, slightly medial toe box
-        k = smooth01(0.7, 1.0, t)
-        wid[i] *= 1 - 0.28 * k ** 1.4
-        cen[i] -= 0.005 * k
-        # heel counter and collar line, then the laced instep sloping down to a low toe box
-        if t < T_OPEN:
-            top[i] = z_in + 0.068 + 0.012 * smooth01(0.2, T_OPEN, t)
-        else:
-            u = smooth01(T_OPEN, 0.95, t)
-            prof = z_in + 0.08 - (0.08 - 0.034) * u ** 0.8
-            top[i] = max(top[i], prof)
-    # heel slightly narrower than the measured heel pad (a cupped counter)
-    for i, t in enumerate(ts):
-        wid[i] *= 1 - 0.06 * (1 - smooth01(0.0, 0.25, t))
-
-    def section(t, w, c, zt, scale=1.0, open_top=False):
-        base = heel + ax * (t * L)
-        zb = z_in
-        hz = (zt - zb) / 2 * scale
-        zm = zb + (zt - zb) / 2
-        r = []
-        for k in range(NR):
-            a = 2 * math.pi * k / NR
-            ca, sa = math.cos(a), math.sin(a)
-            n = 2.3 if sa > 0 else 6.0            # round on top, flat with a tight edge underneath
-            x = math.copysign(abs(ca) ** (2 / n), ca) * w * scale
-            z = math.copysign(abs(sa) ** (2 / n), sa)
-            z = zm + z * hz if sa > 0 else max(zb, zm + z * (zt - zb) / 2)
-            r.append(base + lat * (c + x) + Vector((0, 0, z - base.z)))
-        return r
-
-    params = []   # (t, w, c, zt, scale)
-    for f, back in ((0.45, 0.017), (0.75, 0.012), (0.93, 0.006)):
-        params.append((-back / L, wid[0] * (0.75 + 0.25 * f), cen[0], z_in + (top[0] - z_in) * (0.92 + 0.08 * f), f))
-    for i, t in enumerate(ts):
-        params.append((t, wid[i], cen[i], top[i], 1.0))
-    for f, fwd in ((0.9, 0.004), (0.68, 0.008), (0.38, 0.011), (0.12, 0.013)):
-        params.append((1 + fwd / L, wid[-1] * (0.7 + 0.3 * f), cen[-1], z_in + (top[-1] - z_in) * (0.45 + 0.55 * f), f ** 0.6))
-    rings = [section(t, w, c, zt, sc) for t, w, c, zt, sc in params]
-
-    # ── upper
-    verts = [p for r in rings for p in r]
-    faces = _ring_faces(len(rings), NR)
-    faces.append(tuple(range(NR))[::-1])
-    faces.append(tuple(range((len(rings) - 1) * NR, len(rings) * NR)))
-    # open the throat: drop the top arc of every ring behind the tongue
-    top_k = {k for k in range(NR) if math.sin(2 * math.pi * (k + 0.5) / NR) > 0.62}
-    open_rings = [i for i, p in enumerate(params) if p[0] < T_OPEN]
-    drop = set()
-    for i in open_rings:
-        if i + 1 < len(rings):
-            for k in top_k:
-                drop.add((i * NR + k, i * NR + (k + 1) % NR, (i + 1) * NR + (k + 1) % NR, (i + 1) * NR + k))
-    faces = [f for f in faces if f not in drop and not (f == tuple(range(NR))[::-1])]
-
-    # ── sole plate: a rounded slab under the upper, 3 mm proud all round
-    PR = 10
-    plate_rings = []
-    for t, w, c, zt, sc in params:
-        base = heel + ax * (t * L)
-        W = w * (1 if sc >= 0.99 else sc ** 0.5) + 0.0035
-        r = []
-        for k in range(PR):
-            a = 2 * math.pi * k / PR
-            x = math.copysign(abs(math.cos(a)) ** 0.25, math.cos(a)) * W
-            pt = plate_t(t)
-            zz = z_in - pt / 2 + math.copysign(abs(math.sin(a)) ** 0.5, math.sin(a)) * (pt / 2 + 0.002)
-            r.append(base + lat * (c + x) + Vector((0, 0, zz - base.z)))
-        plate_rings.append(r)
-    pbase = len(verts)
-    verts += [p for r in plate_rings for p in r]
-    pfaces = _ring_faces(len(plate_rings), PR, base=pbase)
-    pfaces.append(tuple(range(pbase, pbase + PR))[::-1])
-    pfaces.append(tuple(range(pbase + (len(plate_rings) - 1) * PR, pbase + len(plate_rings) * PR)))
-    sole_faces = set(range(len(faces), len(faces) + len(pfaces)))
-    faces += pfaces
-
-    # ── studs: bladed under the forefoot, round under the heel
-    def at(t, f):
-        i = min(NS - 1, max(0, int(round(t * (NS - 1)))))
-        return heel + ax * (t * L) + lat * (cen[i] + f * wid[i] * 0.78)
-    STUDS = [(0.9, -0.15, 'b'), (0.79, -0.7, 'b'), (0.78, 0.68, 'b'), (0.65, -0.75, 'b'), (0.65, 0.72, 'b'), (0.53, 0.0, 'b'),
-             (0.09, -0.5, 'r'), (0.09, 0.5, 'r'), (0.24, -0.56, 'r'), (0.24, 0.56, 'r')]
-    for t, f, kind in STUDS:
-        c = at(t, f)
-        z_plate_bottom = z_in - plate_t(t)
-        c.z = z_plate_bottom
-        if kind == 'b':
-            sv, sf = _stud(c, 0.0105, 0.0042, (lat, ax), z_plate_bottom, STUD_H)
-        else:
-            sv, sf = _stud(c, 0.0068, 0.0068, (lat, ax), z_plate_bottom, STUD_H)
-        b = len(verts)
-        verts += sv
-        for fc in sf:
-            sole_faces.add(len(faces))
-            faces.append(tuple(i + b for i in fc))
-
-    # ── laces: flat straps arched over the instep
-    lace_faces = []
-    for j in range(7):
-        t = T_OPEN + 0.03 + j * 0.052
-        i = min(NS - 1, int(round(t * (NS - 1))))
-        base = heel + ax * (t * L)
-        w, c, zt = wid[i], cen[i], top[i]
-        zm, hz = (z_in + zt) / 2, (zt - z_in) / 2
-        strip = []
-        NL = 9
-        for q in range(NL):
-            u = -0.55 + 1.1 * q / (NL - 1)
-            zz = zm + hz * (1 - abs(u) ** 2.3) ** (1 / 2.3)
-            p = base + lat * (c + u * w) + Vector((0, 0, zz - base.z))
-            nrm = Vector((0, 0, 1)) * 1.0 + lat * (u * 0.9)
-            nrm.normalize()
-            for dy, dz in ((-0.0036, 0.0006), (0.0036, 0.0006), (0.0036, 0.0028), (-0.0036, 0.0028)):
-                strip.append(p + ax * dy + nrm * dz)
-        b = len(verts)
-        verts += strip
-        for q in range(NL - 1):
-            for k in range(4):
-                a0, a1 = b + q * 4 + k, b + q * 4 + (k + 1) % 4
-                lace_faces.append((a0, a1, a1 + 4, a0 + 4))
-        lace_faces.append((b, b + 1, b + 2, b + 3)[::-1])
-        lace_faces.append(tuple(range(b + (NL - 1) * 4, b + NL * 4)))
-    faces += lace_faces
-
-    me = bpy.data.meshes.new('Cleat' + side)
-    me.from_pydata(verts, [], faces)
-    ob = bpy.data.objects.new('Cleat' + side, me)
-    bpy.context.collection.objects.link(ob)
-    set_materials(ob, ['cleat', 'sole'])
-    for poly in me.polygons:
-        poly.material_index = 1 if poly.index in sole_faces else 0
-    bm = bmesh.new(); bm.from_mesh(me)
-    # toe spring: the forefoot lifts off the ground
-    for v in bm.verts:
-        t = (v.co - heel).dot(ax) / L
-        v.co.z += 0.022 * smooth01(0.76, 1.08, t) ** 1.6
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
-    bm.to_mesh(me); bm.free()
-    # thickness for the upper's open edge
-    so = ob.modifiers.new('T', 'SOLIDIFY'); so.thickness = 0.0025; so.offset = -1; so.use_rim = True
-    bpy.context.view_layer.objects.active = ob
-    for o in bpy.context.selected_objects:
-        o.select_set(False)
-    ob.select_set(True)
-    bpy.ops.object.modifier_apply(modifier='T')
-    # planar UVs (knit and mesh texture on the upper)
-    uv = me.uv_layers.new(name='UVMap')
-    for poly in me.polygons:
-        for li in poly.loop_indices:
-            p = me.vertices[me.loops[li].vertex_index].co
-            uv.data[li].uv = ((p - heel).dot(ax) * 40, p.z * 40 + (p - heel).dot(lat) * 12)
-    me.shade_smooth()
-    return ob, z_in, (heel, ax, lat, L)
-
-cl, z_in, frameL = build_cleat('L')
-cr, _, frameR = build_cleat('R')
-
-# knit mid-cut collar: the ankle surface just above the shoe, hugging the leg
-collar_cuts = [(Vector((0, 0, COLLAR_TOP)), Vector((0, 0, 1)), lambda c, i: True),
-               (Vector((0, 0, z_in + 0.04)), Vector((0, 0, -1)), lambda c, i: True)]
-for _s, (_h, _ax, _lat, _L) in (('L', frameL), ('R', frameR)):
-    # end the collar inside the throat, under the laces
-    collar_cuts.append((_h + _ax * (_L * 0.33) + Vector((0, 0, z_in + 0.075 - _h.z)), (_ax - Vector((0, 0, 0.8))).normalized(), lambda c, i, _s=_s: i['side'] == _s))
-def _collar_keep(c, i):
-    if not (i['leg'] and z_in + 0.03 < c.z < COLLAR_TOP + 0.02):
-        return False
-    heel, ax, lat, L = frameL if i['side'] == 'L' else frameR
-    return (c - heel).dot(ax) / L < 0.5
-ankle = make_garment('AnkleCollar', _collar_keep, collar_cuts,
-                     lambda co, c: 0.0056, smooth_iters=3)
-solidify(ankle, 0.003)
-ankle.data.materials.clear()
-set_materials(ankle, ['cleat'])
-ankle.data.uv_layers[0].name = 'UVMap'
-for poly in ankle.data.polygons:
-    for li in poly.loop_indices:
-        p = ankle.data.vertices[ankle.data.loops[li].vertex_index].co
-        ankle.data.uv_layers[0].data[li].uv = (math.atan2(p.x - math.copysign(0.17, p.x), p.y) * 4, p.z * 40)
-
+# Nike Vapor-style mid football cleats, modelled as subdivision cages traced
+# from Nike's product shots (see tools/cleat.py): sculpted upper with a lace
+# panel, sole plate with a heel cup and lip, molded studs, knit collar round
+# the sock and criss-crossed laces with a bow. The foot itself is hidden.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cleat as cleat_mod
+# The turf: kept where the original sole plate put it (z_in = bottom of the
+# foot), so the body's joint heights above the ground don't change.
+_foot_all = [v.co.copy() for v, c in zip(bdata.vertices, cls) if c['side'] == 'L' and c['leg'] and v.co.z < ANK['L'].z + 0.01]
+z_in = min(p.z for p in _foot_all) - 0.003
+GROUND_Z = z_in - 0.012 - 0.0145 * 0.8
+_cleats = []
+for _s in 'LR':
+    _pts = [v.co.copy() for v, c in zip(bdata.vertices, cls) if c['side'] == _s and c['leg'] and v.co.z < ANK[_s].z + 0.01]
+    _sock = [v.co.copy() for v in socks.data.vertices if (v.co.x > 0) == (_s == 'L')]
+    _ob, _ = cleat_mod.build_cleat(_s, _pts, ANK[_s], _sock, GROUND_Z)
+    _cleats.append(_ob)
 bpy.ops.object.select_all(action='DESELECT')
-for o in (cl, cr, ankle):
+for o in _cleats:
     o.select_set(True)
-bpy.context.view_layer.objects.active = cl
+bpy.context.view_layer.objects.active = _cleats[0]
 bpy.ops.object.join()
-cleats = cl
+cleats = _cleats[0]
 cleats.name = 'Cleats'
-GROUND_Z = z_in - plate_t(0) - STUD_H * (1 - STUD_SINK)
 
 # ─── gloves ───
 # receiver gloves: snug fingers and a raised wrist cuff with a strap edge
