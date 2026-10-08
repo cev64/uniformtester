@@ -83,6 +83,26 @@ function browTexture() {
   return canvasTexture(c);
 }
 
+// Rear bumper: black rubber with the SPEEDFLEX name moulded in, a shade
+// lighter. UV u runs around the back from the player's right side, so seen from
+// behind it is mirrored.
+function backplateTexture() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 96;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#141517';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.save();
+  ctx.translate(512, 52); ctx.scale(-1, 1);
+  ctx.fillStyle = '#26282b';
+  ctx.font = '800 40px "Helvetica Neue", Arial, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
+  ctx.fillText('SPEEDFLEX', 0, 0);
+  ctx.restore();
+  return canvasTexture(c);
+}
+
 // Metallic paint: fine flake as roughness / metalness noise in the shell UVs
 // (~0.4 mm per texel), under a smooth clear coat.
 let flakeMaps = null;
@@ -185,6 +205,8 @@ export class Helmet {
         (this.parts[key] ||= []).push(o);
       });
       this.mats.browpad.map = browTexture();
+      this.mats.backplate.map = backplateTexture();
+      this.mats.backplate.color.set('#ffffff');
       if (detail) {
         detail.flipY = false;
         detail.wrapS = THREE.RepeatWrapping;
