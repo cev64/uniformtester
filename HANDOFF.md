@@ -129,7 +129,12 @@ Then stop.
 
 1. **DONE: Seahawks shoulders (SEA, all three jerseys)** (see §3). Note: the reference sheet puts the TV
    numbers on the jersey-colour cap *above* the band, not on the grey, so that's how it's built. Back is
-   plain (the sheet shows the front only; check a back photo in P5). The "12" tag stays on the back neck.
+   plain (the sheet shows the front only; see P1b). The "12" tag stays on the back neck. The band's
+   corners are rounded (`poly(..., radii)` in `wingCanvas`) so it sweeps round the shoulder; the user
+   judged the first, straight-edged version "jagged". The band is a canvas drawn in front-view world
+   metres and projected from the front onto torso + sleeves (`wingPanel` in `player.js`). That is the
+   pattern to reuse for items 2–4, since it crosses the torso/sleeve seam cleanly. Draw curved edges,
+   not straight polygons.
    Original brief, for reference:
    - Now: `panels: { yoke: [WG, 11, 0] }` plus `sleeve.top`, and `feathers: G` draws green spikes around
      the collar that read as a spiky fringe.
@@ -167,6 +172,56 @@ Then stop.
      letterform, colours, outline and size against photos, and fix the size, which is too small
      (drawn marks now honour `logo.size`).
    - The Rivalries shell is already plain white. Check that the stripe and mask colour are right.
+
+### P1b: the back of the jerseys (after P1; the fronts have had most of the work so far)
+
+Every pass so far compared fronts against the reference sheets, which only show the front. The backs
+have never been audited. What's on a jersey back and where the engine draws it (`placeDecals` in
+`src/three/player.js`, around the "Back: nameplate and number" comment):
+- **Nameplate:** `back(neckY - 0.1)`, letter height `plateH` (default 0.05 m), with `plateFont`,
+  `plateArch`, `plateTracking`, `plateScaleX`, `plateColor`, `plateOutline`, `plateBar`, `plateStyle`.
+- **Back number:** `back(neckY - 0.3)`, fixed height 0.25 m, same colours and font as the front.
+- **Back collar tag:** `neckTag` at `back(neckY - 0.045)`. Also the back-collar shape and bands
+  (`collar`; the collar mesh runs all the way round).
+- **Shoulder/yoke graphics seen from behind:** panels, loops, TV numbers, sleeve stripes. Projected
+  front graphics (the SEA `wingPanel`) stop at the sides, so they're blank on the back.
+
+**Process (one Opus engine agent first, then 4 Sonnet data agents by division group, as in round 2):**
+1. **References.** For each team's Home and Road (then alternates), find at least one straight-on back
+   photo of the 2025/2026 on-field jersey: Commons game photos from behind, team-shop "back" product
+   images, or team uniform-reveal pages. Keep them in scratch. Use a player with a long name and one with
+   a short name where you can. Note for each jersey:
+   - nameplate font family, letter height, arch (straight / slight / full), tracking, colours and
+     outline, and whether it's on a separate sewn bar;
+   - back number height, digit width and gap, outlines; whether the back colours differ from the front
+     (e.g. the PIT 1933 throwback);
+   - the vertical layout: collar → nameplate → number. Measure the gaps;
+   - the back collar tag (text, size, colours), the back collar shape (how far the round neck dips at
+     the back, band widths);
+   - any back yoke, panel or shoulder graphic, and how the sleeve stripes or loops look from behind.
+2. **Measure in ratios, not pixels:** back number height / shoulder width across the back, nameplate
+   letter height / number height, gap nameplate-to-number / number height, nameplate top below the
+   collar / number height. Average over a few photos. These ratios are scale-free, so they transfer to
+   the model. Measure the same ratios on a `back` render to get the corrections.
+3. **League-wide defaults first (Opus engine agent).** If the ratios show that the defaults are off for
+   most teams (number height 0.25 m, nameplate 0.05 m at `neckY - 0.1`, number at `neckY - 0.3`),
+   fix the defaults in `player.js` once, not per team. Then add the engine fields the references need:
+   - `numBack: [fill, outline, ...]` (back number colours when different from the front);
+   - `numBackH` / `plateAt` (per-jersey number height and nameplate position, only if a team truly differs);
+   - a back yoke/panel or back half of shoulder graphics, so SEA (and any team whose band or yoke
+     continues on the back) can be drawn. Project a `wingPanel`-style canvas from behind, or paint the
+     torso back half;
+   - back-collar shape details, if photos show the round back neck differs from the model.
+   Document new fields in the `src/data/teams.js` header.
+4. **Per-team data pass (Sonnet agents, data only):** set the nameplate font/arch/tracking/scale/colours,
+   `plateBar`, back number colours, `neckTag` and back panels per jersey, from step 1.
+5. **Render to verify, economically:** one `shoot.mjs` call per group with `--views back,backclose,backtop`
+   and `--name WILLIAMSON --number 88` (wide name, wide digits), plus one short name (`--name LEE`) for
+   teams with arched plates. Sheet: the back photo next to the render at the same scale. Iterate only on
+   what's wrong, then stop.
+6. **Check across teams** at the end (lead): nameplate heights and gaps should be consistent league-wide
+   except where a team really differs. Long names must fit inside the shoulder blades without crowding
+   the sleeves (`plateScaleX` compresses them, as on real jerseys).
 
 ### P2: helmet logo placement on the new helmet (one Sonnet agent; data only)
 
