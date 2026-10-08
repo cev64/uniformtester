@@ -12,7 +12,7 @@ Make the 3D NFL uniform builder **as lifelike as physically possible**:
 - the helmet for every team is a faithful **Riddell SpeedFlex**;
 - the player and the way the gear sits on him read as a real NFL player.
 
-The user's current priority is **jersey detail**: first the oversized shoulder pads and collar (§4 P0), then the shoulder designs (§4 P1).
+The user's current priority is **jersey detail**: the shoulder pads and collar are now fixed (§4 P0); next are the shoulder designs (§4 P1).
 
 How the user wants it run:
 - Use subagents, choosing the model per task: **Opus** for 3D modelling, rendering-engine work and the
@@ -96,75 +96,26 @@ Team pass highlights (all merged):
 
 ## 4. Remaining work: specific instructions
 
-### P0: modern, smaller shoulder pads and a lower collar (do this first; one Opus agent)
+### P0: modern shoulder pads and collar: DONE (user approved the sizing and proportions)
 
-The user finds the shoulder/chest pads too big, and that makes every collar look wrong. This must come
-**before P1**, because the Seahawks, Panthers and Rams shoulder graphics are drawn onto the pad shape.
+Done in this session, in `tools/build_player.py`, with the player model rebuilt:
+- **Pads:** low-profile rounded caps over the deltoids (centre `SHX - 0.005`, rounder exponents, wider
+  inward taper so they blend into the trapezius slope), thinner plates. The upper chest stand-off went
+  from 8 cm to about 1–3 cm. The jersey is 64 cm across, down from 67; most of the width is the body's
+  own deltoids, which the user is happy with. The shoulder line now slopes down from the neck instead
+  of a flat shelf at chin height.
+- **Collar:** the `pad_arch()` lift is cut from "almost to the jaw" to the base of the neck. The
+  neckline edge heights are smoothed (40 passes) so the collar bands run evenly, and the V is narrow and
+  visible under the facemask.
+- **TV numbers on the shoulder** (`player.js`) are now projected onto the crown of the sloped cap from
+  above and outside, so they no longer stretch.
+- The cleats came out identical (same vertex count and bounds). `player.glb` is 1.9 MB.
+- Not re-checked yet: shoulder decals (DAL stars, LAC bolts, IND bars), the SEA yoke, and the TV-number
+  size on every team. Look at these in P1/P5 renders and adjust `jersey.shoulder` placement in
+  `player.js` (aimed from above and in front at `sh + (-sx*0.02, 0.05, 0)`) if any of them sit off the
+  new cap.
 
-**What's wrong (measured from `public/models/player.glb` and a DAL Road render, front/side/neck):**
-- **Too wide.** The jersey is **67 cm across the shoulder caps** (x = ±0.335 m at z ≈ 1.60–1.65), on a
-  1.98 m player whose shoulder joints sit at x = ±0.230, z = 1.616 (`SHX`, `SHZ`). The cap shapes in
-  `PAD_SHAPES` (`tools/build_player.py` ~line 346) are centred at `SHX + 0.012` and reach 0.142 m
-  further out, so the cap stands about 15 cm outside the joint. The code comment says "68 cm",
-  which is lineman size. Modern skill/QB pads on a tall player read about **56–60 cm** across the
-  caps, about **2.4–2.5 helmet widths** in a front photo (a SpeedFlex is about 24 cm wide). That is
-  the photo-measurable check.
-- **Flat, boxy top at chin height.** From the front, the top of the pads is a horizontal shelf level
-  with the chin cup, with square corners. That comes from exponents 4.2 (plate) and 4.6 (caps), and from
-  the cap tops at `SHZ + 0.135` ≈ 1.75 m, above the neck base (`neck01` z = 1.72). Real low-profile
-  pads **slope down from the neck to rounded caps** that follow the deltoid, like a trapezius line
-  with a few cm of foam on it. In front and ¾ photos of current players you can see a strip of neck
-  between the collar and the bottom of the facemask.
-- **Chest stands off too far.** At z = 1.65 the jersey front is at y = −0.192 against the body at
-  −0.110, **8 cm off the upper chest**, which forms a shelf under the collar. At the back it's about 5 cm.
-  Modern pads sit **2–3 cm** off the upper chest and shoulder blades. Arch and plates are thin.
-- **Collar pushed up into a rim.** `pad_arch()` (~line 746) lifts the jersey round the sides and back
-  of the neck to `H_SIDE = SHZ + 0.135` / `H_BACK = SHZ + 0.122`, "almost to the jaw". That's the
-  old high-arch lineman look. It makes the collar band stand up as a ring hugging the jaw and buries
-  the V under the facemask (see the `neck` view). A modern Vapor F.U.S.E. collar is a narrow band
-  **lying on the pads at the base of the neck**. The V is narrow and about 7–9 cm deep, with no raised rim.
-
-**How to fix it (starting values; confirm each against photos):**
-1. **References first.** Collect front, side, ¾ and back photos of current NFL skill players and QBs in
-   2024–2026 game uniforms (Wikimedia Commons game photos are easiest to license-check; keep them in
-   scratch only). For each, measure in helmet widths: the across-cap width, the cap top height below the
-   chin, the chest depth in side view, and the visible neck. Use these numbers, not mine, as the targets.
-2. **Shrink and round the pads** in `PAD_SHAPES`:
-   - caps: centre about `SHX - 0.005`, outward reach about 0.10 (aim for 58 ± 2 cm across the jersey),
-     up-radius about 0.065, xz exponent about 3.0 (round, not boxy);
-   - chest/back plate: half-width about 0.20, front/back radii cut so the jersey stands 2–3 cm off the
-     upper chest and shoulder blades, exponent about 3.0;
-   - make the top **slope**: the pad surface beside the neck at about `SHZ + 0.08`, falling to about
-     `SHZ + 0.06` over the cap. Not flat at `SHZ + 0.135`.
-   Update the dimension comment above `PAD_SHAPES` to match.
-3. **Lower the collar.** Remove the lift in `pad_arch()`, or cut it to at most ~1.5 cm above the pad top
-   with no inner lip. Keep the neckline (`R_NECK` 0.086, `neck_hook`) hugging the neck at its base:
-   neck circumference is about 48–50 cm, so a radius around 0.080–0.084. Check the V (`V_POINT`,
-   `vplane`) against photos: a narrow V about 7–9 cm deep, sides about 5–6 cm from the centre at the top.
-   The collar mesh and `player.json` `collar` meta are regenerated from this, so the team `collar`
-   bands follow.
-4. **Sleeves:** with smaller caps, keep the modern short, tight sleeve (`SLEEVE_LEN` 0.13 from the joint)
-   ending above mid-bicep. The sleeve must still wrap the cap without a crease (`pad_shape` fade on the arm).
-5. **Rebuild** with the `build:model` pipeline (needs `pip install bpy` and the makehuman clone; see
-   §2). `tools/cleat.py` geometry is **user-approved and must come out identical**: don't touch it, and
-   diff the cleat mesh vertex count/bounds before and after. Keep the material names, garment UV
-   layouts and the `player.json` keys that `src/three/*.js` reads. Keep `player.glb` near its current
-   size after meshopt (1.9 MB).
-6. **Check what rides on the pads** (one batched render of a few teams at `front`, `three`, `side`,
-   `back`, `neck`, `shoulder`, `shouldertop`):
-   - TV numbers on the shoulder top (BUF, LV);
-   - shoulder decals (DAL stars, LAC bolts, IND UCLA bars);
-   - yoke panels (SEA, BUF Nickel City);
-   - sleeve stripes and loops (PIT, GB);
-   - collar bands and the neck tag (GB, NYG);
-   - chest wordmark and number position (PHI, CIN);
-   - the jersey tuck and the drape below the pads.
-   Fix anything the new shape moves. Most things are positioned in cm or by raycast, so they should follow.
-7. **Verify:** sheets with the render next to the reference photo at front, side and ¾, plus a `neck`
-   close-up next to a collar photo. Report the new across-cap width and chest stand-off numerically.
-   Then stop.
-
-### P1: the user's "glaring problems" (after P0)
+### P1: the user's "glaring problems" (do these first)
 
 Each needs engine work plus data. Give them to **one Opus engine agent** (they share the same code:
 shoulder/sleeve graphics), with the reference sheet and real 2025/2026 game photos for each team.

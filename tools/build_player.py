@@ -351,7 +351,7 @@ PAD_SHAPES = [
 ]
 for s_ in (1, -1):
     # rounded cap over the deltoid
-    PAD_SHAPES.append((Vector((s_ * (SHX - 0.005), -0.014, SHZ + 0.02)), (0.085, 0.097) if s_ < 0 else (0.097, 0.085), (0.092, 0.09), (0.085, 0.055), (3.0, 2.8)))
+    PAD_SHAPES.append((Vector((s_ * (SHX - 0.005), -0.014, SHZ + 0.02)), (0.12, 0.097) if s_ < 0 else (0.097, 0.12), (0.092, 0.09), (0.085, 0.055), (2.6, 2.6)))
 
 def _sdf_one(p, shape):
     c, rx, ry, rz, (nxz, ny) = shape
@@ -375,7 +375,7 @@ NECK_HOLE = Vector((0, NECK.y + 0.012, 0))
 def pad_sdf(p):
     d = _sdf_one(p, PAD_SHAPES[0])
     for sh in PAD_SHAPES[1:]:
-        d = smin(d, _sdf_one(p, sh), 0.06)
+        d = smin(d, _sdf_one(p, sh), 0.1)
     # the neck opening: a cone that widens upward, a little deeper at the front
     k = smooth01(SHZ - 0.04, SHZ + 0.07, p.z)
     if k <= 0:
@@ -625,7 +625,7 @@ def neck_hook(bm):
         if not on_v and nd > 1e-6 and nd < R_NECK + 0.03:
             d = d * (R_NECK / nd)
             v.co.x, v.co.y = NECK_XY.x + d.x, NECK_XY.y + d.y
-    for _ in range(4):
+    for _ in range(40):
         zs = {}
         for v in edge_verts:
             nb = [e.other_vert(v) for e in v.link_edges if e.is_boundary]
@@ -712,10 +712,10 @@ def jersey_drape(bm):
     # crisp pad caps: after smoothing, put the fabric over the shoulders back
     # on the pad shell so the epaulet keeps a defined edge above the arm
     cap = [v for v in bm.verts if abs(v.co.x) > 0.09 and v.co.z > SHZ - 0.14 and not v.is_boundary]
-    for it in range(3):
+    for it in range(5):
         for v in cap:
             v.co = pad_snap(v.co, info_at(v.co))
-        if it < 2:
+        if it < 4:
             bmesh.ops.smooth_vert(bm, verts=cap, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
 
 def pad_snap(p, c, off=0.0045, band=0.012):

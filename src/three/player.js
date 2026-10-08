@@ -541,7 +541,10 @@ export class Player {
       const el = this.J[`lowerarm01.${s}`];
       const sx = Math.sign(sh.x);
       if (jersey.tv === 'shoulder') {
-        const hit = this.raycast([...sleeves, ...torso], new THREE.Vector3(sh.x - sx * 0.035, 2.3, sh.z), new THREE.Vector3(0, -1, 0));
+        // on the crown of the pad cap, which slopes down and out from the neck: aim from above and outside
+        const d = new THREE.Vector3(sx * 0.45, 1, 0).normalize();
+        const crown = sh.clone().add(new THREE.Vector3(sx * 0.005, 0.07, 0));
+        const hit = this.raycast([...sleeves, ...torso], crown.clone().add(d.clone().multiplyScalar(0.6)), d.clone().negate());
         this.lettering([...sleeves, ...torso], hit, num, 0.085, colors.slice(0, 2), font, { ...numOpts, o1: 0.06, o2: 0, up: new THREE.Vector3(0, 0, -1), minDot: 0.2 });
       } else if (jersey.tv === 'sleeve') {
         const p = sh.clone().lerp(el, 0.28);
