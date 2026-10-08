@@ -473,7 +473,9 @@ export class Player {
   // (+x = the player's left) and projected from the front, angled out so they reach the outer sleeve:
   //   { t: 'raglan', c, edge }: a tapered panel along the raglan seam from the collar to the underarm (Panthers)
   //   { t: 'horn', c }: a horn from the collar over the cap, curling down the outer sleeve to a point (Rams)
-  sweepPanel(spec, torso, sleeves) {
+  //   { t: 'bullhorn', c, line, tip, out }: the jersey.loop band, rising on the front into a horn (Texans)
+  sweepPanel(spec, torso, sleeves, jersey = {}) {
+    if (spec.t === 'bullhorn') return this.bullhornPanel(spec, jersey, torso, sleeves);
     const sh = this.J['upperarm01.L'], neckY = this.J.neck01.y;
     const v = new THREE.Vector3(), hem = [];
     for (const m of sleeves) {
@@ -528,6 +530,147 @@ export class Player {
     }
   }
 
+  // Texans bullhorn sleeve stripe. jersey.loop runs round the sleeve as a plain band (sides and
+  // back); on the front its top edge sweeps up into a horn whose point reaches toward the collar,
+  // and the band's inner line (spec.line, one of the loop colours) follows it as a thin crescent.
+  // The band edges are found on the sleeve mesh (loopAt, cm up from the hem; the sleeve UVs put
+  // the hem at v = 1) and mapped into the decal's own projection frame, so the horn meets the
+  // band exactly. spec: { t: 'bullhorn', c, line, tip: [in, up] (m from the band's inner top
+  // corner, default [0, 0.08]), out: sideways tilt of the projection (default 0.2) }
+  bullhornPanel(spec, jersey, torso, sleeves) {
+    const Lcm = this.meta.regions.sleeve.length * 100;
+    const loop = jersey.loop || [[spec.c, 4.2]];
+    const total = loop.reduce((a, [, w]) => a + w, 0), at = jersey.loopAt ?? (Lcm - 7);
+    const vTop = 1 - (at + total / 2) / Lcm, vBot = 1 - (at - total / 2) / Lcm;
+    // the line's place across the band, as fractions from the top edge (loop lists bottom first)
+    let acc = 0, lf = null;
+    for (let i = loop.length - 1; i >= 0; i--) {
+      const [c, w] = loop[i];
+      if (spec.line && c === spec.line && !lf) lf = [acc / total, (acc + w) / total];
+      acc += w;
+    }
+    const [tipIn, tipUp] = spec.tip || [0, 0.08];
+    const Wm = 0.3, Hm = 0.3, ppm = 2400;
+    const nrm = new THREE.Vector3();
+    // resample a polyline to n points evenly spaced along its length
+    const resample = (pts, n) => {
+      const d = [0];
+      for (let i = 1; i < pts.length; i++) d.push(d[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      const out = [];
+      for (let k = 0, j = 0; k < n; k++) {
+        const s = (k / (n - 1)) * d[d.length - 1];
+        while (j < d.length - 2 && d[j + 1] < s) j++;
+        const f = (s - d[j]) / Math.max(1e-9, d[j + 1] - d[j]);
+        out.push([pts[j][0] + (pts[j + 1][0] - pts[j][0]) * f, pts[j][1] + (pts[j + 1][1] - pts[j][1]) * f]);
+      }
+      return out;
+    };
+    const quad = (a, c, b, n = 32) => Array.from({ length: n }, (_, i) => {
+      const t = (i + 1) / n, u = 1 - t;
+      return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]];
+    });
+    for (const sx of [1, -1]) {
+      const axis = new THREE.Vector3(sx * (spec.out ?? 0.2), 0.08, 1).normalize();
+      // the band's top and bottom edges: where the sleeve's triangles cross those UV rows
+      // (the rows don't follow mesh edges), front-facing side only
+      const rings = { top: [], bot: [] };
+      const pa = new THREE.Vector3(), pb = new THREE.Vector3(), na = new THREE.Vector3(), nb = new THREE.Vector3();
+      for (const m of sleeves) {
+        const g = m.geometry, p = g.attributes.position, uv = g.attributes.uv, nn = g.attributes.normal;
+        const idx = g.index ? g.index.array : null, nTri = (idx ? idx.length : p.count) / 3;
+        const nm = new THREE.Matrix3().getNormalMatrix(m.matrixWorld);
+        for (let f = 0; f < nTri; f++) {
+          const tri = [0, 1, 2].map((k) => (idx ? idx[f * 3 + k] : f * 3 + k));
+          for (const [key, vt] of [['top', vTop], ['bot', vBot]]) {
+            for (let e = 0; e < 3; e++) {
+              const a = tri[e], b = tri[(e + 1) % 3], va = uv.getY(a), vb = uv.getY(b);
+              if ((va - vt) * (vb - vt) >= 0) continue;
+              const t = (vt - va) / (vb - va);
+              pa.fromBufferAttribute(p, a).applyMatrix4(m.matrixWorld);
+              pb.fromBufferAttribute(p, b).applyMatrix4(m.matrixWorld);
+              const q = pa.clone().lerp(pb, t);
+              if (q.x * sx <= 0) continue;
+              na.fromBufferAttribute(nn, a); nb.fromBufferAttribute(nn, b);
+              nrm.copy(na.lerp(nb, t)).applyMatrix3(nm).normalize();
+              if (nrm.dot(axis) < 0.1) continue;
+              rings[key].push(q);
+            }
+          }
+        }
+      }
+      if (rings.top.length < 3 || rings.bot.length < 3) continue;
+      const centre = rings.top.reduce((a, q) => a.add(q), new THREE.Vector3()).multiplyScalar(1 / rings.top.length);
+      const helper = new THREE.Object3D();
+      helper.position.copy(centre);
+      helper.lookAt(centre.clone().add(axis));
+      helper.updateMatrixWorld(true);
+      const inv = helper.matrixWorld.clone().invert();
+      // local [x, y] in the decal frame
+      const local = (pts) => pts.map((q) => { const l = q.clone().applyMatrix4(inv); return [l.x, l.y]; });
+      // order each ring's points round the arm (sorting by screen x zig-zags where the ring turns
+      // back at the silhouette), smooth them, and run them from the outer side to the inner
+      const S = sx > 0 ? 'L' : 'R', sj = this.J[`upperarm01.${S}`], ej = this.J[`lowerarm01.${S}`];
+      const ax = ej.clone().sub(sj).normalize();
+      const e1 = new THREE.Vector3(0, 0, 1).projectOnPlane(ax).normalize(), e2 = ax.clone().cross(e1);
+      const ring = (pts) => {
+        const o = pts.map((q) => { const d = q.clone().sub(sj); return [Math.atan2(d.dot(e2), d.dot(e1)), q]; }).sort((a, b) => a[0] - b[0]);
+        const sm = o.map((_, i) => {
+          const w = o.slice(Math.max(0, i - 3), i + 4);
+          return w.reduce((a, [, q]) => a.add(q), new THREE.Vector3()).multiplyScalar(1 / w.length);
+        });
+        if (sm[0].x * sx < sm[sm.length - 1].x * sx) sm.reverse();
+        return local(sm);
+      };
+      const top = ring(rings.top), bot = ring(rings.bot);
+      const It = top[top.length - 1], Ib = bot[bot.length - 1];
+      const T = [It[0] - sx * tipIn, It[1] + tipUp];
+      // upper edge: along the band top for the outer part, then curving up to the tip; lower edge:
+      // along the band bottom a little further, then sweeping up to the tip. Inside of that the
+      // band stops: the front of the sleeve below the horn is the jersey colour.
+      const cut = (pts, f) => pts.slice(0, Math.max(2, Math.round(pts.length * f)));
+      const tU = cut(top, 0.3), tL = cut(bot, 0.45);
+      const pU = tU[tU.length - 1], pL = tL[tL.length - 1];
+      const upper = resample([...tU, ...quad(pU, It, T)], 140);
+      const lower = resample([...tL, ...quad(pL, [(pL[0] + Ib[0]) / 2, Ib[1] + 0.01], T)], 140);
+      const c = document.createElement('canvas');
+      c.width = Math.round(Wm * ppm); c.height = Math.round(Hm * ppm);
+      const ctx = c.getContext('2d');
+      const P = ([x, y]) => [(x + Wm / 2) * ppm, (Hm / 2 - y) * ppm];
+      const poly = (a, b) => {
+        ctx.beginPath();
+        a.forEach((q) => ctx.lineTo(...P(q)));
+        for (let i = b.length - 1; i >= 0; i--) ctx.lineTo(...P(b[i]));
+        ctx.closePath(); ctx.fill();
+      };
+      // cover the texture's band on the front in the jersey colour, then draw the horn
+      ctx.fillStyle = jersey.base || '#ffffff';
+      poly(top.map(([x, y]) => [x, y + 0.003]), bot.map(([x, y]) => [x, y - 0.003]));
+      ctx.fillStyle = spec.c;
+      poly(upper, lower);
+      if (lf) {
+        // the line keeps its distance below the top edge, closing up as the horn narrows
+        const bw = total / 100, n = upper.length;
+        const toward = Math.sign((lower[0][1] - upper[0][1]) || -1);
+        const edge = (f) => upper.map((u, i) => {
+          const a = upper[Math.max(0, i - 1)], b = upper[Math.min(n - 1, i + 1)];
+          let nx = -(b[1] - a[1]), ny = b[0] - a[0];
+          const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+          if (Math.sign(ny) !== toward) { nx = -nx; ny = -ny; }
+          const th = Math.hypot(lower[i][0] - u[0], lower[i][1] - u[1]);
+          const d = f * bw * Math.min(1, th / bw);
+          return [u[0] + nx * d, u[1] + ny * d];
+        });
+        ctx.fillStyle = spec.line;
+        poly(edge(lf[0]), edge(lf[1]));
+      }
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = this.aniso;
+      this.textures.push(t);
+      this.decal([...torso, ...sleeves], { point: centre }, Wm, Hm, t,
+        { axis, depth: 0.3, finish: 'print', minDot: 0.12, order: 1 });
+    }
+  }
+
   placeDecals(team, jersey, pants, player, logos, cleatColor) {
     this.group.updateMatrixWorld(true);
     const torso = this.meshes.jersey || [];
@@ -553,7 +696,7 @@ export class Player {
 
     // shoulder wing panel across the chest and down the sleeves, under the other decals
     if (jersey.panels?.wing) this.wingPanel(jersey.panels.wing, yV, torso, sleeves);
-    if (jersey.sweep) this.sweepPanel(jersey.sweep, torso, sleeves);
+    if (jersey.sweep) this.sweepPanel(jersey.sweep, torso, sleeves, jersey);
 
     // Front: wordmark, number, NFL shield at the collar V
     const w = jersey.word;
@@ -650,7 +793,9 @@ export class Player {
         // shoulder graphic (bolts, stars, UCLA bars, peaks); `at` picks where it sits on the rounded pad cap:
         //   'front' (default): down the front of the shoulder from the cap to the armpit, upright
         //   'top':   on the crown of the cap like the shoulder TV numbers, its vertical axis running front to back
-        //   'outer': on the outside of the upper sleeve under the cap, upright
+        //   'outer': on the outside of the upper sleeve under the cap, upright; `lift` tilts the
+        //            projection up (default 0.12) so a mark can wrap over the top of the cap, and
+        //            `minDot` (default 0.2) lets it run onto more steeply angled cloth
         //   'cuff':  on the outside of the sleeve at the hem, the mark's outer edge toward the hem
         const sp = jersey.shoulder;
         const where = sp.at || 'front';
@@ -659,7 +804,7 @@ export class Player {
         if (where === 'top') {
           at = sh.clone().add(V(sx * 0.005, 0.07, 0)); dir = V(sx * 0.45, 1, 0); up = V(0, 0, -1);
         } else if (where === 'outer') {
-          at = sh.clone().lerp(el, sp.along ?? 0.2); dir = V(sx, 0.12, 0.2);
+          at = sh.clone().lerp(el, sp.along ?? 0.2); dir = V(sx, sp.lift ?? 0.12, 0.2);
         } else if (where === 'cuff') {
           // the decal's +x runs down the arm with the 'left' artwork on the left arm, so the outer edge meets the hem
           at = sh.clone().lerp(el, 0.25); dir = V(sx, 0, 0.25); up = V(0, 0, 1); facing = sx > 0 ? 'left' : 'right';
@@ -670,7 +815,7 @@ export class Player {
         const meshes = [...sleeves, ...torso];
         const hit = this.raycast(meshes, at.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate());
         const size = sp.size || 0.1;
-        const opts = { depth: where === 'top' ? 0.2 : 0.14, style: patchStyle, up, minDot: 0.2 };
+        const opts = { depth: where === 'top' ? 0.2 : 0.14, style: patchStyle, up, minDot: sp.minDot ?? 0.2 };
         if (sp.img && logos[sp.img]) this.image(meshes, hit, size, logos[sp.img], opts);
         else {
           const c = paintLogo(sp, facing);

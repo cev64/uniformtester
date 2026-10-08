@@ -44,8 +44,9 @@ export const NUMBER_FONTS = {
   dolphinsPlate: { family: '"Jost", "Futura", "Century Gothic", sans-serif', weight: 700, skew: -0.2, scaleX: 1.12 },
 
   // AFC South + AFC West fonts
-  // blackletter H (Texans H-Town helmet)
-  blackletter: { family: '"UnifrakturCook", "Old English Text MT", Georgia, serif', weight: 700 },
+  // blackletter H (Texans H-Town and Rivalries helmets): Pirata One's textura H (flagged left
+  // stem, angled feet) is the closest Google font to the club's H; UnifrakturCook's fraktur H read as a 6
+  blackletter: { family: '"Pirata One", "Old English Text MT", Georgia, serif', weight: 400 },
 
   // NFC East + NFC North fonts
 

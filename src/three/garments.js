@@ -173,6 +173,15 @@ export function paintSleeveTex(jersey, meta) {
     // upper part of the sleeve in another colour (shoulder panels)
     ctx.fillStyle = sl.top[0];
     ctx.fillRect(0, 0, W, rowCm(sl.top[1]));
+    if (sl.top[2]) {
+      // halftone fade: dots of the top colour shrinking over top[2] cm below its edge (Rams Midnight)
+      const step = 0.42 * pxPerCmY, y0 = rowCm(sl.top[1]), y1 = rowCm(sl.top[1] - sl.top[2]);
+      for (let y = y0 + step / 2, row = 0; y < y1; y += step * 0.87, row++) {
+        const r = (step * 0.62) * (1 - (y - y0) / (y1 - y0)) ** 1.2;
+        if (r < 0.6) break;
+        for (let x = (row % 2) * step / 2; x < W + step; x += step) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
   }
 
   if (sl.pattern?.t === 'feathers') {
