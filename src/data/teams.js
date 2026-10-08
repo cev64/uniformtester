@@ -87,6 +87,7 @@
 //   plateScaleX: horizontal scale of the name letters, default 1.
 //   plateH: name letter height in metres, default 0.055 (about 0.21 x the back number's outer height).
 //   plateColor / plateOutline: name fill (default num[0]) / [outline, outer].
+//   plateO: [outline, outer] widths as fractions of the letter height (default [0.07, 0.05]).
 //   plateStyle: finish of the name letters, default numStyle.
 //   plateBar: true: a separate sewn-on nameplate strip, always in the jersey colour (the same cloth),
 //              snug round the letters, with a fine lock stitch at its edge.
@@ -1362,7 +1363,7 @@ export const TEAMS = [
       jerseys: [
         { id: 'red', name: 'Cardinal Red', tag: 'Home', base: R, num: [W, GR], numO: [0.03, 0], numStyle: 'twill', tv: 'shoulder', swoosh: W,
           word: { img: 'ARI_word_city@#FFFFFF', h: 0.034 }, neckTag: { s: 'PROTECT THE NEST', c: W, at: 'inside' } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [R, BK], numO: [0.03, 0], numStyle: 'twill', swoosh: R, plateOutline: [BK], neckTag: { s: 'BIRD GANG', c: R, at: 'inside' }, sleeve: cuff(BAND, BK) },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [R, BK], numO: [0.03, 0], numStyle: 'twill', swoosh: R, plateOutline: [BK], plateO: [0.03], neckTag: { s: 'BIRD GANG', c: R, at: 'inside' }, sleeve: cuff(BAND, BK) },
         { id: 'black', name: 'Black', tag: 'Alternate', base: BK, num: [R, GR], numO: [0.03, 0], numStyle: 'twill', swoosh: W, neckTag: { s: 'BIRD GANG', c: R, at: 'inside' }, sleeve: cuff(W, BK) },
         // Rivalries: sandstorm-speckled jersey, red numbers with a copper offset shadow, Arizona flag on the sleeves
         { id: 'desert', name: 'Desert Rivalries', tag: 'Rivalries', base: SAND, num: [R, OR], numO: [0.03, 0], numShadow: { color: OR, dx: 0.04, dy: 0.04 }, numStyle: 'twill', swoosh: R,

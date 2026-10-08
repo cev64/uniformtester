@@ -716,7 +716,8 @@ export class Player {
     // the ratios are to the outer edges: add the outline widths (fractions of the letter height)
     const numOut = numH * ((backColors[1] ? numOpts.o1 : 0) + (backColors[2] ? numOpts.o2 : 0));
     const Hout = numH + 2 * numOut;
-    const plOut = plateH * ((jersey.plateOutline?.[0] ? 0.07 : 0) + (jersey.plateOutline?.[1] ? 0.05 : 0));
+    const [plO1, plO2] = [jersey.plateO?.[0] ?? 0.07, jersey.plateO?.[1] ?? 0.05];
+    const plOut = plateH * ((jersey.plateOutline?.[0] ? plO1 : 0) + (jersey.plateOutline?.[1] ? plO2 : 0));
     const tagH = tag?.img ? (tag.w || 0.05) * 0.6 : (tag?.h || 0.016);
     const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.08 * Hout, tagH + 0.022) : 0.08 * Hout));
     const plateBot = plateTop - plateH * (1 + Math.max(0, arch));
@@ -725,7 +726,7 @@ export class Player {
     if (plateName) {
       this.lettering(torso, back((plateTop + plateBot) / 2), plateName.toUpperCase(), plateH,
         [jersey.plateColor || backColors[0], ...(jersey.plateOutline || [])], plate,
-        { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
+        { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: plO1, o2: plO2, style: jersey.plateStyle || numStyle,
           bar: jersey.plateBar ? jersey.base : null });
     }
     const numTop = plateBot - plOut - 0.09 * Hout - numOut;
