@@ -227,9 +227,10 @@ export class Player {
       // molded TPU studs: a little glossier than the plate
       stud: new THREE.MeshPhysicalMaterial({ roughness: 0.3, clearcoat: 0.45, clearcoatRoughness: 0.3 }),
       // round laces and pull loops: matte braided cord
-      lace: new THREE.MeshPhysicalMaterial({ roughness: 0.88, sheen: 0.5, sheenRoughness: 0.6, sheenColor: new THREE.Color(0.6, 0.6, 0.6) }),
+      lace: new THREE.MeshPhysicalMaterial({ roughness: 0.88, sheen: 0.5, sheenRoughness: 0.6 }),
       // knit sock collar of the cleat
-      cleatknit: new THREE.MeshPhysicalMaterial({ roughness: 0.9, sheen: 0.6, sheenRoughness: 0.55, sheenColor: new THREE.Color(0.5, 0.5, 0.5), normalMap: repeatNormal(getFabricNormal(), [2, 1]), normalScale: new THREE.Vector2(0.8, 0.8) }),
+      // (sheen colour set per uniform from the cleat colour)
+      cleatknit: new THREE.MeshPhysicalMaterial({ roughness: 0.9, sheen: 0.5, sheenRoughness: 0.55, normalMap: repeatNormal(getFabricNormal(), [2, 1]), normalScale: new THREE.Vector2(0.8, 0.8) }),
       glove: new THREE.MeshPhysicalMaterial({ roughness: 0.5, sheen: 0.4, sheenRoughness: 0.5 }),
       eye: new THREE.MeshPhysicalMaterial({ roughness: 0.08, clearcoat: 1, map: tex(eyeCanvas(), this.aniso) }),
       // accessories (separate meshes, see ACCESSORIES)
@@ -326,8 +327,13 @@ export class Player {
     // light cleats get a silver plate (as Nike's white Vapors), dark ones a near-black plate
     m.sole.color.set(luminance(cleat) > 0.5 ? '#B9BCC1' : '#1E1F21');
     m.stud.color.set(luminance(cleat) > 0.5 ? '#A9ACB2' : '#18191B');
-    m.lace.color.set(cleat);
-    m.cleatknit.color.set(cleat);
+    // laces and the knit sock collar are dyed to match the upper: their sheen
+    // follows the cleat colour (a fixed grey sheen washed black knit out to grey)
+    const dark = luminance(cleat) < 0.5;
+    for (const k of ['lace', 'cleatknit']) {
+      m[k].color.set(cleat);
+      m[k].sheenColor.set(cleat).lerp(new THREE.Color(1, 1, 1), dark ? 0.06 : 0);
+    }
 
     this.dressAccessories(team, pants);
     this.placeDecals(team, jersey, pants, player, logos, cleat);
