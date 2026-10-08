@@ -54,14 +54,16 @@ export const NUMERAL_STYLES = {
   bears: { W: 0.37, th: 0.1, tv: 0.105, ro: 0.185, ri: 0.08, rt: 0.05, hook: 0.14, notch: 0, one: { flag: 0, base: false }, gap: 0.09 },
   // Steelers: Futura-like, fully round bowls
   futura: { W: 0.55, th: 0.19, tv: 0.21, ro: 0.275, ri: 0.18, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0 },
-  // Steelers: the same rounds, set italic and a touch narrower
-  steelers: { W: 0.52, th: 0.19, tv: 0.21, ro: 0.26, ri: 0.17, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0, slant: 0.16 },
+  // Steelers: tall stadium-shaped rounds, UPRIGHT (the Commons sheet draws them slanted; shop
+  // and game photos of the Elite jersey and practice jerseys show an upright face).
+  steelers: { W: 0.48, th: 0.17, tv: 0.185, ro: 0.24, ri: 0.1, rt: 0.08, one: { flag: 0.12, base: false }, four: 'open', notch: 0, gap: 0.06 },
   // Sharp, angular sets with notched waists (Vikings, Titans, Panthers, Broncos, Cardinals)
   angular: { cut: 'chamfer', ro: 0.17, ri: 0.03, rt: 0.02, notch: 0.6, one: { flag: 0.2, base: false }, slant: 0.04 },
   // Eagles: angular, slightly italic
   eagles: { cut: 'chamfer', ro: 0.09, ri: 0.03, rt: 0.02, W: 0.6, th: 0.19, tv: 0.225, slant: 0.04, one: { flag: 0.3, base: true } },
   // Ravens: tall, narrow, angular cuts
-  ravens: { W: 0.5, th: 0.16, tv: 0.2, ro: 0.25, ri: 0.14, rt: 0.02, notch: 0, one: { flag: 0.16, base: false } },
+  // (Ravens sheet: thick sides, hairline-thin tops and bottoms, elliptical bowls, footed 1 with a long flag)
+  ravens: { W: 0.55, th: 0.12, tv: 0.18, ro: 0.27, ri: 0.14, rt: 0.02, notch: 0, hook: 0.2, one: { flag: 0.15, base: true } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
 
@@ -72,6 +74,10 @@ export const NUMERAL_STYLES = {
   gotham: { W: 0.58, th: 0.2, tv: 0.22, ro: 0.2, ri: 0.1, rt: 0.06, slant: 0.03, one: { flag: 0.14, base: false } },
   // Dolphins 2018+: heavy rounded-square block, flat-topped 2 and 5, no hook on the 1
   dolphins: { W: 0.6, th: 0.2, tv: 0.22, ro: 0.14, ri: 0.05, rt: 0.03, one: { flag: 0.15, base: false } },
+  // Patriots: pro block with small clipped (chamfered) corners all round
+  patriots: { cut: 'chamfer', W: 0.6, th: 0.17, tv: 0.2, ro: 0.1, ri: 0.035, rt: 0.025, one: { flag: 0.17, base: false } },
+  // Browns: heavy squared block, tight corners, heavy verticals
+  browns: { W: 0.62, th: 0.17, tv: 0.225, ro: 0.06, ri: 0.02, rt: 0.01, hook: 0.18, one: { flag: 0.16, base: false } },
 
   // ── team styles: AFC South + AFC West ──
   // Colts: heavy block with big clipped outer corners, tiny clipped counters, footed 1
