@@ -732,8 +732,8 @@ export const TEAMS = [
         { id: 'red', name: 'Red', tag: 'Primary', shell: R, finish: 'gloss', mask: W, stripe: null, logo: { img: 'KC', size: 0.14, at: [0.46, 0.22] } },
       ],
       jerseys: [
-        { id: 'red', name: 'Red', tag: 'Home', base: R, num: [W, GOLD], plateOutline: [GOLD], numStyle: 'twill', numO: [0.035, 0], tv: 'shoulder', sleeve: { stripes: [[W, 1.3], [GOLD, 1.6], [W, 1.3]], from: 2 } },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [R, GOLD], plateOutline: [GOLD], numStyle: 'twill', numO: [0.035, 0], tv: 'shoulder', sleeve: { stripes: [[R, 1.3], [GOLD, 1.6], [R, 1.3]], from: 2 } },
+        { id: 'red', name: 'Red', tag: 'Home', base: R, num: [W, GOLD], plateOutline: [GOLD], chestLogo: 'KC_LH', chestLogoAt: [0.105, 0.17], chestLogoSize: 0.08, numStyle: 'twill', numO: [0.035, 0], tv: 'shoulder', sleeve: { stripes: [[W, 1.3], [GOLD, 1.6], [W, 1.3]], from: 2 } },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [R, GOLD], plateOutline: [GOLD], chestLogo: 'KC_LH', chestLogoAt: [0.105, 0.17], chestLogoSize: 0.08, numStyle: 'twill', numO: [0.035, 0], tv: 'shoulder', sleeve: { stripes: [[R, 1.3], [GOLD, 1.6], [R, 1.3]], from: 2 } },
       ],
       pants: [
         // gold edge at the side seam, red line inside it
