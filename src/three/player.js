@@ -473,7 +473,10 @@ export class Player {
   // (+x = the player's left) and projected from the front, angled out so they reach the outer sleeve:
   //   { t: 'raglan', c, edge }: a tapered panel along the raglan seam from the collar to the underarm (Panthers)
   //   { t: 'horn', c }: a horn from the collar over the cap, curling down the outer sleeve to a point (Rams)
+  //   lift (either): upward tilt of the projection (default 0.12); higher lays it over the top of the shoulder
+  //   ({ t: 'bullhorn' } is painted into the sleeve texture with the loop band: garments.js)
   sweepPanel(spec, torso, sleeves) {
+    if (spec.t === 'bullhorn') return;
     const sh = this.J['upperarm01.L'], neckY = this.J.neck01.y;
     const v = new THREE.Vector3(), hem = [];
     for (const m of sleeves) {
@@ -524,7 +527,7 @@ export class Player {
       this.textures.push(t);
       const hit = { point: new THREE.Vector3(sx * (x0 + x1) / 2, (yT + yB) / 2, 0.05) };
       this.decal([...torso, ...sleeves], hit, x1 - x0, yT - yB, t,
-        { axis: new THREE.Vector3(sx * (spec.t === 'horn' ? 0.6 : 0.35), 0.12, 1), depth: 0.5, finish: 'print', minDot: 0.12, order: 1 });
+        { axis: new THREE.Vector3(sx * (spec.t === 'horn' ? 0.6 : 0.35), spec.lift ?? 0.12, 1), depth: 0.5, finish: 'print', minDot: 0.12, order: 1 });
     }
   }
 
@@ -650,7 +653,9 @@ export class Player {
         // shoulder graphic (bolts, stars, UCLA bars, peaks); `at` picks where it sits on the rounded pad cap:
         //   'front' (default): down the front of the shoulder from the cap to the armpit, upright
         //   'top':   on the crown of the cap like the shoulder TV numbers, its vertical axis running front to back
-        //   'outer': on the outside of the upper sleeve under the cap, upright
+        //   'outer': on the outside of the upper sleeve under the cap, upright; `lift` tilts the
+        //            projection up (default 0.12) so a mark can wrap over the top of the cap, and
+        //            `minDot` (default 0.2) lets it run onto more steeply angled cloth
         //   'cuff':  on the outside of the sleeve at the hem, the mark's outer edge toward the hem
         const sp = jersey.shoulder;
         const where = sp.at || 'front';
@@ -659,7 +664,7 @@ export class Player {
         if (where === 'top') {
           at = sh.clone().add(V(sx * 0.005, 0.07, 0)); dir = V(sx * 0.45, 1, 0); up = V(0, 0, -1);
         } else if (where === 'outer') {
-          at = sh.clone().lerp(el, sp.along ?? 0.2); dir = V(sx, 0.12, 0.2);
+          at = sh.clone().lerp(el, sp.along ?? 0.2); dir = V(sx, sp.lift ?? 0.12, 0.2);
         } else if (where === 'cuff') {
           // the decal's +x runs down the arm with the 'left' artwork on the left arm, so the outer edge meets the hem
           at = sh.clone().lerp(el, 0.25); dir = V(sx, 0, 0.25); up = V(0, 0, 1); facing = sx > 0 ? 'left' : 'right';
@@ -670,7 +675,7 @@ export class Player {
         const meshes = [...sleeves, ...torso];
         const hit = this.raycast(meshes, at.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate());
         const size = sp.size || 0.1;
-        const opts = { depth: where === 'top' ? 0.2 : 0.14, style: patchStyle, up, minDot: 0.2 };
+        const opts = { depth: where === 'top' ? 0.2 : 0.14, style: patchStyle, up, minDot: sp.minDot ?? 0.2 };
         if (sp.img && logos[sp.img]) this.image(meshes, hit, size, logos[sp.img], opts);
         else {
           const c = paintLogo(sp, facing);

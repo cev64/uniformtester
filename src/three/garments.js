@@ -173,6 +173,15 @@ export function paintSleeveTex(jersey, meta) {
     // upper part of the sleeve in another colour (shoulder panels)
     ctx.fillStyle = sl.top[0];
     ctx.fillRect(0, 0, W, rowCm(sl.top[1]));
+    if (sl.top[2]) {
+      // halftone fade: dots of the top colour shrinking over top[2] cm below its edge (Rams Midnight)
+      const step = 0.42 * pxPerCmY, y0 = rowCm(sl.top[1]), y1 = rowCm(sl.top[1] - sl.top[2]);
+      for (let y = y0 + step / 2, row = 0; y < y1; y += step * 0.87, row++) {
+        const r = (step * 0.62) * (1 - (y - y0) / (y1 - y0)) ** 1.2;
+        if (r < 0.6) break;
+        for (let x = (row % 2) * step / 2; x < W + step; x += step) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
   }
 
   if (sl.pattern?.t === 'feathers') {
@@ -306,6 +315,65 @@ export function paintSleeveTex(jersey, meta) {
         const h = w * pxPerCmY;
         if (col) { ctx.fillStyle = col; ctx.fillRect(0, y - h, W, h); }
         y -= h;
+      }
+    }
+  }
+
+  if (jersey.loop && jersey.sweep?.t === 'bullhorn') {
+    // Texans bullhorn: the loop band runs round the back and sides; on the front of the sleeve
+    // (u: 0.5 outer side, ~0.8 front, 1.0 inner side) both its edges sweep up into a horn point
+    // and the loop's `line` colour follows the top edge as a thin crescent. Below the horn the
+    // front is plain. Painted in the sleeve's own UV space, so band and horn are one shape.
+    // Shape in [a, cm]: a = fraction of the way round from the outer side, cm above the hem.
+    const sw = jersey.sweep, loop = jersey.loop;
+    const at = jersey.loopAt ?? (Lcm - 7), total = stripeTotal(loop);
+    const top = at + total / 2, bot = at - total / 2;
+    const [tipA, tipUp] = sw.tip || [0.36, 8];
+    const T = [tipA, top + tipUp];
+    const circ = circAt(R, at / Lcm) * 100;              // cm round the arm at the band
+    const quad = (a, c, b, n = 48) => Array.from({ length: n + 1 }, (_, i) => {
+      const t = i / n, u = 1 - t;
+      return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]];
+    });
+    // both edges leave the band level (top early, bottom later) and curve up to the tip
+    const uA = 0.04, lA = 0.15;
+    const upper = quad([uA, top], [uA + (tipA - uA) * 0.6, top], T);
+    const lower = quad([lA, bot], [lA + (tipA - lA) * 0.85, bot], T);
+    const X = (a) => (0.5 + a) * W;
+    const poly = (a, b) => {
+      ctx.beginPath();
+      a.forEach(([x, y]) => ctx.lineTo(X(x), rowCm(y)));
+      for (let i = b.length - 1; i >= 0; i--) ctx.lineTo(X(b[i][0]), rowCm(b[i][1]));
+      ctx.closePath(); ctx.fill();
+    };
+    // the band stops where the bottom edge leaves it (the horn covers the rect's left edge)
+    ctx.fillStyle = base;
+    ctx.fillRect(X(lA), rowCm(top) - 1, X(0.5) - X(lA), rowCm(bot) - rowCm(top) + 2);
+    ctx.fillStyle = sw.c || loop[0][0];
+    poly(upper, [[uA, bot], ...lower]);
+    if (sw.line) {
+      // the line keeps its band distance below the top edge, closing up as the horn narrows;
+      // offsets are worked in cm (a * circ) so the line keeps its width round the curve
+      let acc = 0, lf = null;
+      for (let i = loop.length - 1; i >= 0; i--) {
+        const [c, w] = loop[i];
+        if (c === sw.line && !lf) lf = [acc, acc + w];
+        acc += w;
+      }
+      if (lf) {
+        const cm = (q) => [q[0] * circ, q[1]], back = ([x, y]) => [x / circ, y];
+        const U = upper.map(cm), Lo = lower.map(cm), n = U.length;
+        const edge = (d) => U.map((u, i) => {
+          const a = U[Math.max(0, i - 1)], b = U[Math.min(n - 1, i + 1)];
+          let nx = b[1] - a[1], ny = -(b[0] - a[0]);
+          const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+          if (ny > 0) { nx = -nx; ny = -ny; }           // point down, toward the lower edge
+          const th = Math.hypot(Lo[i][0] - u[0], Lo[i][1] - u[1]);
+          const k = d * Math.min(1, th / total);
+          return back([u[0] + nx * k, u[1] + ny * k]);
+        });
+        ctx.fillStyle = sw.line;
+        poly([[0.02, top - lf[0]], ...edge(lf[0])], [[0.02, top - lf[1]], ...edge(lf[1])]);
       }
     }
   }

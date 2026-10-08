@@ -12,14 +12,22 @@
 //   num: [fill, outline, outer outline]      font: number font key
 //   collar: [[colour, cm], ...] bands from the neck edge outward
 //   tv: 'shoulder' | 'sleeve' | null         TV numbers
-//   sleeve: { cap, top: [colour, cmFromHem], stripes, from, pattern }
+//   sleeve: { cap, top: [colour, cmFromHem, fadeCm], stripes, from, pattern }
+//             top[2] (optional): the top colour breaks up into halftone dots over that many cm
+//             below its edge (Rams Midnight cap)
 //   loop / loopPattern / loopAt: stripes around the top of the arm (UCLA, horns, bolts)
 //   shoulder: decal on each shoulder (drawn mark { t: 'star'|'bolt'|'bars'|'peak'|... } or { img }).
 //             size: decal width in metres (default 0.1). at: where it sits on the pad cap:
 //             'front' (default; down the front of the shoulder from the cap toward the armpit),
 //             'top' (crown of the cap like shoulder TV numbers, vertical axis running front to back),
 //             'outer' (outside of the upper sleeve under the cap), 'cuff' (outside of the sleeve at
-//             the hem, the mark's outer edge toward the hem).
+//             the hem, the mark's outer edge toward the hem). along: how far down the arm an
+//             'outer' mark sits (0 = shoulder joint, 1 = elbow); lift: upward tilt of its projection
+//             (default 0.12; higher wraps it over the top of the cap); minDot (default 0.2): lower
+//             lets it run onto more steeply angled cloth.
+//             t: 'sleevehorn' (Rams 2026 horn curl round the swoosh): fill, line (thin ridge line in
+//             the top limb, the sleeve colour on the real jerseys), lineW (default 0.022 of size),
+//             weight (thickness, default 1), outline / outlineW (optional edge).
 //   panels: { yoke, sides, vstripes, wing }  word: chest wordmark
 //             wing: [band, accent] Seahawks wing panel: a band across the chest at the V that sweeps
 //             down the front of each sleeve to the hem, plus an accent wedge at the outer sleeve end
@@ -53,6 +61,12 @@
 //              the number colour on light ones.
 //   sweep: { t: 'raglan', c, edge } | { t: 'horn', c }: shoulder graphic across the
 //              torso/sleeve seam (Panthers raglan panel, Rams horn).
+//              lift: upward tilt of the projection (default 0.12; higher lays it over the shoulder top).
+//              { t: 'bullhorn', c, line, tip: [a, cm] }: Texans sleeve stripe, painted into the sleeve
+//              texture with the jersey's `loop` band: on the front both band edges sweep up into a
+//              horn point (tip: a = fraction round the arm from the outer side, default 0.36; cm above
+//              the band top, default 8) and `line` (a loop colour) follows the top edge as a thin
+//              crescent; below the horn the front is the jersey colour.
 //   jockTag: true or { size, bg, fg } opts in to the woven tag at the lower left
 //              front; off by default (a tucked game jersey hides it).
 // Optional pants fields: swoosh (colour of the hip swoosh), hipStyle (finish
@@ -62,6 +76,11 @@
 // Helmet logo size (decal width in metres) and at ([up, back] on the shell)
 //   apply to image and drawn marks (t: 'horn', 'ramhorn', 'wing', ...) alike.
 // Helmet nameplate: { bg, fg, text } colours the front bumper; text replaces 'Riddell'.
+// Helmet logo t: 'bullhorn' (Texans Battle Red horn): fill, line (the thin inner crescent).
+// Helmet logo t: 'text' also takes scaleX (letter width), shift: [front, down] (mark units),
+//   star (colour) with starAt: [front, down, radius] (mark units; default centred, 0.08).
+// Helmet stripe entries may take a third value, [colour, cm, grout]: the stripe is tiled with
+//   grout lines of that colour across it every 1.25 cm (Texans Rivalries street tiles).
 
 const W = '#FFFFFF';
 const K = '#0E0F11';
@@ -423,23 +442,28 @@ export const TEAMS = [
     const NAVY = '#03202F', RED = '#E31837', LB = '#2E8FD4';
     const logo = { img: 'HOU', faces: 'right', size: 0.14 };
     // chest wordmark: the club's wide squared sans, small, above the number
+    // blackletter "H" helmet mark, typeset (not the logo artwork): wide H, red star off its front
+    const H = { t: 'text', s: 'H', font: 'blackletter', scaleX: 1.3, shift: [-0.05, 0.02], star: RED, starAt: [0.27, -0.05, 0.065], size: 0.21, at: [0.52, 0.36] };
     const TXN = (s, c) => ({ s, c, font: 'squareBlock', h: 0.023, tracking: s === 'HOUSTON' ? 0.18 : 0.12, scaleX: 1.2 });
     return {
       id: 'HOU', city: 'Houston', name: 'Texans', conf: 'AFC', div: 'South',
       colors: [NAVY, RED, LB], font: 'texans',
       helmets: [
         { id: 'navy', name: 'Deep Steel Blue', tag: 'Primary', shell: NAVY, finish: 'gloss', mask: NAVY, stripe: null, logo },
-        { id: 'red', name: 'Battle Red', tag: 'Alternate', shell: RED, finish: 'gloss', mask: RED, stripe: null, logo: { t: 'horn', fill: NAVY, stroke: NAVY } },
+        { id: 'red', name: 'Battle Red', tag: 'Alternate', shell: RED, finish: 'gloss', mask: RED, stripe: null, logo: { t: 'bullhorn', fill: NAVY, line: RED, size: 0.21 } },
         { id: 'htown', name: 'H-Town', tag: 'Alternate', shell: NAVY, finish: 'gloss', mask: NAVY, stripe: null,
-          logo: { t: 'text', s: 'H', fill: LB, stroke: RED, font: 'blackletter', star: RED } },
-        { id: 'riv', name: 'Rivalries White', tag: 'New 2026', debut: '2026-11-19', shell: W, finish: 'gloss', mask: LB, stripe: rep(LB, 0.35, 0.35, 5, W),
-          logo: { t: 'text', s: 'H', fill: '#E9ECF0', stroke: LB, font: 'blackletter', star: RED } },
+          logo: { ...H, fill: LB, stroke: NAVY, stroke2: RED } },
+        // Liberty White shell; centre stripe: Battle Red between two tiled H-Town Blue strips;
+        // chrome H-Town Blue mask; street-tile "H-TOWN" on the front bumper
+        { id: 'riv', name: 'Rivalries White', tag: 'New 2026', debut: '2026-11-19', shell: W, finish: 'gloss', mask: LB,
+          stripe: [[LB, 1, W], [W, 0.25], [RED, 2.8], [W, 0.25], [LB, 1, W]], nameplate: { bg: W, fg: LB, text: 'H-TOWN' },
+          logo: { ...H, fill: '#E9ECF0', stroke: LB, stroke2: RED } },
       ],
       jerseys: [
         { id: 'navy', name: 'Deep Steel Blue', tag: 'Home', base: NAVY, num: [W, RED, '#9AA3AA'], numO: [0.03, 0.022], numStyle: 'twill', tv: 'shoulder', word: TXN('TEXANS', RED),
           collar: [[NAVY, 0.45], [RED, 1.2], [W, 0.5]], sleeveLogo: 'HOU' },
-        { id: 'white', name: 'Liberty White', tag: 'Road', base: W, num: [NAVY, RED], numO: [0.03, 0], numStyle: 'twill', word: TXN('HOUSTON', RED), swoosh: NAVY, loop: [[NAVY, 2.9], [RED, 0.45], [NAVY, 0.85]], loopPattern: 'horn', loopAt: 13 },
-        { id: 'red', name: 'Battle Red', tag: 'Alternate', base: RED, num: [NAVY, W], numO: [0.03, 0], numStyle: 'twill', word: TXN('TEXANS', W), swoosh: NAVY, loop: [[NAVY, 4.2]], loopPattern: 'horn', loopAt: 13 },
+        { id: 'white', name: 'Liberty White', tag: 'Road', base: W, num: [NAVY, RED], numO: [0.03, 0], numStyle: 'twill', word: TXN('HOUSTON', RED), swoosh: NAVY, loop: [[NAVY, 2.9], [RED, 0.45], [NAVY, 0.85]], loopAt: 9, sweep: { t: 'bullhorn', c: NAVY, line: RED } },
+        { id: 'red', name: 'Battle Red', tag: 'Alternate', base: RED, num: [NAVY, W], numO: [0.03, 0], numStyle: 'twill', word: TXN('TEXANS', W), swoosh: NAVY, loop: [[NAVY, 2.9], [RED, 0.45], [NAVY, 0.85]], loopAt: 9, sweep: { t: 'bullhorn', c: NAVY, line: RED } },
         { id: 'htown', name: 'H-Town Navy', tag: 'Alternate', base: NAVY, num: [RED, LB], numO: [0.03, 0], numStyle: 'twill', word: TXN('H-TOWN', LB), collar: [[RED, 2.8]], sleeveLogo: 'HOU', swoosh: RED },
         { id: 'riv', name: 'Rivalries White', tag: 'New 2026', debut: '2026-11-19', base: '#F5F6F7', num: [LB], font: 'texansRiv', numStyle: 'pressed', tv: 'shoulder', word: { s: '' }, chestLogo: 'HOU', swoosh: LB,
           collar: [[LB, 0.4], [W, 0.2], [RED, 0.4], [W, 0.2], [LB, 0.4], [W, 0.2], [RED, 0.4]], sleeve: { stripes: [...rep(LB, 0.4, 0.3, 4, W), [RED, 3.4]], from: 1 } },
@@ -1314,7 +1338,8 @@ export const TEAMS = [
     const ramhorn = (fill) => ({ t: 'ramhorn', fill, stroke: fill, size: 0.2, at: [0.2, -0.1] });
     // horn sleeve: the sleeve in one colour (cap) with the horn curling round it in the other.
     // Royal and Midnight jerseys: royal sleeve, Sol horn. White jersey: Sol sleeve, royal horn.
-    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, shoulder: { t: 'sleevehorn', fill: horn, at: 'outer', along: 0.04, size: 0.22 } });
+    // Every 2026 horn carries a thin ridge line in the sleeve colour inside its top limb.
+    const rams = (cap, horn, sleeve = { cap, top: [cap, 0] }, weight = 1.1) => ({ sleeve, shoulder: { t: 'sleevehorn', fill: horn, line: cap, weight, at: 'outer', along: 0.02, lift: 0.4, minDot: 0.05, size: 0.25 } });
     // 2026: a Sol "LA" monogram on royal backing sits over the back of the collar
     const neck = { s: 'LA', c: SOL, bg: ROY, font: 'block' };
     return {
@@ -1329,10 +1354,13 @@ export const TEAMS = [
         // 2026 refresh: solid (gradient-free) numbers, no chest tag, horn sleeves on both primaries
         { id: 'royal', name: 'Royal', tag: 'Home · Updated 2026', base: ROY, num: [SOL], numStyle: 'pressed', neckTag: neck, swoosh: W, ...rams(ROY, SOL) },
         { id: 'white', name: 'White', tag: 'Road · Updated 2026', base: W, num: [ROY], numStyle: 'pressed', neckTag: neck, swoosh: ROY, ...rams(SOL, ROY) },
-        { id: 'midnight', name: 'Midnight Mode', tag: 'Rivalries', base: BK, num: [W, ROY], numO: [0.02, 0], numPattern: { t: 'dots', c: '#C9CED6', step: 0.035, r: 0.18 }, swoosh: W, ...rams(ROY, SOL) },
+        { id: 'midnight', name: 'Midnight Mode', tag: 'Rivalries', base: BK, num: [W, ROY], numO: [0.02, 0], numPattern: { t: 'dots', c: '#C9CED6', step: 0.035, r: 0.18 }, swoosh: W,
+          // black sleeve with a royal cap that breaks up into halftone dots below the horn; the
+          // 2025 Rivalries horn has a broader top limb than the 2026 primaries
+          ...rams(ROY, SOL, { cap: BK, top: [ROY, 9, 6] }, 1.2) },
         // Fearsome Foursome tribute: royal horns over the shoulders, TV numbers on the sleeves, black names
         { id: 'fearsome', name: 'Fearsome White', tag: 'New 2026', debut: '2026-11-25', base: W, num: [ROY, BK], numO: [0.03, 0], font: 'block', numStyle: 'twill', tv: 'sleeve', swoosh: BK,
-          plateColor: BK, plateOutline: [], loop: [[ROY, 4]], loopPattern: 'horn', loopAt: 16 },
+          plateColor: BK, plateOutline: [], sweep: { t: 'horn', c: ROY, lift: 0.7 } },
         // 1951 championship tribute: royal satin triple stripes on a Sol jersey
         { id: 'sol', name: 'Classic Sol', tag: '75th Anniversary', base: SOL, num: [ROY], font: 'block', numStyle: 'twill', neckTag: neck, swoosh: ROY, sleeve: { stripes: rep(ROY, 1, 0.7, 3), from: 3 } },
       ],
