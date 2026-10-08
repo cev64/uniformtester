@@ -58,6 +58,8 @@
 //             or below an outside neckTag). The number follows the plate.
 //   plateMaxW: widest the name may be, in metres (default 0.235, about half the shoulder width);
 //             longer names are condensed with plateScaleX, as on real jerseys.
+//   numBackMaxW: widest the back number may be with its outlines, in metres (default 1.05 x its
+//              outer height); wider numbers are condensed so they stay inside the back panel.
 //   backShoulder: { shapes: [[colour, [[x, y], ...], round], ...], out, lift } shoulder graphics seen
 //             from behind (the front projections stop at the sides). Polygons for the player's left
 //             shoulder (mirrored), x = metres out from the spine, y = metres above the shoulder joint:

@@ -415,7 +415,9 @@ export class Player {
     }
     const { map, normal } = this.appliqueTextures(built);
     const h = heightM / (built.inkHeight || 0.7);
-    this.decal(meshes, hit, h * built.aspect, h, map, { ...opts, finish: style, normal });
+    // numerals are drawn at their natural width, so a condensing scaleX is applied to the decal
+    const sx = isNum ? (opts.scaleX || 1) : 1;
+    this.decal(meshes, hit, h * built.aspect * sx, h, map, { ...opts, finish: style, normal });
   }
 
   // Logo artwork as a patch: embroidered by default. Sized by width, or by
@@ -718,7 +720,11 @@ export class Player {
           bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
     }
     const numTop = plateBot - plOut - 0.09 * Hout - numOut;
-    this.lettering(torso, back(numTop - numH / 2), num, numH, backColors, font, numOpts);
+    // Width cap: real two-digit backs are about as wide as they are tall (MAHOMES 15: 0.94 H, WILLIAMS 18:
+    // 0.88 H). Wider sets (88 in a wide team font) would fill the back to the armholes and run off the
+    // torso panel at the seam, so they are condensed to numBackMaxW (default 1.05 x the outer height).
+    const numMaxW = jersey.numBackMaxW ?? 1.05 * Hout;
+    this.lettering(torso, back(numTop - numH / 2), num, numH, backColors, font, { ...numOpts, maxW: numMaxW });
     if (jersey.backShoulder || jersey.panels?.wing) this.backShoulderPanel(jersey, torso, sleeves);
 
     // TV numbers: on top of the shoulders, or on the outside of the sleeves

@@ -407,7 +407,8 @@ export function numeralLayers(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, s
   }
   if (fillPattern) fillPattern(face.getContext('2d'), W, H, px);
   layers.push({ alpha: a0, sd, mask, color: fill, face });
-  return { layers, W, H, aspect: W / H, inkHeight: px / H, px };
+  // inkW: width of the digits with their outlines, without the padding (back-number width cap)
+  return { layers, W, H, aspect: W / H, inkHeight: px / H, px, inkW: adv * px + slantPad + 2 * (w1 + w2) };
 }
 
 export function numeralCanvas(text, colors, styleKey, opts = {}) {
