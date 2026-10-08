@@ -418,7 +418,7 @@ export const TEAMS = [
         { id: 'red', name: 'Battle Red', tag: 'Alternate', shell: RED, finish: 'gloss', mask: RED, stripe: null, logo: { t: 'horn', fill: NAVY, stroke: NAVY } },
         { id: 'htown', name: 'H-Town', tag: 'Alternate', shell: NAVY, finish: 'gloss', mask: NAVY, stripe: null,
           logo: { t: 'text', s: 'H', fill: LB, stroke: RED, font: 'blackletter', star: RED } },
-        { id: 'riv', name: 'Rivalries Chrome', tag: 'New 2026', debut: '2026-11-19', shell: '#EEF0F2', finish: 'chrome', mask: LB, stripe: rep(LB, 0.35, 0.35, 5, W),
+        { id: 'riv', name: 'Rivalries White', tag: 'New 2026', debut: '2026-11-19', shell: W, finish: 'gloss', mask: LB, stripe: rep(LB, 0.35, 0.35, 5, W),
           logo: { t: 'text', s: 'H', fill: '#E9ECF0', stroke: LB, font: 'blackletter', star: RED } },
       ],
       jerseys: [
