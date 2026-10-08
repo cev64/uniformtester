@@ -34,7 +34,37 @@
 //             (drawn in front view and projected over torso and sleeves; accent optional)
 //   collarFeathers: { c, n = 6 } chevrons of small feathers on the collar either side of the V (Seahawks)
 //   chestLogo / sleeveLogo / centerLogo: logo image keys (public/logos)
-//   neckTag: text on the back of the collar ({ s, c, bg, font, style })
+//   chestLogoAt: [across, down] metres: chest logo / chestPatch centre, across toward the player's
+//             left from the centre line and down from the neck joint; default [0.11, 0.16].
+//   chestLogoSize: chest logo / patch width in metres (default 0.07 logo, 0.075 patch).
+//   sleeveLogoSize: sleeve logo width in metres (default 0.075).
+//   neckTag: text on the back of the collar ({ s, c, bg, font, style, h, at }), or a logo tag
+//             { img: logo key, w: width in metres (default 0.05), style } (outside only).
+//             h: letter height in metres (default 0.016, 0.012 over 12 characters).
+//             at: omitted = printed on the outside just under the back neck seam (real only for
+//             BUF, LAR, WAS, HOU logo tags: research/backs.md); an outside tag pushes the nameplate
+//             down. 'inside' = printed on the inner back neck (most phrase tags; seen from the front
+//             through the neck opening, if at all). 'hidden' = not drawn.
+//
+// Back of the jersey (defaults from research/backs.md; all optional per jersey):
+//   Layout, top down: back neck seam (neckY - 0.03 on the model) → nameplate top at 0.10 x the
+//   back number height → name letters (plateH) → gap 0.07 x number height → back number
+//   (heights to the outer edge of the outlines; the engine uses 0.08 / 0.09 x H, which reads as
+//   0.10 / 0.07 in the `back` view because the upper back slopes).
+//   numBack: [fill, outline, outer outline] back number colours when they differ from the front
+//             (PIT 1933 throwback: white front, black back). Also the default nameplate colour.
+//   numBackH: back number height in metres, default 0.25 (10 in).
+//   plateAt: nameplate top below the back neck seam in metres (default 0.08 x the number's outer height,
+//             or below an outside neckTag). The number follows the plate.
+//   plateMaxW: widest the name may be, in metres (default 0.235, about half the shoulder width);
+//             longer names are condensed with plateScaleX, as on real jerseys.
+//   backShoulder: { shapes: [[colour, [[x, y], ...], round], ...], out, lift } shoulder graphics seen
+//             from behind (the front projections stop at the sides). Polygons for the player's left
+//             shoulder (mirrored), x = metres out from the spine, y = metres above the shoulder joint:
+//             the cap top is about y 0.09 at x 0.18 and y 0.06 at x 0.29, the sleeve's outer edge
+//             x 0.33 at y 0. round = corner radius (m). Projected from behind, tilted out (`out`,
+//             default 0.45) and up (`lift`, default 0.35) so it wraps the cap and the outer sleeve.
+//             panels.wing adds a default back view (accent wedge over the cap, band on the outer sleeve).
 //
 // Optional jersey fields for the cloth renderer (all have defaults):
 //   numStyle: 'twill' | 'pressed'   how numbers, name and wordmark are applied.
@@ -48,7 +78,7 @@
 //              height (0.25 = middle letters ride 25% higher); default 0.
 //   plateTracking: letter spacing (fraction of font size), default 0.05.
 //   plateScaleX: horizontal scale of the name letters, default 1.
-//   plateH: name letter height in metres, default 0.05 (2 in).
+//   plateH: name letter height in metres, default 0.055 (about 0.21 x the back number's outer height).
 //   plateColor / plateOutline: name fill (default num[0]) / [outline, outer].
 //   plateStyle: finish of the name letters, default numStyle.
 //   plateBar: true (jersey colour) or a colour: a separate sewn-on nameplate strip.
@@ -416,7 +446,7 @@ export const TEAMS = [
           plateBar: true, plateColor: GOLD, plateOutline: [BK] },
         { id: 'rush', name: 'Color Rush', tag: 'Color Rush', base: BK, num: [GOLD], numStyle: 'twill', font: 'chiefs', tv: 'shoulder', chestLogo: 'PIT', swoosh: GOLD,
           sleeve: { stripes: rushStripes, from: 1.2 }, plateBar: true },
-        { id: 'y1933', name: '1933', tag: 'Throwback', base: GOLD, num: [W, BK], numO: [0.06, 0], numStyle: 'twill', font: 'block', collar: [[GOLD, 2.5]], chestLogo: 'PIT_crest',
+        { id: 'y1933', name: '1933', tag: 'Throwback', base: GOLD, num: [W, BK], numBack: [BK], numO: [0.06, 0], numStyle: 'twill', font: 'block', collar: [[GOLD, 2.5]], chestLogo: 'PIT_crest',
           panels: { vstripes: [BK, 3.2, 4.2], vband: [BK, 5, 27, 0.1] } },
       ],
       pants: [
