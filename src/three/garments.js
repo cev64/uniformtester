@@ -770,11 +770,25 @@ export function wingCanvas([band, accent], g, pxPerM = 2600) {
   const W = Math.round(2 * g.hx * pxPerM), H = Math.round((g.yTop - g.yBot) * pxPerM);
   const c = makeCanvas(W, H);
   const ctx = c.getContext('2d');
-  const poly = (pts, col) => {
+  // filled polygon (metres) with rounded corners: r[i] is the radius at vertex i, so the band
+  // sweeps round the shoulder in a curve instead of turning at a hard elbow
+  const poly = (pts, col, r = []) => {
     ctx.fillStyle = col;
+    const n = pts.length;
     for (const side of [-1, 1]) {
+      const P = pts.map(([x, y]) => [(side * x + g.hx) * pxPerM, (g.yTop - y) * pxPerM]);
+      const toward = (a, b, d) => {
+        const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, k = Math.min(d, L / 2) / L;
+        return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+      };
       ctx.beginPath();
-      pts.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo']((side * x + g.hx) * pxPerM, (g.yTop - y) * pxPerM));
+      for (let i = 0; i < n; i++) {
+        const cur = P[i], rad = (r[i] || 0) * pxPerM;
+        if (!rad) { ctx[i ? 'lineTo' : 'moveTo'](...cur); continue; }
+        const a = toward(cur, P[(i + n - 1) % n], rad), b = toward(cur, P[(i + 1) % n], rad);
+        ctx[i ? 'lineTo' : 'moveTo'](...a);
+        ctx.quadraticCurveTo(...cur, ...b);
+      }
       ctx.closePath();
       ctx.fill();
     }
@@ -785,14 +799,14 @@ export function wingCanvas([band, accent], g, pxPerM = 2600) {
   const gi = g.xi + 0.12 * w, go = g.xi + 0.62 * w;
   const top = [g.xbT, g.yT], bot = [g.xbB, g.yB];
   // inner end cut parallel to the sides of the V-neck
-  poly([[g.x0[0], g.yT], top, past(top, [go, g.yh]), past(bot, [gi, g.yh]), bot, [g.x0[1], g.yB]], band);
+  poly([[g.x0[0], g.yT], top, past(top, [go, g.yh]), past(bot, [gi, g.yh]), bot, [g.x0[1], g.yB]], band, [0.004, 0.09, 0, 0, 0.06, 0.004]);
   if (accent) {
     // a wedge on the outer side of the sleeve end, parallel to the band and set off from it by
     // a stripe of jersey colour, its point ~7 cm up the sleeve
     const ga = go + 0.08 * w;
     const dx = (go - g.xbT) / (g.yT - g.yh);          // run of the band's outer edge per metre of height
     const tip = [ga - dx * 0.07, g.yh + 0.07];
-    poly([tip, [ga + dx * 0.03, g.yh - 0.03], [g.xo + 0.08, g.yh - 0.03], [g.xo + 0.08, g.yh + 0.01]], accent);
+    poly([tip, [ga + dx * 0.03, g.yh - 0.03], [g.xo + 0.08, g.yh - 0.03], [g.xo + 0.08, g.yh + 0.01]], accent, [0.012, 0, 0, 0.02]);
   }
   return c;
 }
