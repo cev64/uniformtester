@@ -640,7 +640,11 @@ export class Player {
       o1: jersey.numO?.[0] ?? 0.05, o2: jersey.numO?.[1] ?? 0.045, shadow: jersey.numShadow || null,
       fillPattern: numeralPattern(jersey.numPattern), patternKey: jersey.numPattern ? JSON.stringify(jersey.numPattern) : null, style: numStyle,
     };
-    this.lettering(torso, front(neckY - (top ? 0.31 : 0.29)), num, 0.2, colors, font, numOpts);
+    // Front width cap, like the back's (numBackMaxW): wide sets (88 in a wide font) are condensed to
+    // numMaxW, default 1.05 x the number's outer height, so they never crowd the chest.
+    const frontOut = 0.2 * ((colors[1] ? numOpts.o1 : 0) + (colors[2] ? numOpts.o2 : 0));
+    this.lettering(torso, front(neckY - (top ? 0.31 : 0.29)), num, 0.2, colors, font,
+      { ...numOpts, maxW: jersey.numMaxW ?? 1.05 * (0.2 + 2 * frontOut) });
     if (jersey.centerLogo) this.image(torso, front(neckY - 0.17), 0.06, logos[jersey.centerLogo], { style: patchStyle });
     if (jersey.numMarks) {
       // small arrowhead triangles stacked either side of the front number (Broncos)
@@ -716,8 +720,10 @@ export class Player {
     const tagH = tag?.img ? (tag.w || 0.05) * 0.6 : (tag?.h || 0.016);
     const plateTop = seam - plOut - (jersey.plateAt ?? (tagOut ? Math.max(0.08 * Hout, tagH + 0.022) : 0.08 * Hout));
     const plateBot = plateTop - plateH * (1 + Math.max(0, arch));
-    if (player.name) {
-      this.lettering(torso, back((plateTop + plateBot) / 2), player.name.toUpperCase(), plateH,
+    // plateText: fixed nameplate lettering that replaces the player's name (ATL 2026 "FALCONS")
+    const plateName = jersey.plateText ?? player.name;
+    if (plateName) {
+      this.lettering(torso, back((plateTop + plateBot) / 2), plateName.toUpperCase(), plateH,
         [jersey.plateColor || backColors[0], ...(jersey.plateOutline || [])], plate,
         { tracking: jersey.plateTracking ?? 0.05, arch, scaleX: jersey.plateScaleX || 1, maxW: jersey.plateMaxW ?? 0.235, o1: 0.07, o2: 0.05, style: jersey.plateStyle || numStyle,
           bar: jersey.plateBar ? (jersey.plateBar === true ? jersey.base : jersey.plateBar) : null });
@@ -784,7 +790,7 @@ export class Player {
         const st = jersey.sleeveText;
         const p = sh.clone().lerp(el, 0.2);
         const hit = this.raycast(sleeves, p.clone().add(new THREE.Vector3(sx * 0.4, 0, 0)), new THREE.Vector3(-sx, 0, 0));
-        this.lettering(sleeves, hit, sx > 0 ? st.L : st.R, 0.065, st.c, st.font || 'slab', { o1: 0.08, style: numStyle });
+        this.lettering(sleeves, hit, sx > 0 ? st.L : st.R, st.h || 0.065, st.c, st.font || 'slab', { o1: 0.08, style: numStyle });
       }
       if (jersey.sleevePatch) {
         // drawn patch on the outside of each sleeve (state flags, shields)

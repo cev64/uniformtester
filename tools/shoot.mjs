@@ -2,6 +2,8 @@
 //
 //   node tools/shoot.mjs --team BUF --look Home --views front,three,back,helmet --out /tmp/shots
 //   node tools/shoot.mjs --team PIT --sel white,black,gold,black --number 7 --name SMITH
+//   node tools/shoot.mjs --team "LAR:Road@backclose,HOU:Battle Red@helmetback+helmettop,BAL@numclose"
+//     (per-team look after ':' and per-team views after '@', joined with '+'; they override --look / --views)
 //
 // Starts `vite` on a free port (or uses --url), loads the page with ?debug,
 // dresses the player through window.__stage0 and saves one PNG per view as
@@ -38,6 +40,8 @@ const VIEWS = {
   helmetsideR: { theta: -Math.PI / 2, phi: 1.5, r: 1.25, target: [0, 1.73, 0.1] },
   helmetfront: { theta: 0, phi: 1.5, r: 1.1, target: [0, 1.72, 0] },
   helmetback: { theta: Math.PI * 0.8, phi: 1.35, r: 1.1, target: [0, 1.72, 0] },
+  // straight down on the crown (front of the helmet at the bottom of the frame), for measuring stripe widths
+  helmettop: { theta: 0, phi: 0.02, r: 1.0, target: [0, 1.76, 0.02] },
   chest: { theta: 0.2, phi: 1.5, r: 2.0, target: [0, 1.35, 0] },
   backtop: { theta: Math.PI, phi: 1.5, r: 2.0, target: [0, 1.35, 0] },
   shoulder: { theta: 1.1, phi: 1.2, r: 1.6, target: [0.15, 1.45, 0] },
@@ -112,9 +116,12 @@ try {
   // changes without editing teams.js, e.g. --patch "__teams.NYJ.jerseys[0].plateArch = 0.3"
   if (args.patch) await page.evaluate((code) => new Function(code)(), String(args.patch));
   const teams = String(args.team || 'BUF').split(',');
-  for (const teamId of teams) {
+  for (const spec of teams) {
+    const [, teamId, lookArg, viewArg] = spec.match(/^([^:@]+)(?::([^@]+))?(?:@(.+))?$/);
     const looks = await page.evaluate(([id]) => window.__teams[id].looks.map((l) => l.name), [teamId]);
-    const wanted = args.sel ? ['custom'] : args.look === 'all' ? looks : [args.look || looks[0]];
+    const look = lookArg || args.look;
+    const wanted = args.sel ? ['custom'] : look === 'all' ? looks : [look || looks[0]];
+    const teamViews = viewArg ? viewArg.split('+') : views;
     for (const lookName of wanted) {
       await page.evaluate(async ([id, lookName, sel, number, name, skin]) => {
         const team = window.__teams[id];
@@ -130,7 +137,7 @@ try {
         await st.player.helmet.ready;
       }, [teamId, lookName, args.sel || null, String(args.number ?? '12'), String(args.name ?? 'PLAYER'), args.skin ?? 0]);
       await page.waitForTimeout(Number(args.settle || 1200));
-      for (const v of views) {
+      for (const v of teamViews) {
         const view = VIEWS[v];
         if (!view) { console.warn('unknown view', v); continue; }
         await page.evaluate((view) => {

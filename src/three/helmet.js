@@ -18,7 +18,10 @@ import { loadLogo } from './logos.js';
 //   chinstrap (strap colour),
 //   logo ({ img | t, size, at }; size and at also apply to drawn marks),
 //   numbers, numAt, nameplate: { bg, fg, text } (bumper colours and lettering,
-//   default black plate with a white Riddell wordmark), cup (chin cup colour).
+//   default black plate with a white Riddell wordmark), cup (chin cup colour),
+//   nameplate.rear: { bg, fg, text } (rear bumper: colour and lettering in place of
+//   the moulded SPEEDFLEX), rearLogo: { img | t, size, up } (a mark at the back
+//   centre of the shell above the rear bumper and the NFL shield).
 
 const URL = 'public/models/helmet.glb';
 const DETAIL_URL = asset('public/models/helmet_detail.png');
@@ -88,19 +91,28 @@ function browTexture() {
 // Rear bumper: black rubber with the SPEEDFLEX name moulded in, a shade
 // lighter. UV u runs around the back from the player's right side, so seen from
 // behind it is mirrored.
-function backplateTexture() {
+// rear: { bg, fg, text } paints the bumper and sets team lettering in place of the
+// moulded name (Texans Rivalries "TEXANS").
+function backplateTexture(rear = null) {
   const c = document.createElement('canvas');
   c.width = 1024; c.height = 96;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#141517';
+  ctx.fillStyle = rear?.bg || '#141517';
   ctx.fillRect(0, 0, c.width, c.height);
   ctx.save();
   ctx.translate(512, 52); ctx.scale(-1, 1);
-  ctx.fillStyle = '#26282b';
-  ctx.font = '800 40px "Helvetica Neue", Arial, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
-  ctx.fillText('SPEEDFLEX', 0, 0);
+  if (rear?.text) {
+    ctx.fillStyle = rear.fg || '#f4f4f4';
+    ctx.font = '900 58px "Helvetica Neue", "Arial Black", Arial, sans-serif';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '8px';
+    ctx.fillText(rear.text, 0, 0);
+  } else {
+    ctx.fillStyle = '#26282b';
+    ctx.font = '800 40px "Helvetica Neue", Arial, sans-serif';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
+    ctx.fillText('SPEEDFLEX', 0, 0);
+  }
   ctx.restore();
   return canvasTexture(c);
 }
@@ -233,7 +245,8 @@ export class Helmet {
     if (!this.loaded) return;
     const token = (this.token = Symbol('helmet'));
     const logo = helmet.logo || { t: 'none' };
-    const [img, shield] = await Promise.all([logo.img ? loadLogo(logo.img) : null, loadLogo('NFL_shield')]);
+    const rl = helmet.rearLogo || null;
+    const [img, shield, rimg] = await Promise.all([logo.img ? loadLogo(logo.img) : null, loadLogo('NFL_shield'), rl?.img ? loadLogo(rl.img) : null]);
     if (token !== this.token) return;
     this.clear();
 
@@ -268,6 +281,12 @@ export class Helmet {
     this.mats.bumper.map?.dispose();
     this.mats.bumper.map = nameplateTexture(np.bg, np.fg, np.text);
     this.mats.bumper.needsUpdate = true;
+    if (np.rear || this.mats.backplate.userData.team) {
+      this.mats.backplate.map?.dispose();
+      this.mats.backplate.map = backplateTexture(np.rear);
+      this.mats.backplate.userData.team = Boolean(np.rear);
+      this.mats.backplate.needsUpdate = true;
+    }
 
     this.group.updateMatrixWorld(true);
     const shell = this.parts.shell || [];
@@ -278,6 +297,7 @@ export class Helmet {
     };
     const sides = logo.side === 'right' ? [-1] : [1, -1];   // the player's right is -x
     this.shieldDecal(shield, finish);
+    if (rl) this.rearDecal(rl, rimg, finish);
     for (const sx of sides) {
       // +x side: seen from outside, the front of the helmet is on the viewer's left
       const facing = sx > 0 ? 'left' : 'right';
@@ -315,6 +335,24 @@ export class Helmet {
     const hit = rc.intersectObjects(this.parts.shell || [], false)[0];
     const a = shield.image.width / shield.image.height;
     this.decal(this.parts.shell || [], hit, 0.026 * a, 0.026, shield, finish, false);
+  }
+
+  // Mark on the back of the shell, centred above the rear bumper and the NFL shield.
+  // up: tilt of the aim (default 0, about mid-height on the back); size: width in metres (default 0.06).
+  rearDecal(rl, img, finish) {
+    const dir = new THREE.Vector3(0, rl.up ?? 0, -1).normalize();
+    const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
+    const rc = new THREE.Raycaster(center.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate(), 0, 1);
+    const hit = rc.intersectObjects(this.parts.shell || [], false)[0];
+    const w = rl.size || 0.06;
+    if (img?.image) {
+      this.decal(this.parts.shell || [], hit, w, w * img.image.height / img.image.width, img, finish, false);
+    } else if (rl.t) {
+      const c = paintLogo(rl, 'left');
+      if (!c) return;
+      const t = canvasTexture(c, { flipY: true }); this.textures.push(t);
+      this.decal(this.parts.shell || [], hit, w, w, t, finish, false);
+    }
   }
 
   // point on the shell side: at = [up, back] offsets of the aim direction. The
