@@ -192,10 +192,12 @@ def aim(bone_name, target_dir):
     bpy.context.view_layer.update()
 
 for side, sx in (('L', 1), ('R', -1)):
-    # MakeHuman's left is +x
-    aim(f'upperarm01.{side}', (sx * 0.27, 0.02, -1.0))
-    aim(f'lowerarm01.{side}', (sx * 0.2, -0.3, -1.0))
-    aim(f'wrist.{side}', (sx * 0.06, -0.12, -1.0))
+    # MakeHuman's left is +x. Relaxed sideline stance: upper arms hang close to
+    # the body (only as far out as the pads and lats push them), a ~17 degree
+    # bend at the elbow, forearms angled in so the hands hang by the thighs.
+    aim(f'upperarm01.{side}', (sx * 0.18, 0.0, -1.0))
+    aim(f'lowerarm01.{side}', (sx * 0.035, -0.27, -1.0))
+    aim(f'wrist.{side}', (sx * 0.0, -0.17, -1.0))
     # bring the feet in a little from MakeHuman's wide stance
     aim(f'lowerleg01.{side}', (sx * 0.035, 0.015, -1.0))
 
@@ -211,11 +213,40 @@ def turn(bone_name, axis, angle):
 for side, sx in (('L', 1), ('R', -1)):
     turn(f'foot.{side}', Vector((0, 0, 1)), math.radians(8) * sx)
 
-# relaxed gloved hands: fingers loosely curled toward the palm
-CURL = {2: (10, 20, 14), 3: (14, 26, 16), 4: (17, 30, 18), 5: (20, 34, 20)}
+def palm_normal(side):
+    pbs = rig.pose.bones
+    knuck = (pbs[f'finger2-1.{side}'].head - pbs[f'finger5-1.{side}'].head).normalized()
+    kc = (pbs[f'finger2-1.{side}'].head + pbs[f'finger5-1.{side}'].head) / 2
+    d = (pbs[f'finger3-1.{side}'].head - pbs[f'wrist.{side}'].head).normalized()
+    palm = knuck.cross(d).normalized()
+    if (pbs[f'finger1-3.{side}'].tail - kc).dot(palm) < 0:   # the thumb sits on the palm side
+        palm = -palm
+    return palm
+
+# forearms rotated so the palms face the thighs (a little toward the back),
+# shared between the two forearm bones so the twist spreads down the forearm
+for side, sx in (('L', 1), ('R', -1)):
+    bpy.context.view_layer.update()
+    pb = rig.pose.bones[f'lowerarm02.{side}']
+    axis = (pb.tail - rig.pose.bones[f'lowerarm01.{side}'].head).normalized()
+    want = Vector((-sx, 0.35, 0)); want = (want - axis * want.dot(axis)).normalized()
+    pn = palm_normal(side); pn = (pn - axis * pn.dot(axis)).normalized()
+    a = math.atan2(pn.cross(want).dot(axis), pn.dot(want))
+    turn(f'lowerarm01.{side}', axis, a * 0.4)
+    turn(f'lowerarm02.{side}', axis, a * 0.6)
+
+# relaxed gloved hands: fingers drawn together and gently curled toward the
+# palm, increasing from the index to the little finger, thumb tucked in
+# alongside the index finger
+CURL = {2: (32, 44, 24), 3: (38, 50, 26), 4: (43, 54, 28), 5: (47, 58, 28)}
 for side, sx in (('L', 1), ('R', -1)):
     bpy.context.view_layer.update()
     pbs = rig.pose.bones
+    # close MakeHuman's splayed fingers toward the middle finger
+    d3 = (pbs[f'finger3-1.{side}'].tail - pbs[f'finger3-1.{side}'].head).normalized()
+    for f, k in ((2, 0.6), (4, 0.6), (5, 0.55)):
+        pb = pbs[f'finger{f}-1.{side}']
+        aim(pb.name, (pb.tail - pb.head).normalized() * (1 - k) + d3 * k)
     knuck = (pbs[f'finger2-1.{side}'].head - pbs[f'finger5-1.{side}'].head).normalized()
     kc = (pbs[f'finger2-1.{side}'].head + pbs[f'finger5-1.{side}'].head) / 2
     thumb = pbs[f'finger1-3.{side}'].tail
@@ -224,7 +255,7 @@ for side, sx in (('L', 1), ('R', -1)):
         pb = pbs[f'{tb}.{side}']
         td = (pb.tail - pb.head).normalized()
         idx = (pbs[f'finger2-1.{side}'].tail - pbs[f'finger2-1.{side}'].head).normalized()
-        aim(pb.name, td * 0.45 + idx * 0.55)
+        aim(pb.name, td * 0.3 + idx * 0.7)
     for f, angles in CURL.items():
         for j, a in enumerate(angles, 1):
             pb = pbs[f'finger{f}-{j}.{side}']
@@ -234,6 +265,12 @@ for side, sx in (('L', 1), ('R', -1)):
                 palm = -palm
             axis = d.cross(palm).normalized()
             turn(pb.name, axis, math.radians(a))
+    # thumb: a gentle bend at its two outer joints, toward the palm
+    pn = palm_normal(side)
+    for tb, a in (('finger1-2', 12), ('finger1-3', 18)):
+        pb = pbs[f'{tb}.{side}']
+        d = (pb.tail - pb.head).normalized()
+        turn(pb.name, d.cross(pn).normalized(), math.radians(a))
 bpy.ops.object.mode_set(mode='OBJECT')
 
 # apply the pose
@@ -749,10 +786,17 @@ def pad_arch(bm):
     # The back of the arch is as high as the pads' back arch: the back neckline
     # runs nearly level (1-2 cm under the sides) instead of dipping ~5 cm to
     # the centre, which bunched the back collar into a V seen from behind.
+    # This vertical lift sets the neckline's height; behind the neck, where it
+    # raised the fabric on the steep upper back into a wall 5-6 cm behind the
+    # neck (a hump under the collar, a crumpled collar top), back_yoke reshapes
+    # the fabric under that neckline.
     H_SIDE, H_BACK = SHZ + 0.07, SHZ + 0.11
     NB = 72
     def ang(co):
         return math.atan2(co.x - C.x, -(co.y - C.y))
+    def H_of(th):
+        return H_SIDE + (H_BACK - H_SIDE) * smooth01(1.2, 3.0, abs(th))
+    orig = [v.co.copy() for v in bm.verts]
     # neck radius per direction, a little below the top of the arch
     neck_r = [0.0] * NB
     for bv in bdata.vertices:
@@ -775,7 +819,7 @@ def pad_arch(bm):
         f = smooth01(0.5, 1.35, abs(th))
         if f <= 0:
             continue
-        H = H_SIDE + (H_BACK - H_SIDE) * smooth01(1.2, 3.0, abs(th))
+        H = H_of(th)
         b = int((th + math.pi) / (2 * math.pi) * NB) % NB
         r_in = neck_r[b] + 0.013
         r = math.hypot(co.x - C.x, co.y - C.y)
@@ -792,6 +836,94 @@ def pad_arch(bm):
             k = 1 + f * (r_in - r) / max(r, 1e-6)
             co.x = C.x + (co.x - C.x) * k
             co.y = C.y + (co.y - C.y) * k
+    back_yoke(bm, orig, C, ang)
+
+def back_yoke(bm, orig, C, ang, NB=72, P=2.0, GAP=0.01):
+    """The back of the neck. Behind the neck the body surface is steep, so
+    the jersey is shaped column by column round the neck instead of lifted:
+    from the top of the pads' back plate (vertical there) it curves smoothly in
+    and up to a neckline ring that sits GAP off the base of the neck. Heights
+    are remapped in order (no rows pile up at the collar), so there is no
+    ledge, no wall behind the neck and no crumpling. Blended in from behind the
+    shoulders; the sides and the front V keep pad_arch's shape."""
+    Z_LO = SHZ - 0.07
+    ZSTEP = 0.005
+    NZ = int((SHZ + 0.14 - Z_LO) / ZSTEP) + 3
+    TW = 2 * math.pi
+    bin_of = lambda th: int((th + math.pi) / TW * NB) % NB
+    def interp(arr, th):
+        x = (th + math.pi) / TW * NB - 0.5
+        i = math.floor(x); t = x - i
+        return arr[i % NB] * (1 - t) + arr[(i + 1) % NB] * t
+    def dirv(th):
+        return Vector((math.sin(th), -math.cos(th), 0))
+    # skin radius by direction and height: rays from inside the neck/torso outward
+    rbody = []
+    for b in range(NB):
+        th = (b + 0.5) / NB * TW - math.pi
+        col = []
+        for k in range(NZ):
+            z = Z_LO - 0.01 + k * ZSTEP
+            o = Vector((C.x, C.y, z))
+            hit = body_bvh.ray_cast(o, dirv(th), 0.4)
+            col.append((hit[0] - o).length if hit[0] is not None else 0.0)
+        rbody.append(col)
+    def r_body(th, z):
+        x = (th + math.pi) / TW * NB - 0.5
+        i = math.floor(x); t = x - i
+        kz = min(NZ - 1.001, max(0.0, (z - (Z_LO - 0.01)) / ZSTEP))
+        k = int(kz); s = kz - k
+        val = 0.0
+        for bi, wb in ((i % NB, 1 - t), ((i + 1) % NB, t)):
+            val += wb * (rbody[bi][k] * (1 - s) + rbody[bi][k + 1] * s)
+        return val
+    wgt = lambda th: smooth01(1.75, 2.45, abs(th))
+    # per column: the jersey radius at the top of the back plate and the height of the neckline
+    r_lo, z_top, z_new = [0.0] * NB, [0.0] * NB, [0.0] * NB
+    cnt = [0] * NB
+    for v, co in zip(bm.verts, orig):
+        th = ang(co)
+        if wgt(th) <= 0:
+            continue
+        r = math.hypot(co.x - C.x, co.y - C.y)
+        b = bin_of(th)
+        if abs(co.z - Z_LO) < 0.01 and r < 0.24:
+            r_lo[b] = max(r_lo[b], r)
+        if v.is_boundary and co.z > SHZ - 0.02 and r < 0.16:
+            z_top[b] += co.z; z_new[b] += v.co.z; cnt[b] += 1
+    z_top = [z_top[b] / cnt[b] if cnt[b] else 0.0 for b in range(NB)]
+    z_new = [z_new[b] / cnt[b] if cnt[b] else 0.0 for b in range(NB)]
+    for arr in (r_lo, z_top, z_new):
+        for _ in range(2):
+            for i in range(NB):
+                if arr[i] == 0:
+                    arr[i] = arr[i - 1] or arr[(i + 1) % NB]
+        for _ in range(3):
+            arr[:] = [(arr[i - 1] + 2 * arr[i] + arr[(i + 1) % NB]) / 4 if arr[i - 1] and arr[(i + 1) % NB] else arr[i] for i in range(NB)]
+    # the ring: GAP off the neck at the neckline's height, smoothed round the
+    # neck so the traps' bumps don't make the collar wavy
+    ring = []
+    for b in range(NB):
+        th = (b + 0.5) / NB * TW - math.pi
+        ring.append(r_body(th, z_new[b]) + GAP if z_new[b] else 0.0)
+    for _ in range(8):
+        ring = [(ring[i - 1] + 2 * ring[i] + ring[(i + 1) % NB]) / 4 if ring[i - 1] and ring[(i + 1) % NB] else ring[i] for i in range(NB)]
+    for v, co in zip(bm.verts, orig):
+        th = ang(co)
+        w = wgt(th)
+        if w <= 0 or co.z <= Z_LO:
+            continue
+        rl, zt, Hn = interp(r_lo, th), interp(z_top, th), interp(z_new, th)
+        r = math.hypot(co.x - C.x, co.y - C.y)
+        if not rl or zt <= Z_LO + 0.02 or Hn <= Z_LO + 0.02 or r > rl + 0.02:
+            continue
+        u = min(1.0, (co.z - Z_LO) / (zt - Z_LO))
+        z = Z_LO + u * (Hn - Z_LO)
+        r_ring = max(interp(ring, th), r_body(th, Hn) + 0.006)
+        rt =r_ring + (rl - r_ring) * (1 - u ** P) + (r - rl) * (1 - smooth01(0.0, 0.3, u))
+        rt = max(rt, r_body(th, z) + 0.008)
+        p = Vector((C.x, C.y, z)) + dirv(th) * rt
+        v.co = v.co.lerp(p, w)
 
 jersey = make_garment(
     'Jersey',
