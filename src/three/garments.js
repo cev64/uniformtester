@@ -310,12 +310,31 @@ export function paintSleeveTex(jersey, meta) {
       }
       ctx.fill();
     } else {
+      // loopWeave: { c, i, cell }: a 2x2 twill carbon-fibre weave over loop stripe i (default the
+      // widest), tows highlighted in c, cells `cell` cm (default 0.3)
+      const lw = jersey.loopWeave;
+      const wi = lw ? (lw.i ?? jersey.loop.reduce((b, s, k, a) => (s[1] > a[b][1] ? k : b), 0)) : -1;
       let y = rowCm(at - total / 2);
-      for (const [col, w] of jersey.loop) {
+      jersey.loop.forEach(([col, w], k) => {
         const h = w * pxPerCmY;
         if (col) { ctx.fillStyle = col; ctx.fillRect(0, y - h, W, h); }
+        if (k === wi) {
+          const s = Math.max(3, (lw.cell || 0.3) * pxPerCmY);
+          ctx.save();
+          ctx.beginPath(); ctx.rect(0, y - h, W, h); ctx.clip();
+          ctx.fillStyle = lw.c || '#3A3D42';
+          for (let j = 0; j * s < h + s; j++) {
+            for (let i = 0; i * s < W + s; i++) {
+              const x0 = i * s, y0 = y - h + j * s;
+              // over-two under-two, shifted one cell a row: the tow on top alternates direction
+              if ((i + j) % 4 < 2) ctx.fillRect(x0 + 0.5, y0 + s * 0.22, s - 1, s * 0.34);
+              else ctx.fillRect(x0 + s * 0.22, y0 + 0.5, s * 0.34, s - 1);
+            }
+          }
+          ctx.restore();
+        }
         y -= h;
-      }
+      });
     }
   }
 
@@ -643,7 +662,8 @@ export function letteringLayers(text, colors, font, { o1 = 0.055, o2 = 0.045, tr
     g.beginPath();
     g.roundRect ? g.roundRect(x0, y0, W - 2 * x0, H - 2 * y0, r) : g.rect(x0, y0, W - 2 * x0, H - 2 * y0);
     g.fill();
-    layers.push({ mask: c, color: bar, thick: 0.35, halo: 0.3, stitch: 'straight', thread: shade(bar, luminance(bar) > 0.55 ? -0.18 : 0.25) });
+    // (thin relief and contact shadow, a fine thread a shade off the bar colour)
+    layers.push({ mask: c, color: bar, thick: 0.1, halo: 0.12, stitch: 'straight', stitchW: 0.6, thread: shade(bar, luminance(bar) > 0.55 ? -0.07 : 0.1) });
   }
   const offset = (r) => { const o = new Float32Array(W * H); for (let i = 0; i < W * H; i++) o[i] = sd[i] - r; return o; };
   if (w2) { const a = grow(sd, w1 + w2); layers.push({ alpha: a, sd: offset(w1 + w2), mask: maskCanvas(a, W, H), color: c2 }); }

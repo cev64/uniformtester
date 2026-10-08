@@ -16,6 +16,8 @@
 //             top[2] (optional): the top colour breaks up into halftone dots over that many cm
 //             below its edge (Rams Midnight cap)
 //   loop / loopPattern / loopAt: stripes around the top of the arm (UCLA, horns, bolts)
+//   loopWeave: { c, i, cell }: carbon-fibre twill weave over loop stripe i (default the widest),
+//             tows highlighted in c (default '#3A3D42'), cell size in cm (default 0.3) (DET Concrete caps)
 //   shoulder: decal on each shoulder (drawn mark { t: 'star'|'bolt'|'bars'|'peak'|... } or { img }).
 //             size: decal width in metres (default 0.1). at: where it sits on the pad cap:
 //             'front' (default; down the front of the shoulder from the cap toward the armpit),
@@ -60,6 +62,9 @@
 //             longer names are condensed with plateScaleX, as on real jerseys.
 //   numBackMaxW: widest the back number may be with its outlines, in metres (default 1.05 x its
 //              outer height); wider numbers are condensed so they stay inside the back panel.
+//   numMaxW: the same cap for the front number (default 1.05 x its outer height), so wide sets
+//              (88 in a wide font) never crowd the chest.
+//   plateText: fixed nameplate lettering in place of the player's name (e.g. 'FALCONS').
 //   backShoulder: { shapes: [[colour, [[x, y], ...], round], ...], out, lift } shoulder graphics seen
 //             from behind (the front projections stop at the sides). Polygons for the player's left
 //             shoulder (mirrored), x = metres out from the spine, y = metres above the shoulder joint:
@@ -83,7 +88,10 @@
 //   plateH: name letter height in metres, default 0.055 (about 0.21 x the back number's outer height).
 //   plateColor / plateOutline: name fill (default num[0]) / [outline, outer].
 //   plateStyle: finish of the name letters, default numStyle.
-//   plateBar: true (jersey colour) or a colour: a separate sewn-on nameplate strip.
+//   plateBar: true (jersey colour) or a colour: a separate sewn-on nameplate strip (flat, the jersey's
+//              cloth, a fine lock stitch at its edge).
+//   sleeveText: { L, R, c: [fill, outline], font, h }: letters on the outside of each sleeve;
+//              h = letter height in metres (default 0.065).
 //   word.img: image wordmark instead of text, a public/logos key ('KEY' or
 //              'KEY@#hex' for a one-colour version); word.h = its height in
 //              metres (default 0.045) or word.w = width. word.style = finish
@@ -108,6 +116,9 @@
 // Helmet logo size (decal width in metres) and at ([up, back] on the shell)
 //   apply to image and drawn marks (t: 'horn', 'ramhorn', 'wing', ...) alike.
 // Helmet nameplate: { bg, fg, text } colours the front bumper; text replaces 'Riddell'.
+//   nameplate.rear: { bg, fg, text } colours the rear bumper; text replaces the moulded SPEEDFLEX.
+// Helmet rearLogo: { img | t, size, up }: a mark at the back centre of the shell above the rear
+//   bumper and NFL shield; size = width in metres (default 0.06), up = aim tilt (default 0).
 // Helmet logo t: 'bullhorn' (Texans Battle Red horn): fill, line (the thin inner crescent).
 // Helmet logo t: 'text' also takes scaleX (letter width), shift: [front, down] (mark units),
 //   star (colour) with starAt: [front, down, radius] (mark units; default centred, 0.08).
@@ -491,7 +502,7 @@ export const TEAMS = [
         // Liberty White shell; centre stripe: Battle Red between two tiled H-Town Blue strips;
         // chrome H-Town Blue mask; street-tile "H-TOWN" on the front bumper
         { id: 'riv', name: 'Rivalries White', tag: 'New 2026', debut: '2026-11-19', shell: W, finish: 'gloss', mask: LB,
-          stripe: [[LB, 1, W], [W, 0.25], [RED, 2.8], [W, 0.25], [LB, 1, W]], nameplate: { bg: W, fg: LB, text: 'H-TOWN' },
+          stripe: [[LB, 1, W], [W, 0.25], [RED, 2.8], [W, 0.25], [LB, 1, W]], nameplate: { bg: W, fg: LB, text: 'H-TOWN', rear: { bg: W, fg: LB, text: 'TEXANS' } },
           logo: { ...H, fill: '#E9ECF0', stroke: LB, stroke2: RED } },
       ],
       jerseys: [
@@ -987,7 +998,7 @@ export const TEAMS = [
     const hem = (a, b) => ({ stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], from: 1.6 });
     const sock = (base, a, b) => ({ base, stripes: [[a, 0.8], [b, 0.5], [a, 0.8], [b, 0.5], [a, 0.8]], stripesFrom: 13, lower: [W, 20] });
     // the "GSH" (George Stanley Halas) memorial patch on the player's left sleeve
-    const gsh = (c) => ({ L: 'GSH', R: '', c, font: 'collegeSlab' });
+    const gsh = (c) => ({ L: 'GSH', R: '', c, font: 'collegeSlab', h: 0.04 });
     return {
       id: 'CHI', city: 'Chicago', name: 'Bears', conf: 'NFC', div: 'North',
       colors: [NAVY, OR, W], font: 'bears',
@@ -1047,7 +1058,7 @@ export const TEAMS = [
         { id: 'throwback', name: 'Throwback', tag: 'Throwback', base: HB, num: [SIL], numStyle: 'twill', font: 'chiefs' },
         { id: 'concrete', name: 'Concrete Rivalries', tag: 'Rivalries · New', debut: '2026-11-01', base: CON, num: ['#202225', HB], numO: [0.035, 0], font: 'lionsItalic', numPattern: { t: 'lines', c: '#3A3D42', step: 0.03, w: 0.5 }, tv: 'shoulder', plateOutline: [HB], word: { s: 'DETROIT', c: HB, font: 'italic' },
           neckTag: { s: 'DEFEND THE DEN', c: HB, at: 'inside' },
-          loop: [[HB, 1], [BK, 2.4]], loopAt: 18 },
+          loop: [[HB, 1], [BK, 2.4]], loopAt: 18, loopWeave: { c: '#34373C' } },
       ],
       pants: [
         { id: 'blue', name: 'Honolulu Blue', base: HB },

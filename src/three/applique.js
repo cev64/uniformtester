@@ -163,14 +163,16 @@ export function buildApplique(layers, { style = 'twill', pxPerMm = 2, halo = tru
     ctx.drawImage(l.face || tintMask(l.mask, l.color || '#fff'), 0, 0);
     if (S.stitch && l.stitch === 'straight' && sds[i]) {
       // a straight lock stitch a few mm inside the edge (nameplate strips)
-      const inset = 3 * pxPerMm, lw = Math.max(0.6, 0.3 * pxPerMm);
+      // stitchW: thread width factor (default 1)
+      const inset = 3 * pxPerMm, lw = Math.max(0.6, 0.3 * pxPerMm * (l.stitchW ?? 1));
       const lines = contours(grow(sds[i], -inset), W, H, Math.max(1, Math.round(pxPerMm * 0.6)));
       for (const g of [ctx, tctx]) {
         g.save();
         g.setLineDash([2.2 * pxPerMm, 0.9 * pxPerMm]);
         g.strokeStyle = g === ctx ? (l.thread || l.color || '#fff') : '#fff';
         g.lineWidth = lw;
-        if (g === ctx) g.filter = 'brightness(1.08)';
+        if (g === ctx && l.stitchW == null) g.filter = 'brightness(1.08)';
+        if (g !== ctx && l.stitchW != null) g.globalAlpha = l.stitchW * 0.6;
         for (const ln of lines) { g.beginPath(); ln.forEach((q, k) => (k ? g.lineTo(...q) : g.moveTo(...q))); g.closePath(); g.stroke(); }
         g.restore();
       }

@@ -20,6 +20,10 @@ import { signedDistance, grow, cpuCanvas, alphaOf, maskCanvas } from './sdf.js';
 // rt: terminal corner radius, cut: 'round' | 'chamfer', slant (x per y),
 // one: { flag, base, bw? (foot width, default tv + 0.2) }, four: 'closed' | 'open', seven: 'diag' | 'stem',
 // notch: waist notches on 3 and 8, gap: spacing between digits.
+// Opt-in (default off): waist: corner radius where the two bowls of 3 and 8 meet (builds them as two
+// stacked bowls, pinched at the waist); topIn: the upper bowl of 3 and 8 is this much narrower on each
+// side (needs waist); termCut: the 3's terminals are cut on a slant instead of square (0..1, how far
+// the cut rises from the outer edge toward the counter).
 const BASE = {
   W: 0.6, th: 0.165, tv: 0.19, m: 0.53, hook: 0.2, ro: 0.1, ri: 0.04, rt: 0.02, cut: 'round',
   slant: 0, one: { flag: 0.16, base: true }, four: 'closed', seven: 'diag', notch: 0.35, gap: 0.08, twoWaist: 0.44,
@@ -65,7 +69,9 @@ export const NUMERAL_STYLES = {
   eagles: { cut: 'chamfer', ro: 0.09, ri: 0.03, rt: 0.02, W: 0.5, th: 0.19, tv: 0.185, slant: 0.04, one: { flag: 0.3, base: true } },
   // Ravens: tall, narrow, angular cuts
   // (Ravens sheet: thick sides, hairline-thin tops and bottoms, elliptical bowls, footed 1 with a long flag)
-  ravens: { W: 0.55, th: 0.12, tv: 0.18, ro: 0.27, ri: 0.14, rt: 0.02, notch: 0, hook: 0.2, one: { flag: 0.15, base: true } },
+  // (2026 launch photos: the 8 is two stacked bowls with a pinched waist, the upper one narrower;
+  // terminals are cut on a slant)
+  ravens: { W: 0.55, th: 0.12, tv: 0.18, ro: 0.27, ri: 0.14, rt: 0.02, notch: 0, hook: 0.2, waist: 0.15, topIn: 0.025, termCut: 0.6, one: { flag: 0.15, base: true } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
 
@@ -184,6 +190,14 @@ function digit(d, S) {
   const e = 0.02; // overshoot so erasers cut cleanly through edges
   const notch = S.notch * tv;
   let width = W;
+  // 3 and 8: one rounded block, or (opt-in waist) two stacked bowls pinched where they meet
+  const ti = S.waist ? (S.topIn || 0) : 0;
+  const body = () => {
+    if (!S.waist) { add(R(0, 0, W, 1, ro)); return; }
+    const ov = 0.015;
+    add(R(0, 0, W, m + ov, [S.waist, S.waist, ro, ro]));
+    add(R(ti, m - ov, W - 2 * ti, 1 - m + ov, [ro, ro, S.waist, S.waist]));
+  };
   switch (d) {
     case '0':
       if (S.zero === 'texans') {
@@ -220,11 +234,20 @@ function digit(d, S) {
       break;
     }
     case '3':
-      add(R(0, 0, W, 1, ro));
-      sub(R(tv, m + th / 2, W - 2 * tv, 1 - th - m - th / 2, ri));
+      body();
+      sub(R(tv + ti, m + th / 2, W - 2 * tv - 2 * ti, 1 - th - m - th / 2, ri));
       sub(R(tv, th, W - 2 * tv, m - th / 2 - th, ri));
-      sub(rect(-e, m + th / 2, tv + ri + e, 1 - th - hook - m - th / 2));
-      sub(rect(-e, th + hookL, tv + ri + e, m - th / 2 - th - hookL));
+      if (S.termCut) {
+        // slanted terminal cuts: the end hangs lower on the outside than at the counter
+        const c = S.termCut, x1 = tv + ti + ri + e;
+        const yO = 1 - th - hook * (1 + c / 2), yI = 1 - th - hook * (1 - c);
+        sub(poly([[-e, m + th / 2], [x1, m + th / 2], [x1, yI], [tv + ti, yI], [-e, yO - (yI - yO) * (e / (tv + ti))]]));
+        const bO = th + hookL * (1 + c / 2), bI = th + hookL * (1 - c);
+        sub(poly([[-e, m - th / 2], [x1, m - th / 2], [x1, bI], [tv, bI], [-e, bO + (bO - bI) * (e / tv)]]));
+      } else {
+        sub(rect(-e, m + th / 2, tv + ri + e, 1 - th - hook - m - th / 2));
+        sub(rect(-e, th + hookL, tv + ri + e, m - th / 2 - th - hookL));
+      }
       sub(rect(-e, m - th / 2 - e, W * 0.3 + e, th + 2 * e));
       if (notch) sub(poly([[W + e, m + notch], [W - notch, m], [W + e, m - notch]]));
       break;
@@ -256,8 +279,8 @@ function digit(d, S) {
       else add(poly([[W - tv * 1.1, 1 - th + 0.005], [W, 1 - th + 0.005], [W, 1 - th - 0.05], [W * 0.34 + tv * 1.12, 0], [W * 0.34, 0]]));
       break;
     case '8':
-      add(R(0, 0, W, 1, ro));
-      sub(R(tv, m + th / 2, W - 2 * tv, 1 - th - m - th / 2, ri));
+      body();
+      sub(R(tv + ti, m + th / 2, W - 2 * tv - 2 * ti, 1 - th - m - th / 2, ri));
       sub(R(tv, th, W - 2 * tv, m - th / 2 - th, ri));
       if (notch) {
         sub(poly([[-e, m + notch], [notch, m], [-e, m - notch]]));

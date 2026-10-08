@@ -354,15 +354,16 @@ export function paintLogo(logo, facing, size = 512) {
       fillStroke(ctx, (g) => starPath(g, cx, cy + S * 0.03, S * 0.44, S * 0.18), logo.fill, logo.stroke, S * 0.04, logo.stroke2, S * 0.02);
       break;
     case 'streak': {
-      // Bills "Charge": a long red streak sweeping from the brow to the back
+      // Bills "Charge": a long red streak sweeping from the brow (+x, narrow) down to the back,
+      // where it is thickest (BUF sheet)
       ctx.save();
       ctx.translate(cx, cy);
       ctx.scale(dirX, 1);
       const path = (g) => {
-        g.moveTo(0.5 * S, -0.1 * S);
-        g.lineTo(-0.5 * S, -0.02 * S);
-        g.lineTo(-0.5 * S, 0.1 * S);
-        g.lineTo(0.5 * S, 0.06 * S);
+        g.moveTo(0.5 * S, -0.075 * S);
+        g.lineTo(-0.5 * S, -0.05 * S);
+        g.lineTo(-0.5 * S, 0.115 * S);
+        g.lineTo(0.5 * S, 0.01 * S);
         g.closePath();
       };
       fillStroke(ctx, path, logo.fill, logo.stroke, S * 0.03);
