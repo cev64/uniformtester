@@ -603,14 +603,46 @@ export class Player {
       }
     }
 
-    // Cleats: a contrasting swoosh on the outside of each shoe
-    const cs = new THREE.CanvasTexture(swooshCanvas(luminance(cleatColor) > 0.5 ? '#161616' : '#f2f2f2'));
-    cs.colorSpace = THREE.SRGBColorSpace; this.textures.push(cs);
+    // Cleats: a contrasting swoosh on the outside of each shoe. On a Nike
+    // Vapor the lateral swoosh is ~14 cm long (about 45% of the outsole): the
+    // hook sits low at the midfoot just above the plate, leading toward the
+    // toe, and the tail sweeps back and up toward the heel counter. The
+    // artwork is mirrored on the right shoe so it reads that way on both feet.
+    const csCol = luminance(cleatColor) > 0.5 ? '#161616' : '#f2f2f2';
+    const studs = this.meshes.stud || [];
+    const v = new THREE.Vector3();
     for (const s of ['L', 'R']) {
-      const f = this.J[`foot.${s}`];
-      const sx = Math.sign(f.x);
-      const hit = this.raycast(cleats, new THREE.Vector3(sx * 0.6, 0.05, f.z + 0.03), new THREE.Vector3(-sx, 0, 0));
-      this.decal(cleats, hit, 0.1, 0.05, cs, { minDot: 0.2 });
+      const sx = Math.sign(this.J[`foot.${s}`].x);
+      // heel, toe and turf of this shoe from its vertices (the feet toe out a little)
+      let heel = null, toe = null, turf = Infinity;
+      for (const mesh of [...cleats, ...studs]) {
+        const pos = mesh.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+          if (Math.sign(v.x) !== sx) continue;
+          turf = Math.min(turf, v.y);
+          if (!cleats.includes(mesh)) continue;
+          if (!heel || v.z < heel.z) heel = v.clone();
+          if (!toe || v.z > toe.z) toe = v.clone();
+        }
+      }
+      if (!heel) continue;
+      const fwd = new THREE.Vector3(toe.x - heel.x, 0, toe.z - heel.z);
+      const len = fwd.length();
+      fwd.normalize();
+      const out = new THREE.Vector3(fwd.z, 0, -fwd.x);   // lateral side
+      if (out.x * sx < 0) out.negate();
+      const artLen = 0.45 * len;                 // tip of the tail to the front of the hook
+      const canvas = swooshCanvas(csCol, 256, { mirror: sx < 0 });
+      const t = new THREE.CanvasTexture(canvas);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = this.aniso; this.textures.push(t);
+      // the artwork spans 24/26 of the canvas's 2.08 × px width (see swooshCanvas)
+      const wM = artLen / ((2 * 24 / 26) / 2.08), hM = wM * canvas.height / canvas.width;
+      // centre ~36% of the way from the heel, hook ~1 cm above the plate lip
+      const at = heel.clone().addScaledVector(fwd, 0.36 * len);
+      at.y = turf + 0.033 + hM / 2;
+      const hit = this.raycast(cleats, at.clone().addScaledVector(out, 0.4), out.clone().negate());
+      this.decal(cleats, hit, wM, hM, t, { minDot: 0.15, depth: 0.08 });
     }
   }
 }
