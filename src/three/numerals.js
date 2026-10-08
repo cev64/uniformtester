@@ -12,18 +12,27 @@
 // outline width (so corners follow the digit), stacked under the fill.
 
 import { makeCanvas } from './paint.js';
+import { signedDistance, grow, cpuCanvas, alphaOf, maskCanvas } from './sdf.js';
 
 // ─── styles ────────────────────────────────────────────────────────────
 // W: digit width, th / tv: horizontal / vertical stroke, m: waist height,
 // hook: terminal length on 2 3 5 6 9, ro / ri: outer / counter corner radius,
 // rt: terminal corner radius, cut: 'round' | 'chamfer', slant (x per y),
-// one: { flag, base }, four: 'closed' | 'open', seven: 'diag' | 'stem',
+// one: { flag, base, bw? (foot width, default tv + 0.2) }, four: 'closed' | 'open', seven: 'diag' | 'stem',
 // notch: waist notches on 3 and 8, gap: spacing between digits.
+// Opt-in (default off): waist: corner radius where the two bowls of 3 and 8 meet (builds them as two
+// stacked bowls, pinched at the waist); topIn: the upper bowl of 3 and 8 is this much narrower on each
+// side (needs waist); termCut: the 3's terminals are cut on a slant instead of square (0..1, how far
+// the cut rises from the outer edge toward the counter).
 const BASE = {
   W: 0.6, th: 0.165, tv: 0.19, m: 0.53, hook: 0.2, ro: 0.1, ri: 0.04, rt: 0.02, cut: 'round',
   slant: 0, one: { flag: 0.16, base: true }, four: 'closed', seven: 'diag', notch: 0.35, gap: 0.08, twoWaist: 0.44,
 };
 
+// Digit widths (W) of chiefs, chargers, cowboys, eagles, dolphins, browns, texans, lions, giants, falcons, saints,
+// panthers and niners were measured on straight-on back photos (research/backs.md; outer digit width / height, P5 review).
+// Round 4: packers (10: 0.84), vikings (18: ~0.94), commanders (13: ~0.78), jaguars (65: 1.13), cardinals (18: ~0.74) narrowed the same way;
+// patriots (12: 1.04) and broncos (43: 1.20) already matched their photos. Raiders, titans, seahawks: no full-number photo.
 export const NUMERAL_STYLES = {
   // Pro block: Packers, Chiefs, Bills, Cowboys, Giants, Raiders, 49ers, Colts, Bucs, Browns
   block: {},
@@ -34,11 +43,11 @@ export const NUMERAL_STYLES = {
   // Chamfered block (Jets, Falcons, Commanders)
   chamfer: { cut: 'chamfer', ro: 0.13, ri: 0.05, rt: 0.03, one: { flag: 0.16, base: false } },
   // Chiefs: squared block with clipped corners and a footed 1
-  chiefs: { cut: 'chamfer', ro: 0.09, ri: 0.035, rt: 0.02, one: { flag: 0.17, base: true } },
+  chiefs: { cut: 'chamfer', W: 0.5, tv: 0.18, gap: 0.09, ro: 0.09, ri: 0.035, rt: 0.02, one: { flag: 0.1, base: true, bw: 0.32 } },
   // Cowboys road/Color Rush: square block with a footed 1
-  cowboys: { ro: 0.05, ri: 0.02, rt: 0.01, W: 0.56, one: { flag: 0.17, base: true } },
+  cowboys: { cut: 'chamfer', W: 0.48, th: 0.18, tv: 0.17, ro: 0.08, ri: 0.03, rt: 0.01, one: { flag: 0.12, base: true } },
   // Vikings: wide and heavy with square counters and a footed 1
-  vikings: { W: 0.64, th: 0.2, tv: 0.25, ro: 0.1, ri: 0.02, rt: 0.02, notch: 0.4, one: { flag: 0.18, base: true } },
+  vikings: { W: 0.55, th: 0.17, tv: 0.18, ro: 0.15, ri: 0.02, rt: 0.02, notch: 0.4, gap: 0.05, one: { flag: 0.1, base: true, bw: 0.3 } },
   // Rams 2020s: heavy rounded set with a slight lean
   rams: { W: 0.56, th: 0.2, tv: 0.23, ro: 0.22, ri: 0.1, rt: 0.06, slant: 0.07, one: { flag: 0.17, base: false } },
   // Titans 2026 (Oilers lineage): octagonal block, based 1
@@ -48,21 +57,83 @@ export const NUMERAL_STYLES = {
   // Bengals: tall, narrow, oval bowls
   bengals: { W: 0.52, th: 0.16, tv: 0.2, ro: 0.26, ri: 0.15, rt: 0.03, one: { flag: 0.16, base: false } },
   // Chargers: round block set italic
-  chargers: { ro: 0.2, ri: 0.1, rt: 0.05, th: 0.19, tv: 0.21, one: { flag: 0.17, base: false }, slant: 0.17 },
+  chargers: { W: 0.48, ro: 0.2, ri: 0.1, rt: 0.05, th: 0.19, tv: 0.165, one: { flag: 0.17, base: false }, slant: 0.17 },
   // Bears: condensed with round corners
-  bears: { W: 0.5, th: 0.17, tv: 0.18, ro: 0.2, ri: 0.1, rt: 0.05, hook: 0.18, one: { flag: 0.13, base: false }, gap: 0.07 },
+  bears: { W: 0.37, th: 0.1, tv: 0.105, ro: 0.185, ri: 0.08, rt: 0.05, hook: 0.14, notch: 0, one: { flag: 0, base: false }, gap: 0.09 },
   // Steelers: Futura-like, fully round bowls
   futura: { W: 0.55, th: 0.19, tv: 0.21, ro: 0.275, ri: 0.18, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0 },
-  // Steelers: the same rounds, set italic and a touch narrower
-  steelers: { W: 0.52, th: 0.19, tv: 0.21, ro: 0.26, ri: 0.17, rt: 0.1, one: { flag: 0.12, base: false }, four: 'open', notch: 0, slant: 0.16 },
+  // Steelers: tall stadium-shaped rounds, UPRIGHT (the Commons sheet draws them slanted; shop
+  // and game photos of the Elite jersey and practice jerseys show an upright face).
+  steelers: { W: 0.48, th: 0.17, tv: 0.185, ro: 0.24, ri: 0.1, rt: 0.08, one: { flag: 0.12, base: false }, four: 'open', notch: 0, gap: 0.06 },
   // Sharp, angular sets with notched waists (Vikings, Titans, Panthers, Broncos, Cardinals)
   angular: { cut: 'chamfer', ro: 0.17, ri: 0.03, rt: 0.02, notch: 0.6, one: { flag: 0.2, base: false }, slant: 0.04 },
   // Eagles: angular, slightly italic
-  eagles: { cut: 'chamfer', ro: 0.1, ri: 0.03, rt: 0.02, slant: 0.03, one: { flag: 0.18, base: true } },
+  eagles: { cut: 'chamfer', ro: 0.09, ri: 0.03, rt: 0.02, W: 0.5, th: 0.19, tv: 0.185, slant: 0.04, one: { flag: 0.3, base: true } },
   // Ravens: tall, narrow, angular cuts
-  ravens: { W: 0.5, th: 0.16, tv: 0.2, ro: 0.25, ri: 0.14, rt: 0.02, notch: 0, one: { flag: 0.16, base: false } },
+  // (Ravens sheet: thick sides, hairline-thin tops and bottoms, elliptical bowls, footed 1 with a long flag)
+  // (2026 launch photos: the 8 is two stacked bowls with a pinched waist, the upper one narrower;
+  // terminals are cut on a slant)
+  ravens: { W: 0.55, th: 0.12, tv: 0.18, ro: 0.27, ri: 0.14, rt: 0.02, notch: 0, hook: 0.2, waist: 0.15, topIn: 0.025, termCut: 0.6, one: { flag: 0.15, base: true } },
   // Italic pro block (Chargers powder-blue era, Bucs throwback)
   italic: { slant: 0.2, ro: 0.1, ri: 0.04 },
+
+  // ── team styles: AFC East + AFC North ──
+  // Jets 2024: chamfered heavy block, octagonal 0, footed 1 with a long flag
+  jets: { cut: 'chamfer', W: 0.62, th: 0.2, tv: 0.235, ro: 0.12, ri: 0.04, rt: 0.02, one: { flag: 0.16, base: true } },
+  // Jets Gotham City FC: the same block, softened and slightly rough-cut
+  gotham: { W: 0.58, th: 0.2, tv: 0.22, ro: 0.2, ri: 0.1, rt: 0.06, slant: 0.03, one: { flag: 0.14, base: false } },
+  // Dolphins 2018+: heavy rounded-square block, flat-topped 2 and 5, no hook on the 1
+  dolphins: { W: 0.5, th: 0.2, tv: 0.18, ro: 0.14, ri: 0.05, rt: 0.03, one: { flag: 0.15, base: false } },
+  // Patriots: pro block with small clipped (chamfered) corners all round
+  patriots: { cut: 'chamfer', W: 0.6, th: 0.17, tv: 0.2, ro: 0.1, ri: 0.035, rt: 0.025, one: { flag: 0.17, base: false } },
+  // Browns: heavy squared block, tight corners, heavy verticals
+  browns: { W: 0.56, th: 0.17, tv: 0.2, ro: 0.06, ri: 0.02, rt: 0.01, hook: 0.18, one: { flag: 0.16, base: false } },
+
+  // ── team styles: AFC South + AFC West ──
+  // Colts: heavy block with big clipped outer corners, tiny clipped counters, footed 1
+  colts: { cut: 'chamfer', ro: 0.16, ri: 0.03, rt: 0.01, th: 0.175, tv: 0.18, one: { flag: 0.1, base: true } },
+  // Broncos: tall, narrow rounded block with a flagged 1
+  broncos: { W: 0.54, th: 0.15, tv: 0.17, ro: 0.2, ri: 0.07, rt: 0.04, notch: 0, one: { flag: 0.12, base: false } },
+  // Jaguars: squared counters inside clipped outer corners, flagged 1 without a foot
+  jaguars: { cut: 'chamfer', W: 0.54, ro: 0.12, ri: 0.0, rt: 0.01, th: 0.17, tv: 0.19, gap: 0.06, one: { flag: 0.12, base: false }, seven: 'stem' },
+  // Titans Rivalries (Music City): rounded neon-tube numerals with a white inline stripe in every stroke
+  titansNeon: { W: 0.52, th: 0.21, tv: 0.21, ro: 0.26, ri: 0.13, rt: 0.07, notch: 0, one: { flag: 0.14, base: true }, inline: { c: '#FFFFFF', d: 0.09 } },
+  // Texans 2024+: very heavy block, the 0 has a diagonal cut top-left and a rounded bottom-right corner, flagged 1 without a foot
+  texans: { cut: 'chamfer', W: 0.6, th: 0.22, tv: 0.225, ro: 0.1, ri: 0.0, rt: 0.02, notch: 0.4, gap: 0.1, one: { flag: 0.22, base: false }, zero: 'texans' },
+  // Texans Rivalries: the same heavy block cut square, no clipped corners
+  texansRiv: { W: 0.66, th: 0.2, tv: 0.26, ro: 0.015, ri: 0.0, rt: 0.01, notch: 0.4, gap: 0.08, one: { flag: 0.2, base: false } },
+  // Raiders: heavy squared block, clipped outer corners, sharp square counters, footed 1 (2021 and 2025 game photos)
+  raiders: { cut: 'chamfer', W: 0.6, th: 0.18, tv: 0.215, ro: 0.11, ri: 0.0, rt: 0.01, one: { flag: 0.17, base: true } },
+
+  // ── team styles: NFC East + NFC North ──
+  // Lions Rivalries: chamfered pro block leaning forward ("italicised numerals")
+  // Lions 2024+: wide octagonal block, big clipped outer corners, short flag and a heavy foot on the 1
+  lions: { cut: 'chamfer', W: 0.58, th: 0.19, tv: 0.19, ro: 0.15, ri: 0.035, rt: 0.02, one: { flag: 0.08, base: true, bw: 0.3 } },
+  // Giants: heavy block with clipped outer corners, flagged and footed 1
+  giants: { cut: 'chamfer', W: 0.53, th: 0.19, tv: 0.18, ro: 0.1, ri: 0.03, rt: 0.015, one: { flag: 0.14, base: true } },
+  // Commanders: octagonal 0 (big chamfers), stepped flag and wide foot on the 1
+  commanders: { cut: 'chamfer', W: 0.42, th: 0.15, tv: 0.15, ro: 0.11, ri: 0.03, rt: 0.02, gap: 0.05, one: { flag: 0.1, base: true, bw: 0.3 } },
+  // Packers: wide block with clipped corners and a footed 1
+  packers: { cut: 'chamfer', W: 0.47, th: 0.15, tv: 0.16, ro: 0.11, ri: 0.03, rt: 0.02, gap: 0.05, one: { flag: 0.08, base: true, bw: 0.3 } },
+  lionsItalic: { cut: 'chamfer', ro: 0.12, ri: 0.04, rt: 0.02, slant: 0.2, one: { flag: 0.17, base: true } },
+
+  // ── team styles: NFC South + NFC West ──
+  // Falcons 2026 (traced from the club's number-set graphic): upright heavy block, near-square outer corners with tiny
+  // chamfers, square counters, flagged 1 with no foot, waist bites on 3 and 8
+  falcons: { cut: 'chamfer', W: 0.57, th: 0.17, tv: 0.2, m: 0.5, ro: 0.055, ri: 0.02, rt: 0.03, hook: 0.2, notch: 0.4, twoWaist: 0.42, one: { flag: 0.23, base: false } },
+  // Saints: square block with clipped corners (big chamfers on 0 6 8 9) and a footed 1
+  saints: { cut: 'chamfer', W: 0.5, th: 0.18, tv: 0.18, ro: 0.15, ri: 0.04, rt: 0.02, one: { flag: 0.17, base: true } },
+  // Buccaneers: heavy block with clipped corners, notched 1 foot
+  bucs: { cut: 'chamfer', W: 0.6, th: 0.185, tv: 0.215, ro: 0.12, ri: 0.04, rt: 0.02, one: { flag: 0.17, base: true } },
+  // Panthers: block with clipped (octagonal) corners on 0 6 8 9, footed flagged 1, narrow rectangular counters
+  panthers: { cut: 'chamfer', W: 0.51, th: 0.165, tv: 0.17, ro: 0.13, ri: 0.035, rt: 0.02, one: { flag: 0.17, base: true } },
+  // Cardinals: heavy collegiate block, mild clipped corners, footed 1 (traced from the 2025 sheet)
+  cardinals: { cut: 'chamfer', W: 0.44, th: 0.17, tv: 0.17, ro: 0.09, ri: 0.03, rt: 0.02, gap: 0.06, one: { flag: 0.08, base: false } },
+  // 49ers: clean square-shouldered block, tiny clipped corners, no foot on the 1
+  niners: { cut: 'chamfer', W: 0.52, th: 0.2, tv: 0.18, ro: 0.06, ri: 0.02, rt: 0.015, one: { flag: 0.17, base: false } },
+  // Seahawks: heavy block with clipped outer corners and square counters
+  seahawks: { cut: 'chamfer', W: 0.62, th: 0.19, tv: 0.215, ro: 0.1, ri: 0.015, rt: 0.02, one: { flag: 0.16, base: false } },
+
 };
 
 export function numeralStyle(key) {
@@ -121,14 +192,33 @@ function digit(d, S) {
   const e = 0.02; // overshoot so erasers cut cleanly through edges
   const notch = S.notch * tv;
   let width = W;
+  // 3 and 8: one rounded block, or (opt-in waist) two stacked bowls pinched where they meet
+  const ti = S.waist ? (S.topIn || 0) : 0;
+  const body = () => {
+    if (!S.waist) { add(R(0, 0, W, 1, ro)); return; }
+    const ov = 0.015;
+    add(R(0, 0, W, m + ov, [S.waist, S.waist, ro, ro]));
+    add(R(ti, m - ov, W - 2 * ti, 1 - m + ov, [ro, ro, S.waist, S.waist]));
+  };
   switch (d) {
     case '0':
+      if (S.zero === 'texans') {
+        // opt-in (Texans): top-left corner cut on the diagonal, bottom-right corner rounded, the others square
+        const cutC = ro * 1.5, rr = ro * 2.2;
+        add((g) => {
+          g.moveTo(0, 0); g.lineTo(W - rr, 0);
+          g.arc(W - rr, rr, rr, -Math.PI / 2, 0);
+          g.lineTo(W, 1); g.lineTo(cutC, 1); g.lineTo(0, 1 - cutC); g.closePath();
+        });
+        sub(R(tv, th, W - 2 * tv, 1 - 2 * th, ri));
+        break;
+      }
       add(R(0, 0, W, 1, ro));
       sub(R(tv, th, W - 2 * tv, 1 - 2 * th, ri));
       break;
     case '1': {
       const { flag, base } = S.one;
-      const bw = base ? tv + 0.2 : 0;
+      const bw = base ? (S.one.bw ?? tv + 0.2) : 0;
       const xc = Math.max(flag + tv / 2, bw / 2);
       width = Math.max(xc + tv / 2, xc + bw / 2);
       add(R(xc - tv / 2, 0, tv, 1, [0, rt, base ? 0 : rt, base ? 0 : rt]));
@@ -146,11 +236,20 @@ function digit(d, S) {
       break;
     }
     case '3':
-      add(R(0, 0, W, 1, ro));
-      sub(R(tv, m + th / 2, W - 2 * tv, 1 - th - m - th / 2, ri));
+      body();
+      sub(R(tv + ti, m + th / 2, W - 2 * tv - 2 * ti, 1 - th - m - th / 2, ri));
       sub(R(tv, th, W - 2 * tv, m - th / 2 - th, ri));
-      sub(rect(-e, m + th / 2, tv + ri + e, 1 - th - hook - m - th / 2));
-      sub(rect(-e, th + hookL, tv + ri + e, m - th / 2 - th - hookL));
+      if (S.termCut) {
+        // slanted terminal cuts: the end hangs lower on the outside than at the counter
+        const c = S.termCut, x1 = tv + ti + ri + e;
+        const yO = 1 - th - hook * (1 + c / 2), yI = 1 - th - hook * (1 - c);
+        sub(poly([[-e, m + th / 2], [x1, m + th / 2], [x1, yI], [tv + ti, yI], [-e, yO - (yI - yO) * (e / (tv + ti))]]));
+        const bO = th + hookL * (1 + c / 2), bI = th + hookL * (1 - c);
+        sub(poly([[-e, m - th / 2], [x1, m - th / 2], [x1, bI], [tv, bI], [-e, bO + (bO - bI) * (e / tv)]]));
+      } else {
+        sub(rect(-e, m + th / 2, tv + ri + e, 1 - th - hook - m - th / 2));
+        sub(rect(-e, th + hookL, tv + ri + e, m - th / 2 - th - hookL));
+      }
       sub(rect(-e, m - th / 2 - e, W * 0.3 + e, th + 2 * e));
       if (notch) sub(poly([[W + e, m + notch], [W - notch, m], [W + e, m - notch]]));
       break;
@@ -182,8 +281,8 @@ function digit(d, S) {
       else add(poly([[W - tv * 1.1, 1 - th + 0.005], [W, 1 - th + 0.005], [W, 1 - th - 0.05], [W * 0.34 + tv * 1.12, 0], [W * 0.34, 0]]));
       break;
     case '8':
-      add(R(0, 0, W, 1, ro));
-      sub(R(tv, m + th / 2, W - 2 * tv, 1 - th - m - th / 2, ri));
+      body();
+      sub(R(tv + ti, m + th / 2, W - 2 * tv - 2 * ti, 1 - th - m - th / 2, ri));
       sub(R(tv, th, W - 2 * tv, m - th / 2 - th, ri));
       if (notch) {
         sub(poly([[-e, m + notch], [notch, m], [-e, m - notch]]));
@@ -214,26 +313,8 @@ function drawDigitMask(ctx, D, S, x0, baseY, px) {
   ctx.globalCompositeOperation = 'source-over';
 }
 
-// grow an alpha mask by r pixels (round kernel)
-function dilate(src, r) {
-  const c = makeCanvas(src.width, src.height);
-  const ctx = c.getContext('2d');
-  ctx.drawImage(src, 0, 0);
-  if (r <= 0) return c;
-  const rings = Math.max(1, Math.ceil(r / 6));
-  for (let k = 1; k <= rings; k++) {
-    const rr = (r * k) / rings;
-    const n = Math.max(12, Math.ceil(rr * 1.6));
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      ctx.drawImage(src, Math.cos(a) * rr, Math.sin(a) * rr);
-    }
-  }
-  return c;
-}
-
 function tint(mask, color) {
-  const c = makeCanvas(mask.width, mask.height);
+  const c = cpuCanvas(mask.width, mask.height);
   const ctx = c.getContext('2d');
   ctx.drawImage(mask, 0, 0);
   ctx.globalCompositeOperation = 'source-in';
@@ -292,7 +373,10 @@ export function numeralPattern(p) {
   };
 }
 
-export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, shadow = null, fillPattern = null, px = 300 } = {}) {
+// The number as a stack of twill layers, bottom to top: drop shadow, outer
+// outline, inner outline, face. Each layer is an alpha mask the size of the
+// final canvas; the face may carry a printed pattern.
+export function numeralLayers(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, shadow = null, fillPattern = null, px = 300 } = {}) {
   const S = numeralStyle(styleKey) || numeralStyle('block');
   const digits = [...String(text)].map((ch) => digit(ch, S)).filter(Boolean);
   if (!digits.length) return null;
@@ -304,11 +388,11 @@ export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, s
   const slantPad = Math.abs(S.slant) * px;
   const W = Math.ceil(adv * px + slantPad + pad * 2), H = Math.ceil(px + pad * 2);
 
-  const mask = makeCanvas(W, H);
+  let mask = cpuCanvas(W, H);
   const mctx = mask.getContext('2d');
   mctx.fillStyle = '#000';
   let x = pad + (S.slant < 0 ? slantPad : 0);
-  const one = makeCanvas(W, H);
+  const one = cpuCanvas(W, H);
   const octx = one.getContext('2d');
   octx.fillStyle = '#000';
   for (const D of digits) {
@@ -319,14 +403,46 @@ export function numeralCanvas(text, colors, styleKey, { o1 = 0.05, o2 = 0.045, s
     x += (D.width + S.gap) * px;
   }
 
-  const out = makeCanvas(W, H);
-  const ctx = out.getContext('2d');
-  const outer = w2 ? dilate(mask, w1 + w2) : w1 ? dilate(mask, w1) : mask;
-  if (shadow) ctx.drawImage(tint(outer, shadow.color), sh.dx, sh.dy);
-  if (w2) ctx.drawImage(tint(outer, c2), 0, 0);
-  if (w1) ctx.drawImage(tint(dilate(mask, w1), c1), 0, 0);
+  // outlines are the digit grown by the outline widths (round corners, like
+  // twill cut around the layer above it)
+  // rebuild the face from its distance field: shapes drawn in pieces leave
+  // hairline seams in the alpha where they meet
+  const sd = signedDistance(alphaOf(mask), W, H);
+  const a0 = grow(sd, 0);
+  mask = maskCanvas(a0, W, H);
+  const layers = [];
+  const aOuter = sd ? grow(sd, w1 + w2) : a0;
+  if (shadow) {
+    const a = new Float32Array(W * H);
+    const dx = Math.round(sh.dx), dy = Math.round(sh.dy);
+    for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
+      const sx = xx - dx, sy = y - dy;
+      if (sx >= 0 && sy >= 0 && sx < W && sy < H) a[y * W + xx] = aOuter[sy * W + sx];
+    }
+    layers.push({ alpha: a, mask: maskCanvas(a, W, H), color: shadow.color });
+  }
+  // grown layers' distance fields are the face's, offset (exact for a dilation)
+  const offset = (r) => { const o = new Float32Array(W * H); for (let i = 0; i < W * H; i++) o[i] = sd[i] - r; return o; };
+  if (w2) layers.push({ alpha: aOuter, sd: offset(w1 + w2), mask: maskCanvas(aOuter, W, H), color: c2 });
+  if (w1) { const a = grow(sd, w1); layers.push({ alpha: a, sd: offset(w1), mask: maskCanvas(a, W, H), color: c1 }); }
   const face = tint(mask, fill);
+  if (S.inline) {
+    // neon-tube numerals: a thin inline stripe down the middle of every stroke (the face eroded by d)
+    const hex = S.inline.c.replace('#', '');
+    const rgb = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    face.getContext('2d').drawImage(maskCanvas(grow(sd, -S.inline.d * px), W, H, rgb), 0, 0);
+  }
   if (fillPattern) fillPattern(face.getContext('2d'), W, H, px);
-  ctx.drawImage(face, 0, 0);
-  return { canvas: out, aspect: W / H, inkHeight: px / H };
+  layers.push({ alpha: a0, sd, mask, color: fill, face });
+  // inkW: width of the digits with their outlines, without the padding (back-number width cap)
+  return { layers, W, H, aspect: W / H, inkHeight: px / H, px, inkW: adv * px + slantPad + 2 * (w1 + w2) };
+}
+
+export function numeralCanvas(text, colors, styleKey, opts = {}) {
+  const L = numeralLayers(text, colors, styleKey, opts);
+  if (!L) return null;
+  const out = cpuCanvas(L.W, L.H);
+  const ctx = out.getContext('2d');
+  for (const l of L.layers) ctx.drawImage(l.face || tint(l.mask, l.color), 0, 0);
+  return { canvas: out, aspect: L.aspect, inkHeight: L.inkHeight, layers: L.layers, px: L.px };
 }

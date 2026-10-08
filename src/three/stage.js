@@ -22,7 +22,7 @@ export class Stage {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    renderer.toneMappingExposure = 1.1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.setClearColor(0x000000, 0);
@@ -33,25 +33,31 @@ export class Stage {
     this.scene = scene;
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    scene.environmentIntensity = 0.42;
+    scene.environmentIntensity = 0.5;
 
-    // Stadium-light rig: warm key, cool rim, soft fill
-    const key = new THREE.DirectionalLight(0xfff3e2, 1.9);
-    key.position.set(2.2, 4.2, 3.2);
+    // Stadium-light rig. A high key from the front right rakes across the
+    // cloth at a low enough angle to bring out the knit, seams and the
+    // thickness of the twill; a soft fill keeps the shadow side readable;
+    // two high back lights rim the silhouette (and light the back views).
+    const key = new THREE.DirectionalLight(0xfff4e6, 2.5);
+    key.position.set(3.4, 4.0, 2.4);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     Object.assign(key.shadow.camera, { left: -1.3, right: 1.3, top: 2.2, bottom: -0.3, near: 0.5, far: 12 });
     key.shadow.bias = -0.0004;
     key.shadow.normalBias = 0.02;
-    key.shadow.radius = 4;
+    key.shadow.radius = 5;
     scene.add(key);
-    const rim = new THREE.DirectionalLight(0xbcd6ff, 1.5);
-    rim.position.set(-2.8, 3.2, -3.4);
+    const fill = new THREE.DirectionalLight(0xe8eeff, 0.75);
+    fill.position.set(-3.2, 1.6, 2.6);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xeef2fa, 1.5);
+    rim.position.set(-2.8, 3.4, -3.4);
     scene.add(rim);
-    const rim2 = new THREE.DirectionalLight(0xffffff, 0.5);
-    rim2.position.set(3, 2, -3);
+    const rim2 = new THREE.DirectionalLight(0xfff3e4, 0.9);
+    rim2.position.set(3, 2.4, -3);
     scene.add(rim2);
-    scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1d2a18, 0.3));
+    scene.add(new THREE.HemisphereLight(0xeef0f3, 0x2a3324, 0.4));
 
     // Turf disc that fades into the dark
     const turf = new THREE.CanvasTexture(paintTurf());

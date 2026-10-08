@@ -1,0 +1,1752 @@
+{
+ "ARI": {
+  "colors": "#9C243C #0C0C0C #FCB40C",
+  "file": "ARI.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1015,
+   913
+  ],
+  "source_title": "Arizona Cardinals logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Arizona_Cardinals_logo.svg",
+  "team": "ARI",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "ARI_word": {
+  "colors": "#9C243C",
+  "file": "ARI_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   196
+  ],
+  "source_title": "Arizona Cardinals wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Arizona_Cardinals_wordmark.svg",
+  "team": "ARI",
+  "what": "ARIZONA / CARDINALS wordmark",
+  "worn": "chest above number"
+ },
+ "ARI_word_city": {
+  "colors": "#9C243C",
+  "file": "ARI_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   612,
+   72
+  ],
+  "source_title": "Arizona Cardinals wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Arizona_Cardinals_wordmark.svg",
+  "team": "ARI",
+  "what": "city line of the ARI wordmark",
+  "worn": "chest above number"
+ },
+ "ARI_word_name": {
+  "colors": "#9C243C",
+  "file": "ARI_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   96
+  ],
+  "source_title": "Arizona Cardinals wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Arizona_Cardinals_wordmark.svg",
+  "team": "ARI",
+  "what": "name line of the ARI wordmark",
+  "worn": "chest above number"
+ },
+ "ATL": {
+  "colors": "#0C0C0C #FCFCFC #9CB4B4",
+  "file": "ATL.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1016,
+   964
+  ],
+  "source_title": "Atlanta Falcons logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Atlanta_Falcons_logo.svg",
+  "team": "ATL",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "ATL_tb": {
+  "cleaned": true,
+  "colors": "#242424 #FCFCFC",
+  "file": "ATL_tb.png",
+  "license": "CC BY-SA 4.0 (uniform sheet); mark itself trademarked",
+  "render": "recut from full-size uniform sheet",
+  "size": [
+   147,
+   192
+  ],
+  "source_title": "Atlanta Falcons Uniforms 2026.png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Atlanta_Falcons_Uniforms_2026.png",
+  "team": "ATL",
+  "what": "1966 black falcon (throwback)",
+  "worn": "throwback helmet / sleeve"
+ },
+ "ATL_word": {
+  "colors": "#0C0C0C #B4243C",
+  "file": "ATL_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1003,
+   211
+  ],
+  "source_title": "Atlanta Falcons wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Atlanta_Falcons_wordmark.svg",
+  "team": "ATL",
+  "what": "ATLANTA / FALCONS wordmark",
+  "worn": "chest above number (2026 redesign)"
+ },
+ "ATL_word_city": {
+  "colors": "#B4243C",
+  "file": "ATL_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   556,
+   57
+  ],
+  "source_title": "Atlanta Falcons wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Atlanta_Falcons_wordmark.svg",
+  "team": "ATL",
+  "what": "city line of the ATL wordmark",
+  "worn": "chest above number (2026 redesign)"
+ },
+ "ATL_word_name": {
+  "colors": "#0C0C0C",
+  "file": "ATL_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1003,
+   111
+  ],
+  "source_title": "Atlanta Falcons wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Atlanta_Falcons_wordmark.svg",
+  "team": "ATL",
+  "what": "name line of the ATL wordmark",
+  "worn": "chest above number (2026 redesign)"
+ },
+ "BAL": {
+  "colors": "#0C0C0C #FCFCFC #240C54 #9C6C0C",
+  "file": "BAL.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   996,
+   482
+  ],
+  "source_title": "Baltimore Ravens logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Baltimore_Ravens_logo.svg",
+  "team": "BAL",
+  "what": "primary logo",
+  "worn": "helmet; sleeve (shield patch)"
+ },
+ "BAL_dark": {
+  "cleaned": true,
+  "colors": "#0C0C0C #545454",
+  "file": "BAL_dark.png",
+  "license": "see sheet page (unverified) (uniform sheet); mark itself trademarked",
+  "render": "cut from uniform sheet",
+  "size": [
+   231,
+   292
+  ],
+  "source_title": "Baltimore Ravens Uniforms (2026).png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Baltimore_Ravens_Uniforms_(2026).png",
+  "team": "BAL",
+  "what": "Darkness raven head",
+  "worn": "Darkness helmet"
+ },
+ "BAL_word": {
+  "colors": "#0C0C0C #6C540C",
+  "file": "BAL_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1012,
+   199
+  ],
+  "source_title": "Baltimore Ravens wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Baltimore_Ravens_wordmark.svg",
+  "team": "BAL",
+  "what": "BALTIMORE / RAVENS wordmark",
+  "worn": "chest above number, collar"
+ },
+ "BAL_word_city": {
+  "colors": "#0C0C0C",
+  "file": "BAL_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   616,
+   32
+  ],
+  "source_title": "Baltimore Ravens wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Baltimore_Ravens_wordmark.svg",
+  "team": "BAL",
+  "what": "city line of the BAL wordmark",
+  "worn": "chest above number, collar"
+ },
+ "BAL_word_name": {
+  "colors": "#0C0C0C #6C540C",
+  "file": "BAL_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1012,
+   142
+  ],
+  "source_title": "Baltimore Ravens wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Baltimore_Ravens_wordmark.svg",
+  "team": "BAL",
+  "what": "name line of the BAL wordmark",
+  "worn": "chest above number, collar"
+ },
+ "BUF": {
+  "colors": "#0C3C84 #CC0C3C #FCFCFC",
+  "file": "BUF.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   683
+  ],
+  "source_title": "Buffalo Bills logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Buffalo_Bills_logo.svg",
+  "team": "BUF",
+  "what": "primary logo",
+  "worn": "helmet; sleeve (Nickel City alt); pants hip"
+ },
+ "BUF_classic": {
+  "colors": "#CC0C3C",
+  "file": "BUF_classic.png",
+  "license": "Public domain",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   753
+  ],
+  "source_title": "Buffalo Bills classic logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Buffalo_Bills_classic_logo.svg",
+  "team": "BUF",
+  "what": "classic standing buffalo (1962-73)",
+  "worn": "red throwback helmet"
+ },
+ "BUF_word": {
+  "colors": "#0C3C84",
+  "file": "BUF_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1023,
+   263
+  ],
+  "source_title": "Buffalo Bills wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Buffalo_Bills_wordmark.svg",
+  "team": "BUF",
+  "what": "BILLS wordmark",
+  "worn": "chest above number (home/road)"
+ },
+ "CAR": {
+  "colors": "#0C0C0C #0C84CC",
+  "file": "CAR.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   557
+  ],
+  "source_title": "Carolina Panthers logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Carolina_Panthers_logo.svg",
+  "team": "CAR",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "CAR_word": {
+  "colors": "#0C84CC",
+  "file": "CAR_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   395
+  ],
+  "source_title": "Carolina Panthers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Carolina_Panthers_wordmark.svg",
+  "team": "CAR",
+  "what": "CAROLINA / PANTHERS wordmark",
+  "worn": "chest above number"
+ },
+ "CAR_word_city": {
+  "colors": "#0C84CC",
+  "file": "CAR_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   871,
+   185
+  ],
+  "source_title": "Carolina Panthers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Carolina_Panthers_wordmark.svg",
+  "team": "CAR",
+  "what": "city line of the CAR wordmark",
+  "worn": "chest above number"
+ },
+ "CAR_word_name": {
+  "colors": "#0C84CC",
+  "file": "CAR_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   926,
+   191
+  ],
+  "source_title": "Carolina Panthers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Carolina_Panthers_wordmark.svg",
+  "team": "CAR",
+  "what": "name line of the CAR wordmark",
+  "worn": "chest above number"
+ },
+ "CHI": {
+  "colors": "#CC3C0C #FCFCFC #0C0C24",
+  "file": "CHI.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1023,
+   681
+  ],
+  "source_title": "Chicago Bears logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Chicago_Bears_logo.svg",
+  "team": "CHI",
+  "what": "primary logo",
+  "worn": "helmet (C); sleeve"
+ },
+ "CHI_bear": {
+  "colors": "#0C0C24 #E43C0C #FCFCFC",
+  "file": "CHI_bear.png",
+  "license": "Fair use (non-free)",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   1014
+  ],
+  "source_title": "Chicago Bears logo primary.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Chicago_Bears_logo_primary.svg",
+  "team": "CHI",
+  "what": "Bear head",
+  "worn": "sleeve / alternate"
+ },
+ "CHI_word": {
+  "colors": "#E43C0C",
+  "file": "CHI_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   145
+  ],
+  "source_title": "Chicago Bears wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Chicago_Bears_wordmark.svg",
+  "team": "CHI",
+  "what": "BEARS wordmark",
+  "worn": "chest above number"
+ },
+ "CIN": {
+  "colors": "#FC540C #0C0C0C #FCFCFC",
+  "file": "CIN.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1024,
+   719
+  ],
+  "source_title": "Cincinnati Bengals logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cincinnati_Bengals_logo.svg",
+  "team": "CIN",
+  "what": "primary logo",
+  "worn": "helmet (B logo, Bengals wear tiger stripes instead); sleeve"
+ },
+ "CIN_word": {
+  "colors": "#0C0C0C #FC5424",
+  "file": "CIN_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1023,
+   170
+  ],
+  "source_title": "Cincinnati Bengals wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cincinnati_Bengals_wordmark.svg",
+  "team": "CIN",
+  "what": "CINCINNATI / BENGALS wordmark",
+  "worn": "chest above number"
+ },
+ "CIN_word_city": {
+  "colors": "#FC5424",
+  "file": "CIN_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   618,
+   42
+  ],
+  "source_title": "Cincinnati Bengals wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cincinnati_Bengals_wordmark.svg",
+  "team": "CIN",
+  "what": "city line of the CIN wordmark",
+  "worn": "chest above number"
+ },
+ "CIN_word_name": {
+  "colors": "#0C0C0C",
+  "file": "CIN_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1023,
+   92
+  ],
+  "source_title": "Cincinnati Bengals wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cincinnati_Bengals_wordmark.svg",
+  "team": "CIN",
+  "what": "name line of the CIN wordmark",
+  "worn": "chest above number"
+ },
+ "CLE": {
+  "colors": "#FC3C0C #FCFCFC #3C240C",
+  "file": "CLE.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1023,
+   778
+  ],
+  "source_title": "Cleveland Browns logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Cleveland_Browns_logo.svg",
+  "team": "CLE",
+  "what": "primary logo",
+  "worn": "helmet logo (orange helmet mark); sleeve"
+ },
+ "CLE_elf": {
+  "colors": "#3C2424 #E45424",
+  "file": "CLE_elf.png",
+  "license": "Fair use (non-free)",
+  "render": "raster",
+  "size": [
+   147,
+   168
+  ],
+  "source_title": "Brownie Elf logo.png",
+  "source_url": "https://en.wikipedia.org/wiki/File:Brownie_Elf_logo.png",
+  "team": "CLE",
+  "what": "Brownie the Elf",
+  "worn": "throwback sleeve / alternate"
+ },
+ "CLE_word": {
+  "colors": "#FC3C0C",
+  "file": "CLE_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1003,
+   457
+  ],
+  "source_title": "Cleveland Browns wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cleveland_Browns_wordmark.svg",
+  "team": "CLE",
+  "what": "CLEVELAND / BROWNS wordmark",
+  "worn": "chest above number"
+ },
+ "CLE_word_city": {
+  "colors": "#FC3C0C",
+  "file": "CLE_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1003,
+   192
+  ],
+  "source_title": "Cleveland Browns wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cleveland_Browns_wordmark.svg",
+  "team": "CLE",
+  "what": "city line of the CLE wordmark",
+  "worn": "chest above number"
+ },
+ "CLE_word_name": {
+  "colors": "#FC3C0C",
+  "file": "CLE_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1003,
+   247
+  ],
+  "source_title": "Cleveland Browns wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cleveland_Browns_wordmark.svg",
+  "team": "CLE",
+  "what": "name line of the CLE wordmark",
+  "worn": "chest above number"
+ },
+ "DAL": {
+  "colors": "#0C243C #FCFCFC",
+  "file": "DAL.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1018,
+   968
+  ],
+  "source_title": "Dallas Cowboys.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Dallas_Cowboys.svg",
+  "team": "DAL",
+  "what": "primary logo",
+  "worn": "helmet; sleeve; pants"
+ },
+ "DAL_word": {
+  "colors": "#0C243C",
+  "file": "DAL_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   174
+  ],
+  "source_title": "Cowboys wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Cowboys_wordmark.svg",
+  "team": "DAL",
+  "what": "COWBOYS wordmark",
+  "worn": "chest/sleeve (rare)"
+ },
+ "DEN": {
+  "colors": "#FCFCFC #0C243C #FC540C",
+  "file": "DEN.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1013,
+   594
+  ],
+  "source_title": "Denver Broncos logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Denver_Broncos_logo.svg",
+  "team": "DEN",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "DEN_tb": {
+  "cleaned": true,
+  "colors": "#FC540C #FCFCFC",
+  "file": "DEN_tb.png",
+  "license": "CC BY-SA 4.0 (uniform sheet); mark itself trademarked",
+  "render": "recut from full-size uniform sheet",
+  "size": [
+   129,
+   133
+  ],
+  "source_title": "Denver Broncos Uniforms 2024-Present.png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Denver_Broncos_Uniforms_2024-Present.png",
+  "team": "DEN",
+  "what": "classic D with bucking horse",
+  "worn": "throwback helmet / sleeve"
+ },
+ "DEN_word": {
+  "colors": "#0C243C",
+  "file": "DEN_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   177
+  ],
+  "source_title": "Denver Broncos wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Denver_Broncos_wordmark.svg",
+  "team": "DEN",
+  "what": "BRONCOS / DENVER wordmark",
+  "worn": "chest above number"
+ },
+ "DEN_word_city": {
+  "colors": "#FC540C",
+  "file": "DEN_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   430,
+   29
+  ],
+  "source_title": "Denver Broncos wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Denver_Broncos_wordmark.svg",
+  "team": "DEN",
+  "what": "city line of the DEN wordmark",
+  "worn": "chest above number"
+ },
+ "DEN_word_name": {
+  "colors": "#0C243C",
+  "file": "DEN_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   117
+  ],
+  "source_title": "Denver Broncos wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Denver_Broncos_wordmark.svg",
+  "team": "DEN",
+  "what": "name line of the DEN wordmark",
+  "worn": "chest above number"
+ },
+ "DET": {
+  "colors": "#0C6CB4 #FCFCFC #B4B4B4",
+  "file": "DET.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1009,
+   768
+  ],
+  "source_title": "Detroit Lions logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Detroit_Lions_logo.svg",
+  "team": "DET",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "DET_word": {
+  "colors": "#0C6CB4",
+  "file": "DET_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   268
+  ],
+  "source_title": "Detroit Lions wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Detroit_Lions_wordmark.svg",
+  "team": "DET",
+  "what": "LIONS wordmark",
+  "worn": "chest above number"
+ },
+ "GB": {
+  "colors": "#FCFCFC #243C3C",
+  "file": "GB.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1013,
+   666
+  ],
+  "source_title": "Green Bay Packers logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Green_Bay_Packers_logo.svg",
+  "team": "GB",
+  "what": "primary logo",
+  "worn": "helmet (G); sleeve"
+ },
+ "GB_word": {
+  "colors": "#243C3C",
+  "file": "GB_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   299
+  ],
+  "source_title": "Green Bay Packers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Green_Bay_Packers_wordmark.svg",
+  "team": "GB",
+  "what": "PACKERS wordmark",
+  "worn": "chest above number"
+ },
+ "HOU": {
+  "colors": "#0C0C24 #FCFCFC #E40C24",
+  "file": "HOU.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   934
+  ],
+  "source_title": "Houston Texans logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Houston_Texans_logo.svg",
+  "team": "HOU",
+  "what": "primary logo",
+  "worn": "helmet; sleeve; pants hip"
+ },
+ "HOU_word": {
+  "colors": "#0C2424 #B4243C",
+  "file": "HOU_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1013,
+   155
+  ],
+  "source_title": "Houston Texans wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Houston_Texans_wordmark.svg",
+  "team": "HOU",
+  "what": "HOUSTON / TEXANS wordmark",
+  "worn": "chest above number"
+ },
+ "HOU_word_city": {
+  "colors": "#B4243C",
+  "file": "HOU_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   479,
+   36
+  ],
+  "source_title": "Houston Texans wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Houston_Texans_wordmark.svg",
+  "team": "HOU",
+  "what": "city line of the HOU wordmark",
+  "worn": "chest above number"
+ },
+ "HOU_word_name": {
+  "colors": "#0C2424",
+  "file": "HOU_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1013,
+   97
+  ],
+  "source_title": "Houston Texans wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Houston_Texans_wordmark.svg",
+  "team": "HOU",
+  "what": "name line of the HOU wordmark",
+  "worn": "chest above number"
+ },
+ "IND": {
+  "colors": "#0C3C6C #FCFCFC",
+  "file": "IND.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1007,
+   1059
+  ],
+  "source_title": "Indianapolis Colts logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Indianapolis_Colts_logo.svg",
+  "team": "IND",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "IND_word": {
+  "colors": "#0C3C6C",
+  "file": "IND_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1003,
+   249
+  ],
+  "source_title": "Indianapolis Colts new wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Indianapolis_Colts_new_wordmark.svg",
+  "team": "IND",
+  "what": "COLTS wordmark (current)",
+  "worn": "chest / back collar"
+ },
+ "JAX": {
+  "colors": "#0C0C0C #FCFCFC #9C8424 #E49C24",
+  "file": "JAX.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1014,
+   759
+  ],
+  "source_title": "Jacksonville Jaguars logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Jacksonville_Jaguars_logo.svg",
+  "team": "JAX",
+  "what": "primary logo",
+  "worn": "helmet; chest; sleeve"
+ },
+ "JAX_tb": {
+  "cleaned": true,
+  "colors": "#CC9C3C #0C0C0C #FCFCFC #0C6C84",
+  "file": "JAX_tb.png",
+  "license": "CC BY 4.0 (uniform sheet); mark itself trademarked",
+  "render": "cut from uniform sheet",
+  "size": [
+   291,
+   236
+  ],
+  "source_title": "Jacksonville Jaguars Uniforms (2026).png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Jacksonville_Jaguars_Uniforms_(2026).png",
+  "team": "JAX",
+  "what": "1995 Prowler jaguar",
+  "worn": "throwback helmet / sleeve"
+ },
+ "JAX_word": {
+  "colors": "#0C0C0C #9C8424",
+  "file": "JAX_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1023,
+   345
+  ],
+  "source_title": "Jacksonville Jaguars wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Jacksonville_Jaguars_wordmark.svg",
+  "team": "JAX",
+  "what": "JACKSONVILLE / JAGUARS wordmark",
+  "worn": "chest above number"
+ },
+ "JAX_word_city": {
+  "colors": "#9C8424",
+  "file": "JAX_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   782,
+   76
+  ],
+  "source_title": "Jacksonville Jaguars wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Jacksonville_Jaguars_wordmark.svg",
+  "team": "JAX",
+  "what": "city line of the JAX wordmark",
+  "worn": "chest above number"
+ },
+ "JAX_word_name": {
+  "colors": "#0C0C0C",
+  "file": "JAX_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1023,
+   228
+  ],
+  "source_title": "Jacksonville Jaguars wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Jacksonville_Jaguars_wordmark.svg",
+  "team": "JAX",
+  "what": "name line of the JAX wordmark",
+  "worn": "chest above number"
+ },
+ "KC": {
+  "colors": "#FCFCFC #0C0C0C #E4243C",
+  "file": "KC.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1012,
+   640
+  ],
+  "source_title": "Kansas City Chiefs logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Kansas_City_Chiefs_logo.svg",
+  "team": "KC",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "KC_kc": {
+  "colors": "#B40C3C #0C0C0C",
+  "file": "KC_kc.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   944,
+   608
+  ],
+  "source_title": "Kansas City Chiefs KC logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Kansas_City_Chiefs_KC_logo.svg",
+  "team": "KC",
+  "what": "KC monogram",
+  "worn": "sleeve / alternate"
+ },
+ "KC_word": {
+  "colors": "#E4243C",
+  "file": "KC_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1017,
+   223
+  ],
+  "source_title": "Kansas City Chiefs wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Kansas_City_Chiefs_wordmark.svg",
+  "team": "KC",
+  "what": "CHIEFS wordmark",
+  "worn": "chest above number"
+ },
+ "LAC": {
+  "colors": "#FCCC0C #0C84CC #FCFCFC",
+  "file": "LAC.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1013,
+   448
+  ],
+  "source_title": "Los Angeles Chargers logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Chargers_logo.svg",
+  "team": "LAC",
+  "what": "primary logo",
+  "worn": "helmet (bolt); sleeve"
+ },
+ "LAC_classic": {
+  "colors": "#0C84CC #FCFCFC #FCCC0C",
+  "file": "LAC_classic.png",
+  "license": "Fair use (non-free)",
+  "render": "thumb.php",
+  "size": [
+   704,
+   1008
+  ],
+  "source_title": "Los Angeles Charges classic mark.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Los_Angeles_Charges_classic_mark.svg",
+  "team": "LAC",
+  "what": "1960 Los Angeles Chargers shield",
+  "worn": "throwback"
+ },
+ "LAC_word": {
+  "colors": "#0C0C3C",
+  "file": "LAC_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   261
+  ],
+  "source_title": "Los Angeles Chargers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Chargers_wordmark.svg",
+  "team": "LAC",
+  "what": "LOS ANGELES / CHARGERS wordmark",
+  "worn": "chest above number"
+ },
+ "LAC_word_city": {
+  "colors": "#0C0C3C",
+  "file": "LAC_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   813,
+   47
+  ],
+  "source_title": "Los Angeles Chargers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Chargers_wordmark.svg",
+  "team": "LAC",
+  "what": "city line of the LAC wordmark",
+  "worn": "chest above number"
+ },
+ "LAC_word_name": {
+  "colors": "#0C0C3C",
+  "file": "LAC_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   195
+  ],
+  "source_title": "Los Angeles Chargers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Chargers_wordmark.svg",
+  "team": "LAC",
+  "what": "name line of the LAC wordmark",
+  "worn": "chest above number"
+ },
+ "LAR": {
+  "colors": "#FCCC0C #0C3C9C",
+  "file": "LAR.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   735
+  ],
+  "source_title": "LA Rams logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:LA_Rams_logo.svg",
+  "team": "LAR",
+  "what": "primary logo",
+  "worn": "primary logo (LA monogram); sleeve / pants"
+ },
+ "LAR_ram": {
+  "colors": "#0C243C #B49C54 #FCFCFC",
+  "file": "LAR_ram.png",
+  "license": "Fair use (non-free)",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   730
+  ],
+  "source_title": "NFL Rams logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:NFL_Rams_logo.svg",
+  "team": "LAR",
+  "what": "ram head (2000-16)",
+  "worn": "throwback"
+ },
+ "LAR_word": {
+  "colors": "#0C243C #FCFCFC #3C546C",
+  "file": "LAR_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   416
+  ],
+  "source_title": "Los Angeles Rams wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Los_Angeles_Rams_wordmark.svg",
+  "team": "LAR",
+  "what": "LOS ANGELES / Rams script wordmark",
+  "worn": "chest above number"
+ },
+ "LAR_word_alt": {
+  "colors": "#0C3C9C",
+  "file": "LAR_word_alt.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1010,
+   360
+  ],
+  "source_title": "LA Rams wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:LA_Rams_wordmark.svg",
+  "team": "LAR",
+  "what": "LOS ANGELES / RAMS block wordmark",
+  "worn": "chest / sleeve"
+ },
+ "LV": {
+  "colors": "#0C0C0C #FCFCFC #CCCCCC",
+  "file": "LV.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1020,
+   1083
+  ],
+  "source_title": "Las Vegas Raiders logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Las_Vegas_Raiders_logo.svg",
+  "team": "LV",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "LV_word": {
+  "colors": "#0C0C0C",
+  "file": "LV_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   191
+  ],
+  "source_title": "Las Vegas Raiders wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Las_Vegas_Raiders_wordmark.svg",
+  "team": "LV",
+  "what": "RAIDERS wordmark",
+  "worn": "chest above number"
+ },
+ "MIA": {
+  "colors": "#FCFCFC #0C849C #FC540C",
+  "file": "MIA.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1017,
+   803
+  ],
+  "source_title": "Miami Dolphins logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Miami_Dolphins_logo.svg",
+  "team": "MIA",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "MIA_tb": {
+  "cleaned": true,
+  "colors": "#FCFCFC #0C6C84 #E46C24",
+  "file": "MIA_tb.png",
+  "license": "CC BY-SA 4.0 (uniform sheet); mark itself trademarked",
+  "render": "cut from uniform sheet",
+  "size": [
+   118,
+   140
+  ],
+  "source_title": "Miami Dolphins Uniforms 2025.png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Miami_Dolphins_Uniforms_2025.png",
+  "team": "MIA",
+  "what": "1966 throwback dolphin in sunburst",
+  "worn": "throwback helmet"
+ },
+ "MIA_word": {
+  "colors": "#0C9C9C #FC540C",
+  "file": "MIA_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1017,
+   273
+  ],
+  "source_title": "Miami Dolphins wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Miami_Dolphins_wordmark.svg",
+  "team": "MIA",
+  "what": "MIAMI over \"Dolphins\" script",
+  "worn": "chest (\"Dolphins\" script), collar (MIAMI)"
+ },
+ "MIA_word_city": {
+  "colors": "#FC540C",
+  "file": "MIA_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   421,
+   63
+  ],
+  "source_title": "Miami Dolphins wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Miami_Dolphins_wordmark.svg",
+  "team": "MIA",
+  "what": "city line of the MIA wordmark",
+  "worn": "chest (\"Dolphins\" script), collar (MIAMI)"
+ },
+ "MIA_word_name": {
+  "colors": "#0C9C9C",
+  "file": "MIA_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1017,
+   198
+  ],
+  "source_title": "Miami Dolphins wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Miami_Dolphins_wordmark.svg",
+  "team": "MIA",
+  "what": "name line of the MIA wordmark",
+  "worn": "chest (\"Dolphins\" script), collar (MIAMI)"
+ },
+ "MIN": {
+  "colors": "#FCFCFC #FCCC24 #0C0C0C #542484",
+  "file": "MIN.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1008,
+   1242
+  ],
+  "source_title": "Minnesota Vikings logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Minnesota_Vikings_logo.svg",
+  "team": "MIN",
+  "what": "primary logo",
+  "worn": "helmet (Viking head, horn variant on helmet); sleeve"
+ },
+ "MIN_word": {
+  "colors": "#542484 #84546C #E4B43C #B48454",
+  "file": "MIN_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1023,
+   331
+  ],
+  "source_title": "Minnesota Vikings wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Minnesota_Vikings_wordmark.svg",
+  "team": "MIN",
+  "what": "VIKINGS wordmark",
+  "worn": "chest above number"
+ },
+ "MIN_word_1982": {
+  "colors": "#3C0C6C",
+  "file": "MIN_word_1982.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   200
+  ],
+  "source_title": "Minnesota Vikings wordmark (1982 - 2003).svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Minnesota_Vikings_wordmark_(1982_-_2003).svg",
+  "team": "MIN",
+  "what": "VIKINGS wordmark (1982-2003)",
+  "worn": "throwback"
+ },
+ "NE": {
+  "colors": "#0C243C #FCFCFC #CC0C3C #B4B4B4",
+  "file": "NE.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1014,
+   490
+  ],
+  "source_title": "New England Patriots logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:New_England_Patriots_logo.svg",
+  "team": "NE",
+  "what": "primary logo",
+  "worn": "helmet (Flying Elvis); sleeve"
+ },
+ "NE_ne": {
+  "colors": "#0C243C",
+  "file": "NE_ne.png",
+  "license": "Public domain [trademarked]",
+  "render": "raster",
+  "size": [
+   496,
+   362
+  ],
+  "source_title": "New England Patriots NE logo.png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_England_Patriots_NE_logo.png",
+  "team": "NE",
+  "what": "NE (with star) monogram",
+  "worn": "Rivalries 'Nor'easter' sleeves"
+ },
+ "NE_pat": {
+  "colors": "#243C84 #FCFCFC #E4243C",
+  "file": "NE_pat.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   1024
+  ],
+  "source_title": "New England Patriots logo old.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:New_England_Patriots_logo_old.svg",
+  "team": "NE",
+  "what": "Pat Patriot (1961-92)",
+  "worn": "throwback helmet; sleeves of the red throwback"
+ },
+ "NE_word": {
+  "colors": "#0C243C",
+  "file": "NE_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   236
+  ],
+  "source_title": "New England Patriots wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_England_Patriots_wordmark.svg",
+  "team": "NE",
+  "what": "PATRIOTS wordmark",
+  "worn": "chest, collar"
+ },
+ "NFL_shield": {
+  "colors": "#FCFCFC #0C3C6C #CC0C0C",
+  "file": "NFL_shield.png",
+  "license": "CC-BY-4.0 [design|trademarked]",
+  "render": "svg",
+  "size": [
+   1019,
+   1405
+  ],
+  "source_title": "National Football League logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:National_Football_League_logo.svg",
+  "team": "NFL",
+  "what": "NFL shield (2008-present)",
+  "worn": "jersey V-neck collar, pants/sleeve"
+ },
+ "NO": {
+  "colors": "#0C0C0C #CCB484 #FCFCFC",
+  "file": "NO.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1017,
+   1240
+  ],
+  "source_title": "New Orleans Saints logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_Orleans_Saints_logo.svg",
+  "team": "NO",
+  "what": "primary logo",
+  "worn": "helmet (fleur-de-lis); sleeve; pants hip"
+ },
+ "NO_word": {
+  "colors": "#0C0C0C",
+  "file": "NO_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1014,
+   236
+  ],
+  "source_title": "New Orleans Saints wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_Orleans_Saints_wordmark.svg",
+  "team": "NO",
+  "what": "SAINTS wordmark",
+  "worn": "chest above number"
+ },
+ "NYG": {
+  "colors": "#0C246C #B4243C",
+  "file": "NYG.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1014,
+   787
+  ],
+  "source_title": "New York Giants logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Giants_logo.svg",
+  "team": "NYG",
+  "what": "primary logo",
+  "worn": "helmet; chest (ny); sleeve"
+ },
+ "NYG_white": {
+  "colors": "#FFFFFF #B4243C",
+  "file": "NYG_white.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1014,
+   787
+  ],
+  "source_title": "New York Giants logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Giants_logo.svg",
+  "team": "NYG",
+  "what": "primary logo, white fill (blue fill of NYG.png recoloured white, red outline kept)",
+  "worn": "blue helmet decal"
+ },
+ "NYG_word": {
+  "colors": "#0C246C",
+  "file": "NYG_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   395
+  ],
+  "source_title": "New York Giants wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Giants_wordmark.svg",
+  "team": "NYG",
+  "what": "GIANTS wordmark",
+  "worn": "chest above number (Giants wear it on the chest of alternates)"
+ },
+ "NYJ": {
+  "colors": "#0C543C #FCFCFC",
+  "file": "NYJ.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1024,
+   612
+  ],
+  "source_title": "New York Jets 2024.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Jets_2024.svg",
+  "team": "NYJ",
+  "what": "primary logo",
+  "worn": "helmet (via NYJ_word); chest (Rivalries)"
+ },
+ "NYJ_1978": {
+  "colors": "#3C6C54",
+  "file": "NYJ_1978.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   311
+  ],
+  "source_title": "New York Jets logo (1978\u20131997).svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Jets_logo_(1978%E2%80%931997).svg",
+  "team": "NYJ",
+  "what": "JETS wordmark with swoosh (1978-97)",
+  "worn": "throwback helmet / chest"
+ },
+ "NYJ_classic": {
+  "cleaned": true,
+  "colors": "#246C3C #FCFCFC",
+  "file": "NYJ_classic.png",
+  "license": "CC BY 4.0 (uniform sheet); mark itself trademarked",
+  "render": "cut from uniform sheet",
+  "size": [
+   310,
+   174
+  ],
+  "source_title": "New York Jets Uniforms (2026).png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Jets_Uniforms_(2026).png",
+  "team": "NYJ",
+  "what": "classic JETS oval",
+  "worn": "throwback helmet"
+ },
+ "NYJ_plane": {
+  "cleaned": true,
+  "colors": "#242424 #CCCCCC",
+  "file": "NYJ_plane.png",
+  "license": "CC BY 4.0 (uniform sheet); mark itself trademarked",
+  "render": "cut from uniform sheet",
+  "size": [
+   185,
+   111
+  ],
+  "source_title": "New York Jets Uniforms (2026).png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Jets_Uniforms_(2026).png",
+  "team": "NYJ",
+  "what": "Gotham diamond-plate JETS oval",
+  "worn": "Rivalries chest"
+ },
+ "NYJ_word": {
+  "colors": "#0C543C",
+  "file": "NYJ_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   322
+  ],
+  "source_title": "New York Jets 2024 (wordmark).svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Jets_2024_(wordmark).svg",
+  "team": "NYJ",
+  "what": "JETS italic wordmark with swoosh tail (2024)",
+  "worn": "helmet; chest (Rivalries)"
+ },
+ "NYJ_word_plain": {
+  "colors": "#0C543C",
+  "file": "NYJ_word_plain.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   194
+  ],
+  "source_title": "New York Jets wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:New_York_Jets_wordmark.svg",
+  "team": "NYJ",
+  "what": "JETS italic wordmark, plain",
+  "worn": "alt helmet / chest"
+ },
+ "PHI": {
+  "colors": "#FCFCFC #0C0C0C #9CB4B4",
+  "file": "PHI.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1016,
+   700
+  ],
+  "source_title": "Philadelphia Eagles logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Philadelphia_Eagles_logo.svg",
+  "team": "PHI",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "PHI_tb": {
+  "cleaned": true,
+  "colors": "#FCFCFC #0C0C0C",
+  "file": "PHI_tb.png",
+  "license": "CC BY 4.0 (uniform sheet); mark itself trademarked",
+  "render": "recut from full-size uniform sheet",
+  "size": [
+   147,
+   164
+  ],
+  "source_title": "Philadelphia Eagles Uniforms (2026).png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Philadelphia_Eagles_Uniforms_(2026).png",
+  "team": "PHI",
+  "what": "Kelly-green throwback eagle",
+  "worn": "throwback sleeve"
+ },
+ "PHI_word": {
+  "colors": "#0C5454",
+  "file": "PHI_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1016,
+   165
+  ],
+  "source_title": "Philadelphia Eagles wordmark (2022\u2013present).svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Philadelphia_Eagles_wordmark_(2022%E2%80%93present).svg",
+  "team": "PHI",
+  "what": "EAGLES wordmark (2022-present)",
+  "worn": "chest above number"
+ },
+ "PHI_word_wing": {
+  "colors": "#FCFCFC #0C0C0C",
+  "file": "PHI_word_wing.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1010,
+   333
+  ],
+  "source_title": "Philadelphia Eagles wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Philadelphia_Eagles_wordmark.svg",
+  "team": "PHI",
+  "what": "winged EAGLES wordmark",
+  "worn": "chest"
+ },
+ "PIT": {
+  "colors": "#FCFCFC #9CB4B4",
+  "file": "PIT.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   999,
+   998
+  ],
+  "source_title": "Pittsburgh Steelers logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Pittsburgh_Steelers_logo.svg",
+  "team": "PIT",
+  "what": "primary logo",
+  "worn": "helmet (steelmark inside ring); chest/sleeve"
+ },
+ "PIT_crest": {
+  "cleaned": true,
+  "colors": "#E4E4E4 #24240C #846C24 #848484",
+  "file": "PIT_crest.png",
+  "license": "CC BY-SA 4.0 (uniform sheet); mark itself trademarked",
+  "render": "cut from uniform sheet",
+  "size": [
+   108,
+   123
+  ],
+  "source_title": "Pittsburgh Steelers Uniforms 2025.png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Pittsburgh_Steelers_Uniforms_2025.png",
+  "team": "PIT",
+  "what": "1933 crest",
+  "worn": "1933 throwback chest"
+ },
+ "PIT_word": {
+  "colors": "#0C0C0C",
+  "file": "PIT_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   984,
+   273
+  ],
+  "source_title": "Pittsburgh Steelers Script.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Pittsburgh_Steelers_Script.svg",
+  "team": "PIT",
+  "what": "Steelers bold wordmark",
+  "worn": "not worn on the 2026 jersey; helmet/sleeve alt use"
+ },
+ "SEA": {
+  "colors": "#0C243C #FCFCFC #9CB4B4",
+  "file": "SEA.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   453
+  ],
+  "source_title": "Seattle Seahawks logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Seattle_Seahawks_logo.svg",
+  "team": "SEA",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "SEA_word": {
+  "colors": "#0C243C #9CB4B4",
+  "file": "SEA_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   156
+  ],
+  "source_title": "Seattle Seahawks wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Seattle_Seahawks_wordmark.svg",
+  "team": "SEA",
+  "what": "SEATTLE / SEAHAWKS wordmark",
+  "worn": "chest above number"
+ },
+ "SEA_word_city": {
+  "colors": "#B4B4B4",
+  "file": "SEA_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   638,
+   43
+  ],
+  "source_title": "Seattle Seahawks wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Seattle_Seahawks_wordmark.svg",
+  "team": "SEA",
+  "what": "city line of the SEA wordmark",
+  "worn": "chest above number"
+ },
+ "SEA_word_name": {
+  "colors": "#0C243C",
+  "file": "SEA_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   108
+  ],
+  "source_title": "Seattle Seahawks wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Seattle_Seahawks_wordmark.svg",
+  "team": "SEA",
+  "what": "name line of the SEA wordmark",
+  "worn": "chest above number"
+ },
+ "SF": {
+  "colors": "#B40C0C #0C0C0C #FCFCFC #B49C54",
+  "file": "SF.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1024,
+   605
+  ],
+  "source_title": "San Francisco 49ers logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:San_Francisco_49ers_logo.svg",
+  "team": "SF",
+  "what": "primary logo",
+  "worn": "helmet (SF oval); sleeve"
+ },
+ "SF_word": {
+  "colors": "#B40C0C #0C0C0C #84543C",
+  "file": "SF_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   194
+  ],
+  "source_title": "San Francisco 49ers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:San_Francisco_49ers_wordmark.svg",
+  "team": "SF",
+  "what": "49ERS wordmark",
+  "worn": "chest above number"
+ },
+ "TB": {
+  "colors": "#9C243C #0C0C0C #B4CCCC #FCFCFC",
+  "file": "TB.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1017,
+   905
+  ],
+  "source_title": "Tampa Bay Buccaneers logo.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Tampa_Bay_Buccaneers_logo.svg",
+  "team": "TB",
+  "what": "primary logo",
+  "worn": "helmet (flag); sleeve"
+ },
+ "TB_tb": {
+  "cleaned": true,
+  "colors": "#CC0C24 #FC840C #FCFCFC",
+  "file": "TB_tb.png",
+  "license": "CC BY 4.0 (uniform sheet); mark itself trademarked",
+  "render": "recut from full-size uniform sheet",
+  "size": [
+   285,
+   303
+  ],
+  "source_title": "Tampa Bay Buccaneers Uniforms (2026).png",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Tampa_Bay_Buccaneers_Uniforms_(2026).png",
+  "team": "TB",
+  "what": "Bucco Bruce (1976-96)",
+  "worn": "throwback helmet"
+ },
+ "TB_word": {
+  "colors": "#B4243C #B4B4CC",
+  "file": "TB_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1024,
+   283
+  ],
+  "source_title": "Tampa Bay Buccaneers wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Tampa_Bay_Buccaneers_wordmark.svg",
+  "team": "TB",
+  "what": "TAMPA BAY / BUCCANEERS wordmark",
+  "worn": "chest above number"
+ },
+ "TEN": {
+  "colors": "#3C9CCC #FCFCFC #CC0C0C",
+  "file": "TEN.png",
+  "license": "Fair use (non-free)",
+  "render": "svg",
+  "size": [
+   1024,
+   1024
+  ],
+  "source_title": "Tennessee Titans Logo 2026.svg",
+  "source_url": "https://en.wikipedia.org/wiki/File:Tennessee_Titans_Logo_2026.svg",
+  "team": "TEN",
+  "what": "primary logo",
+  "worn": "helmet; sleeve"
+ },
+ "TEN_word": {
+  "colors": "#0C243C #549CE4 #245484 #3C6CB4",
+  "file": "TEN_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1015,
+   367
+  ],
+  "source_title": "Tennessee Titans wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Tennessee_Titans_wordmark.svg",
+  "team": "TEN",
+  "what": "TENNESSEE / TITANS wordmark",
+  "worn": "chest above number"
+ },
+ "WAS": {
+  "colors": "#540C0C #FCB40C",
+  "file": "WAS.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1024,
+   559
+  ],
+  "source_title": "Washington Commanders logo.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Washington_Commanders_logo.svg",
+  "team": "WAS",
+  "what": "primary logo",
+  "worn": "helmet (W); sleeve"
+ },
+ "WAS_word": {
+  "colors": "#540C0C",
+  "file": "WAS_word.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   319
+  ],
+  "source_title": "Washington Commanders wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Washington_Commanders_wordmark.svg",
+  "team": "WAS",
+  "what": "WASHINGTON / COMMANDERS wordmark",
+  "worn": "chest above number"
+ },
+ "WAS_word_city": {
+  "colors": "#540C0C",
+  "file": "WAS_word_city.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   819,
+   49
+  ],
+  "source_title": "Washington Commanders wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Washington_Commanders_wordmark.svg",
+  "team": "WAS",
+  "what": "city line of the WAS wordmark",
+  "worn": "chest above number"
+ },
+ "WAS_word_name": {
+  "colors": "#540C0C",
+  "file": "WAS_word_name.png",
+  "license": "Public domain [trademarked]",
+  "render": "thumb.php",
+  "size": [
+   1015,
+   152
+  ],
+  "source_title": "Washington Commanders wordmark.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Washington_Commanders_wordmark.svg",
+  "team": "WAS",
+  "what": "name line of the WAS wordmark",
+  "worn": "chest above number"
+ },
+ "nike_swoosh": {
+  "colors": "#0C0C0C",
+  "file": "nike_swoosh.png",
+  "license": "Public domain [trademarked]",
+  "render": "svg",
+  "size": [
+   1024,
+   365
+  ],
+  "source_title": "Logo NIKE.svg",
+  "source_url": "https://commons.wikimedia.org/wiki/File:Logo_NIKE.svg",
+  "team": "nike",
+  "what": "Nike swoosh",
+  "worn": "jersey/pants (apparel mark)"
+ }
+}

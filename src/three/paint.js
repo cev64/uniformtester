@@ -150,6 +150,20 @@ export function grain(ctx, W, H, strength = 0.035, seed = 7) {
 
 export const HELMET_R = { x: 0.126, yz: 0.14 };
 
+// Centre-line radius of the shell (m) at u = 0, 1/64, ... 1, from
+// tools/build_helmet.py (helmet.json centerline_r). Canvas y is the polar
+// angle around the x axis, so a stripe w cm wide spans w / (pi * r * 100) of
+// the canvas height at u: this keeps stripes at their real width from the
+// nameplate over the crown to the rear bumper.
+const HELMET_CL_R = [0.172, 0.1727, 0.1745, 0.1776, 0.1812, 0.1848, 0.1876, 0.1891, 0.1891, 0.1877, 0.1853, 0.1806, 0.1742, 0.1689, 0.1661, 0.1646, 0.164, 0.1639, 0.1637, 0.1629, 0.1618, 0.1603, 0.1585, 0.1567, 0.1549, 0.1532, 0.1517, 0.1504, 0.1492, 0.1481, 0.147, 0.146, 0.1452, 0.1448, 0.1447, 0.1428, 0.143, 0.1433, 0.144, 0.1449, 0.146, 0.1498, 0.1506, 0.1513, 0.1518, 0.1521, 0.1522, 0.152, 0.152, 0.1526, 0.1542, 0.1568, 0.1601, 0.1638, 0.1676, 0.1712, 0.1743, 0.1765, 0.1777, 0.1779, 0.1771, 0.1756, 0.174, 0.1726, 0.172];
+
+function helmetPxPerCm(u, H) {
+  const t = (((u % 1) + 1) % 1) * 64;
+  const i = Math.min(63, Math.floor(t));
+  const r = HELMET_CL_R[i] + (HELMET_CL_R[i + 1] - HELMET_CL_R[i]) * (t - i);
+  return H / (Math.PI * r * 100);
+}
+
 export function paintHelmet(helmet) {
   const W = 2048, H = 1024;
   const c = makeCanvas(W, H);
@@ -213,17 +227,24 @@ export function paintHelmet(helmet) {
 
   if (helmet.stripe) {
     const total = stripeTotal(helmet.stripe);
-    let y = H / 2 - (total * pxPerCmY) / 2;
-    // stripeSpan: [start, end] around the shell (0.25 back, 0.5 crown, 0.72 brow)
+    // stripeSpan: [start, end] around the shell (0.25 back, 0.5 crown, 0.72 brow).
+    // The default runs from under the rear bumper to under the nameplate.
     const [s0, s1] = helmet.stripeSpan || [0.1, 0.725];
-    const x0 = s0 * W, x1 = s1 * W;
-    for (const [col, w] of helmet.stripe) {
-      const h = w * pxPerCmY;
-      if (col) {
-        ctx.fillStyle = col;
-        ctx.fillRect(x0, y, x1 - x0, h);
+    const step = 2;
+    for (let x = Math.floor(s0 * W); x < s1 * W; x += step) {
+      const k = helmetPxPerCm((x + step / 2) / W, H);
+      let y = H / 2 - (total * k) / 2;
+      for (const [col, w, grout] of helmet.stripe) {
+        const h = w * k;
+        if (col) {
+          // a third entry tiles the stripe: grout lines of that colour across it every ~1.25 cm
+          // (Texans Rivalries street tiles)
+          const tile = 1.25 * pxPerCmX, gw = 0.2 * pxPerCmX;
+          ctx.fillStyle = grout && (x - s0 * W) % tile < gw ? grout : col;
+          ctx.fillRect(x, y, Math.min(step, s1 * W - x), h);
+        }
+        y += h;
       }
-      y += h;
     }
   }
 
@@ -333,15 +354,16 @@ export function paintLogo(logo, facing, size = 512) {
       fillStroke(ctx, (g) => starPath(g, cx, cy + S * 0.03, S * 0.44, S * 0.18), logo.fill, logo.stroke, S * 0.04, logo.stroke2, S * 0.02);
       break;
     case 'streak': {
-      // Bills "Charge": a long red streak sweeping from the brow to the back
+      // Bills "Charge": a long red streak sweeping from the brow (+x, narrow) down to the back,
+      // where it is thickest (BUF sheet)
       ctx.save();
       ctx.translate(cx, cy);
       ctx.scale(dirX, 1);
       const path = (g) => {
-        g.moveTo(0.5 * S, -0.1 * S);
-        g.lineTo(-0.5 * S, -0.02 * S);
-        g.lineTo(-0.5 * S, 0.1 * S);
-        g.lineTo(0.5 * S, 0.06 * S);
+        g.moveTo(0.5 * S, -0.075 * S);
+        g.lineTo(-0.5 * S, -0.05 * S);
+        g.lineTo(-0.5 * S, 0.115 * S);
+        g.lineTo(0.5 * S, 0.01 * S);
         g.closePath();
       };
       fillStroke(ctx, path, logo.fill, logo.stroke, S * 0.03);
@@ -354,6 +376,41 @@ export function paintLogo(logo, facing, size = 512) {
         : [[-0.46, -0.1], [0.06, -0.2], [0.02, -0.06], [0.46, -0.12], [-0.08, 0.16], [-0.02, 0.02], [-0.46, 0.08]];
       const path = (g) => pts.forEach(([x, y], i) => (i ? g.lineTo(cx + x * S * dirX, cy + y * S) : g.moveTo(cx + x * S * dirX, cy + y * S)));
       fillStroke(ctx, (g) => { path(g); g.closePath(); }, logo.fill, logo.stroke, S * 0.035);
+      break;
+    }
+    case 'bars': {
+      // UCLA shoulder stripes (Colts): parallel bars running front to back over
+      // the shoulder. stripes: [[colour|null, width as a fraction of the canvas], ...]
+      // centred left to right, len = fraction of the canvas height, skew = lean (x per y)
+      const total = logo.stripes.reduce((a, [, w]) => a + w, 0);
+      const len = logo.len ?? 0.9, sk = logo.skew ?? 0;
+      let x = -total / 2;
+      for (const [col, w] of logo.stripes) {
+        if (col) {
+          ctx.fillStyle = col;
+          const x0 = (x * dirX) * S + cx, x1 = ((x + w) * dirX) * S + cx;
+          const t = -len / 2 * S, b = len / 2 * S, d = sk * len * S / 2 * dirX;
+          ctx.beginPath();
+          ctx.moveTo(x0 + d, cy + t); ctx.lineTo(x1 + d, cy + t); ctx.lineTo(x1 - d, cy + b); ctx.lineTo(x0 - d, cy + b);
+          ctx.closePath(); ctx.fill();
+        }
+        x += w;
+      }
+      break;
+    }
+    case 'peak': {
+      // Broncos shoulder graphic: a wedge of colour over the shoulder with a
+      // jagged "mountain" spike under it. Outer edge of the arm is +x for 'right'.
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(dirX, 1);
+      const P = (pts) => (g) => { pts.forEach(([x, y], i) => (i ? g.lineTo(x * S, y * S) : g.moveTo(x * S, y * S))); g.closePath(); };
+      const wedge = P([[0.46, -0.46], [-0.34, -0.46], [-0.1, -0.2], [0.46, 0.1]]);
+      fillStroke(ctx, wedge, logo.fill, logo.fill, S * 0.01);
+      const sp = logo.spike || logo.stroke || logo.fill;
+      fillStroke(ctx, P([[0.46, -0.02], [-0.36, -0.28], [0.46, 0.22]]), sp, sp, S * 0.01);
+      fillStroke(ctx, P([[0.46, 0.16], [0.08, 0.16], [0.46, 0.5]]), sp, sp, S * 0.01);
+      ctx.restore();
       break;
     }
     case 'wing': {
@@ -388,6 +445,93 @@ export function paintLogo(logo, facing, size = 512) {
         g.closePath();
       };
       fillStroke(ctx, path, logo.fill, logo.stroke, S * 0.035);
+      ctx.restore();
+      break;
+    }
+    case 'sleevehorn': {
+      // Rams 2026 sleeve horn: a C-curl on the outside of the shoulder cap, wrapping round the
+      // swoosh. Full width along the top of the cap (cut off by the front of the decal, where it
+      // runs on over the shoulder), thickest down the back, then round the bottom of the sleeve,
+      // tapering to a point under the swoosh; the open side faces the front. A slight spiral:
+      // the bottom limb sits a little inside the top one.
+      //   weight: thickness multiplier (1 = default); line: colour of the thin ridge line that
+      //   runs inside the top limb (the sleeve colour on the real jerseys); lineW: its width
+      //   (unit = mark size, default 0.016); outline / outlineW: an optional edge round the horn.
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(-dirX * S, -S);          // unit coords, +x toward the front, +y up
+      // centreline: a straight run along the top from beyond the front edge, then the spiral
+      // from the top (a = pi/2) round the back and bottom to the tip (t = 1)
+      const k = logo.weight ?? 1, a0 = Math.PI / 2, a1 = 2 * Math.PI - 0.3, N = 120, lead = 0.62;
+      const rad = (t) => 0.36 - 0.06 * Math.max(0, t);
+      const wid = (t) => k * 0.2 * (t < 0.3 ? 0.9 + 0.1 * Math.max(0, t / 0.3) : t < 0.55 ? 1 : ((1 - t) / 0.45) ** 0.85);
+      // t < 0 is the straight lead-in: x from `lead` back to 0 along y = rad(0)
+      const t0 = -0.25;
+      const at = (t, off) => {
+        if (t < 0) return [lead * (t / t0), rad(0) + off];
+        const a = a0 + (a1 - a0) * t, r = rad(t) + off;
+        return [r * Math.cos(a), r * Math.sin(a)];
+      };
+      const T = (i) => t0 + (1 - t0) * (i / N);
+      const strip = (g, off, half, i0 = 0, i1 = N) => {
+        for (let i = i0; i <= i1; i++) g.lineTo(...at(T(i), off(T(i)) + half(T(i))));
+        for (let i = i1; i >= i0; i--) g.lineTo(...at(T(i), off(T(i)) - half(T(i))));
+        g.closePath();
+      };
+      const zero = () => 0;
+      if (logo.outline) {
+        const ow = logo.outlineW ?? 0.012;
+        ctx.fillStyle = logo.outline;
+        ctx.beginPath(); strip(ctx, zero, (t) => wid(t) / 2 + ow); ctx.fill();
+      }
+      ctx.fillStyle = logo.fill;
+      ctx.beginPath(); strip(ctx, zero, (t) => wid(t) / 2); ctx.fill();
+      if (logo.line) {
+        // ridge line: a thin line in the outer part of the top limb, fading out over the back
+        const lw = logo.lineW ?? 0.022, tEnd = 0.42;
+        const iEnd = Math.round(((tEnd - t0) / (1 - t0)) * N);
+        ctx.fillStyle = logo.line;
+        ctx.beginPath();
+        strip(ctx, (t) => wid(t) * 0.2, (t) => (lw / 2) * Math.min(1, (tEnd - t) / 0.25), 0, iEnd);
+        ctx.fill();
+      }
+      ctx.restore();
+      break;
+    }
+    case 'bullhorn': {
+      // Texans Battle Red helmet (2024): a procedural bull horn, not the bull-head logo. A wide
+      // crescent whose sharp point is at the top front; it sweeps back and down round the ear and
+      // runs forward along the bottom to a broad base, with a thin line (logo.line, the shell
+      // colour on the real decal) inside it following the curve. Traced from the club's art.
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(dirX * S * 0.94, S * 0.94);   // unit coords, +x toward the front, +y down
+      const smooth = (g, pts, first = true) => {
+        // Catmull-Rom through the points
+        if (first) g.moveTo(...pts[0]); else g.lineTo(...pts[0]);
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+          g.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+        }
+      };
+      const tip = [0.16, -0.456];
+      const outer = [tip, [-0.025, -0.4], [-0.21, -0.31], [-0.375, -0.175], [-0.444, 0], [-0.41, 0.15], [-0.275, 0.287], [-0.09, 0.375], [0.14, 0.445], [0.36, 0.49]];
+      const inner = [[0.44, 0.06], [0.29, 0.038], [0.1, 0], [-0.05, -0.062], [-0.106, -0.137], [-0.094, -0.237], [0, -0.35], tip];
+      const body = (g) => { smooth(g, outer); g.lineTo(0.44, 0.06); smooth(g, inner, false); g.closePath(); };
+      ctx.fillStyle = logo.fill;
+      ctx.beginPath(); body(ctx); ctx.fill();
+      if (logo.line) {
+        ctx.save();
+        ctx.beginPath(); body(ctx); ctx.clip();
+        const ltip = [-0.1375, -0.275];
+        ctx.fillStyle = logo.line;
+        ctx.beginPath();
+        smooth(ctx, [ltip, [-0.306, -0.112], [-0.306, 0.012], [-0.237, 0.125], [-0.087, 0.2], [0.1, 0.237], [0.275, 0.25], [0.5, 0.258]]);
+        ctx.lineTo(0.5, 0.232);
+        smooth(ctx, [[0.5, 0.232], [0.275, 0.225], [0.125, 0.2], [-0.05, 0.15], [-0.2, 0.075], [-0.256, -0.025], [-0.237, -0.15], ltip], false);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
       ctx.restore();
       break;
     }
@@ -556,8 +700,10 @@ export function paintLogo(logo, facing, size = 512) {
       }
       const len = logo.s.length;
       const h = bg ? (len > 2 ? S * 0.22 : S * 0.42) : (len > 3 ? S * 0.26 : len > 1 ? S * 0.5 : S * 0.66);
-      const sx = len > 3 && !bg ? 0.62 : len > 3 ? 0.55 : 1;
-      drawLettering(ctx, logo.s, cx, cy + (logo.stars ? -S * 0.06 : 0), h, sx,
+      const sx = logo.scaleX ?? (len > 3 && !bg ? 0.62 : len > 3 ? 0.55 : 1);
+      // shift: [x toward the front, y down] of the lettering in mark units (room for a star)
+      const [tdx, tdy] = logo.shift || [0, 0];
+      drawLettering(ctx, logo.s, cx + dirX * S * tdx, cy + S * tdy + (logo.stars ? -S * 0.06 : 0), h, sx,
         [logo.fill, logo.stroke, logo.stroke2], font, S * 0.022, logo.stroke2 ? S * 0.016 : 0);
       if (logo.underline) {
         ctx.fillStyle = logo.underline;
@@ -569,7 +715,9 @@ export function paintLogo(logo, facing, size = 512) {
       }
       if (logo.star) {
         ctx.fillStyle = logo.star;
-        ctx.beginPath(); starPath(ctx, cx + S * 0.02, cy - S * 0.02, S * 0.08, S * 0.035); ctx.fill();
+        // starAt: [x toward the front, y down, outer radius] in mark units (default: centred)
+        const [kx, ky, kr] = logo.starAt || [0.02, -0.02, 0.08];
+        ctx.beginPath(); starPath(ctx, cx + dirX * S * kx, cy + S * ky, S * kr, S * kr * 0.44); ctx.fill();
       }
       if (logo.spear) {
         ctx.strokeStyle = logo.spear; ctx.lineWidth = S * 0.03;

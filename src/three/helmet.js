@@ -7,35 +7,164 @@ import { numeralCanvas, numeralStyle } from './numerals.js';
 import { asset, loadGLB } from '../assets.js';
 import { loadLogo } from './logos.js';
 
-// SpeedFlex-style helmet (tools/build_helmet.py → public/models/helmet.glb).
-// The shell is painted per team (base colour + stripe), the flex-panel groove
-// and vents come from a baked bump map, logos are projected decals.
+// Riddell SpeedFlex (tools/build_helmet.py → public/models/helmet.glb).
+// The shell is painted per team (base colour + stripe) under a clear coat; the
+// Flex-panel hinge step comes from a baked bump map; logos, numbers and the NFL
+// shield are vinyl decals that sit under the same clear coat.
+//
+// Helmet data used here (src/data/teams.js):
+//   shell, finish ('gloss' | 'matte' | 'metallic' | 'chrome'), stripe, pattern,
+//   mask (facemask colour, null = no mask), maskStyle ('2BD' | '2EG' | '3BD'),
+//   chinstrap (strap colour),
+//   logo ({ img | t, size, at }; size and at also apply to drawn marks),
+//   numbers, numAt, nameplate: { bg, fg, text } (bumper colours and lettering,
+//   default black plate with a white Riddell wordmark), cup (chin cup colour),
+//   nameplate.rear: { bg, fg, text } (rear bumper: colour and lettering in place of
+//   the moulded SPEEDFLEX), rearLogo: { img | t, size, up } (a mark at the back
+//   centre of the shell above the rear bumper and the NFL shield).
 
 const URL = 'public/models/helmet.glb';
 const DETAIL_URL = asset('public/models/helmet_detail.png');
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+// SF-2BD-SW (skill players, the default), SF-2EG-SW (eye guards), SF-3BD (lineman cage)
+const MASK_STYLES = ['2BD', '2EG', '3BD'];
 let modelPromise = null;
-// The Riddell nameplate bumper above the brow: black plate, white wordmark
-function nameplateTexture() {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 128;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#17181a';
-  ctx.fillRect(0, 0, 512, 128);
-  ctx.fillStyle = '#f4f4f4';
-  ctx.font = 'italic 900 78px "Barlow Condensed", "Arial Black", sans-serif';
+
+// glTF UVs have v down, so canvases map unflipped
+function canvasTexture(c, { srgb = true, flipY = false } = {}) {
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.flipY = flipY;
+  t.anisotropy = 8;
+  return t;
+}
+
+// The Riddell wordmark: heavy upright geometric sans with a dotless i.
+function wordmark(ctx, x, y, h, fill, text = 'Rıddell') {
+  ctx.save();
+  ctx.fillStyle = fill;
+  ctx.font = `900 ${h}px "Helvetica Neue", "Arial Black", Arial, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.save();
-  ctx.translate(256, 66);
-  ctx.scale(1.25, 1);
-  ctx.fillText('Riddell', 0, 0);
+  ctx.translate(x, y);
+  ctx.scale(1.02, 1);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = `${-h * 0.02}px`;
+  ctx.fillText(text, 0, 0);
   ctx.restore();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.flipY = false;
-  t.anisotropy = 8;
+}
+
+// Nameplate bumper: UV u runs across the plate, v from its bottom to its top.
+function nameplateTexture(bg = '#141517', fg = '#f4f4f4', text) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 224;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, c.width, c.height);
+  // faint moulded sheen toward the top edge
+  const g = ctx.createLinearGradient(0, 0, 0, c.height);
+  g.addColorStop(0, 'rgba(255,255,255,0.06)'); g.addColorStop(0.5, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
+  // the wordmark sits in the upper part of the plate: the top bar crosses its lower third
+  wordmark(ctx, 256, 86, 92, fg, text || 'Rıddell');
+  return canvasTexture(c);
+}
+
+// Brow pad inside the front of the shell, "SPEEDFLEX" in grey on black vinyl.
+function browTexture() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#18191b';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#8d9096';
+  ctx.font = '700 46px "Helvetica Neue", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.save(); ctx.translate(512, 100); ctx.scale(1.05, 1); ctx.fillText('SPEEDFLEX', 0, 0); ctx.restore();
+  ctx.fillStyle = '#b5352d';
+  ctx.font = '800 22px "Helvetica Neue", Arial, sans-serif';
+  ctx.fillText('Rıddell', 512, 64);
+  return canvasTexture(c);
+}
+
+// Rear bumper: black rubber with the SPEEDFLEX name moulded in, a shade
+// lighter. UV u runs around the back from the player's right side, so seen from
+// behind it is mirrored.
+// rear: { bg, fg, text } paints the bumper and sets team lettering in place of the
+// moulded name (Texans Rivalries "TEXANS").
+function backplateTexture(rear = null) {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 96;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = rear?.bg || '#141517';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.save();
+  ctx.translate(512, 52); ctx.scale(-1, 1);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (rear?.text) {
+    ctx.fillStyle = rear.fg || '#f4f4f4';
+    ctx.font = '900 58px "Helvetica Neue", "Arial Black", Arial, sans-serif';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '8px';
+    ctx.fillText(rear.text, 0, 0);
+  } else {
+    ctx.fillStyle = '#26282b';
+    ctx.font = '800 40px "Helvetica Neue", Arial, sans-serif';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
+    ctx.fillText('SPEEDFLEX', 0, 0);
+  }
+  ctx.restore();
+  return canvasTexture(c);
+}
+
+// Metallic paint: fine flake as roughness / metalness noise in the shell UVs
+// (~0.4 mm per texel), under a smooth clear coat.
+let flakeMaps = null;
+function flake() {
+  if (flakeMaps) return flakeMaps;
+  const W = 1024, H = 512;
+  const mk = (lo, hi, seed) => {
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    const img = ctx.createImageData(W, H);
+    let s = seed;
+    for (let i = 0; i < W * H; i++) {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      const r = s / 4294967296;
+      const v = Math.round(255 * (lo + (hi - lo) * (r * r)));
+      img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    const t = canvasTexture(c, { srgb: false, flipY: false });
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(2, 2);
+    return t;
+  };
+  flakeMaps = { rough: mk(0.55, 1.0, 7), metal: mk(0.6, 1.0, 11) };
+  return flakeMaps;
+}
+
+// Vinyl decal: a hair of darker edge where the film meets the paint.
+const vinylCache = new WeakMap();
+function vinyl(tex) {
+  const img = tex?.image;
+  if (!img || !img.width) return tex;
+  if (vinylCache.has(img)) return vinylCache.get(img);
+  const s = Math.min(1, 1024 / Math.max(img.width, img.height));
+  const w = Math.max(2, Math.round(img.width * s)), h = Math.max(2, Math.round(img.height * s));
+  const pad = 4;
+  const c = document.createElement('canvas');
+  c.width = w + pad * 2; c.height = h + pad * 2;
+  const ctx = c.getContext('2d');
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = Math.max(1, w / 400);
+  ctx.drawImage(img, pad, pad, w, h);
+  ctx.shadowColor = 'transparent';
+  ctx.drawImage(img, pad, pad, w, h);
+  const t = canvasTexture(c, { flipY: tex.flipY });
+  t.colorSpace = tex.colorSpace;
+  t.userData.padFrac = [pad / c.width, pad / c.height];
+  vinylCache.set(img, t);
   return t;
 }
 
@@ -45,18 +174,28 @@ export class Helmet {
     this.decals = [];
     this.textures = [];
     this.mats = {
-      shell: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: 0.06, roughness: 0.2 }),
-      liner: new THREE.MeshStandardMaterial({ color: '#1a1b1e', roughness: 0.9, side: THREE.DoubleSide }),
-      trim: new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.65 }),
-      mask: new THREE.MeshPhysicalMaterial({ roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2 }),
-      // SpeedFlex hardware: clear polycarbonate clips with grey screws, black buckles
-      clip: new THREE.MeshPhysicalMaterial({ color: '#dfe6ea', roughness: 0.12, clearcoat: 1, transparent: true, opacity: 0.55, depthWrite: false }),
-      screw: new THREE.MeshStandardMaterial({ color: '#8a8d91', roughness: 0.35, metalness: 0.8 }),
-      buckle: new THREE.MeshStandardMaterial({ color: '#141416', roughness: 0.45 }),
-      bumper: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.3, clearcoat: 0.6 }),
-      cup: new THREE.MeshPhysicalMaterial({ color: '#f2f2f2', roughness: 0.35, clearcoat: 0.4 }),
-      strap: new THREE.MeshStandardMaterial({ color: '#18191b', roughness: 0.7 }),
-      pad: new THREE.MeshStandardMaterial({ color: '#1d1e21', roughness: 0.95 }),
+      shell: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: 0.04, roughness: 0.22 }),
+      liner: new THREE.MeshStandardMaterial({ color: '#141517', roughness: 0.92, side: THREE.DoubleSide }),
+      trim: new THREE.MeshPhysicalMaterial({ color: '#101113', roughness: 0.55, clearcoat: 0.2, clearcoatRoughness: 0.5 }),
+      // powder-coated steel: satin with a soft sheen
+      mask: new THREE.MeshPhysicalMaterial({ roughness: 0.38, metalness: 0.0, clearcoat: 0.55, clearcoatRoughness: 0.28 }),
+      // SpeedFlex quick-release clips: clear polycarbonate, chrome release buttons
+      clip: new THREE.MeshPhysicalMaterial({
+        color: '#e4ecf0', roughness: 0.08, metalness: 0, transmission: 0.6, thickness: 0.006, ior: 1.58,
+        clearcoat: 1, transparent: true, opacity: 0.78, depthWrite: false,
+      }),
+      button: new THREE.MeshStandardMaterial({ color: '#d9dcdf', roughness: 0.16, metalness: 1 }),
+      clipscrew: new THREE.MeshStandardMaterial({ color: '#a7abb0', roughness: 0.3, metalness: 1 }),
+      screw: new THREE.MeshStandardMaterial({ color: '#9a9ea3', roughness: 0.3, metalness: 1 }),
+      buckle: new THREE.MeshPhysicalMaterial({ color: '#141416', roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.4 }),
+      ratchet: new THREE.MeshPhysicalMaterial({ color: '#c9ced3', roughness: 0.25, transparent: true, opacity: 0.75, depthWrite: false }),
+      bumper: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.3 }),
+      backplate: new THREE.MeshPhysicalMaterial({ color: '#141517', roughness: 0.55, clearcoat: 0.15 }),
+      cup: new THREE.MeshPhysicalMaterial({ color: '#f2f2f2', roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.2 }),
+      strap: new THREE.MeshStandardMaterial({ color: '#18191b', roughness: 0.75 }),
+      pad: new THREE.MeshStandardMaterial({ color: '#1b1c1f', roughness: 0.9, side: THREE.DoubleSide }),
+      cuppad: new THREE.MeshStandardMaterial({ color: '#d9dadc', roughness: 0.85, side: THREE.DoubleSide }),
+      browpad: new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6 }),
     };
     modelPromise ||= Promise.all([
       loadGLB(loader, URL),
@@ -69,16 +208,24 @@ export class Helmet {
         if (!o.isMesh) return;
         const key = o.material.name.split('.')[0];
         if (this.mats[key]) o.material = this.mats[key];
-        o.castShadow = true;
+        // clear plastic and thin hardware: no shadow acne from the shell
+        o.castShadow = !['clip', 'ratchet', 'liner', 'pad', 'browpad'].includes(key);
         o.receiveShadow = true;
+        if (key === 'clip' || key === 'ratchet') o.renderOrder = 3;
+        // facemask meshes are named after their style (M2BD_, M2EG_, M3BD_)
+        let n = o; let style = null;
+        while (n && !style) { style = /^M(2BD|2EG|3BD)_/.exec(n.name || '')?.[1]; n = n.parent; }
+        if (style) o.userData.maskStyle = style;
         (this.parts[key] ||= []).push(o);
       });
-      this.mats.bumper.map = nameplateTexture();
+      this.mats.browpad.map = browTexture();
+      this.mats.backplate.map = backplateTexture();
+      this.mats.backplate.color.set('#ffffff');
       if (detail) {
         detail.flipY = false;
         detail.wrapS = THREE.RepeatWrapping;
         this.mats.shell.bumpMap = detail;
-        this.mats.shell.bumpScale = 1.2;
+        this.mats.shell.bumpScale = 1.6;
       }
       this.group.add(root);
       this.loaded = true;
@@ -98,37 +245,59 @@ export class Helmet {
     if (!this.loaded) return;
     const token = (this.token = Symbol('helmet'));
     const logo = helmet.logo || { t: 'none' };
-    const [img, shield] = await Promise.all([logo.img ? loadLogo(logo.img) : null, loadLogo('NFL_shield')]);
+    const rl = helmet.rearLogo || null;
+    const [img, shield, rimg] = await Promise.all([logo.img ? loadLogo(logo.img) : null, loadLogo('NFL_shield'), rl?.img ? loadLogo(rl.img) : null]);
     if (token !== this.token) return;
     this.clear();
 
     const m = this.mats.shell;
     const { canvas } = paintHelmet(helmet);
-    const map = new THREE.CanvasTexture(canvas);
-    map.colorSpace = THREE.SRGBColorSpace;
-    map.flipY = false;
+    const map = canvasTexture(canvas, { flipY: false });
     map.wrapS = THREE.RepeatWrapping;
-    map.anisotropy = 8;
     this.textures.push(map);
     m.map = map;
     const fin = helmet.finish;
-    m.roughness = fin === 'matte' ? 0.6 : fin === 'metallic' ? 0.3 : fin === 'chrome' ? 0.08 : 0.18;
-    m.metalness = fin === 'metallic' ? 0.55 : fin === 'chrome' ? 0.95 : 0;
+    // gloss: urethane clear coat over pigmented shell; matte: flat clear, no
+    // coat; metallic: flake under the coat; chrome: vacuum-metallised film
+    m.roughness = fin === 'matte' ? 0.62 : fin === 'metallic' ? 0.34 : fin === 'chrome' ? 0.06 : 0.3;
+    m.metalness = fin === 'metallic' ? 0.75 : fin === 'chrome' ? 1 : 0;
     m.clearcoat = fin === 'matte' ? 0 : 1;
-    m.clearcoatRoughness = fin === 'metallic' ? 0.14 : 0.05;
+    m.clearcoatRoughness = fin === 'metallic' ? 0.06 : 0.035;
+    m.sheen = fin === 'matte' ? 0.25 : 0;
+    m.sheenRoughness = 0.6;
+    const fl = fin === 'metallic' ? flake() : null;
+    m.roughnessMap = fl ? fl.rough : null;
+    m.metalnessMap = fl ? fl.metal : null;
     m.needsUpdate = true;
 
     const hasMask = Boolean(helmet.mask);
-    for (const k of ['mask', 'clip']) for (const o of this.parts[k] || []) o.visible = hasMask;
+    const style = MASK_STYLES.includes(helmet.maskStyle) ? helmet.maskStyle : '2BD';
+    for (const k of ['clip', 'button', 'clipscrew']) for (const o of this.parts[k] || []) o.visible = hasMask;
+    for (const o of this.parts.mask || []) o.visible = hasMask && o.userData.maskStyle === style;
     if (hasMask) this.mats.mask.color.set(helmet.mask);
-    this.mats.cup.color.set('#f2f2f2');
+    this.mats.cup.color.set(helmet.cup || '#f2f2f2');
     this.mats.strap.color.set(helmet.chinstrap || '#18191b');
+    const np = helmet.nameplate || {};
+    this.mats.bumper.map?.dispose();
+    this.mats.bumper.map = nameplateTexture(np.bg, np.fg, np.text);
+    this.mats.bumper.needsUpdate = true;
+    if (np.rear || this.mats.backplate.userData.team) {
+      this.mats.backplate.map?.dispose();
+      this.mats.backplate.map = backplateTexture(np.rear);
+      this.mats.backplate.userData.team = Boolean(np.rear);
+      this.mats.backplate.needsUpdate = true;
+    }
 
     this.group.updateMatrixWorld(true);
     const shell = this.parts.shell || [];
-    const finish = { roughness: m.roughness, metalness: m.metalness * 0.4, clearcoat: m.clearcoat, clearcoatRoughness: 0.05 };
+    // decals take the shell's clear coat (but not its flake)
+    const finish = {
+      roughness: fin === 'matte' ? 0.5 : 0.3, metalness: fin === 'chrome' ? 0.2 : 0,
+      clearcoat: m.clearcoat, clearcoatRoughness: 0.04,
+    };
     const sides = logo.side === 'right' ? [-1] : [1, -1];   // the player's right is -x
     this.shieldDecal(shield, finish);
+    if (rl) this.rearDecal(rl, rimg, finish);
     for (const sx of sides) {
       // +x side: seen from outside, the front of the helmet is on the viewer's left
       const facing = sx > 0 ? 'left' : 'right';
@@ -140,16 +309,16 @@ export class Helmet {
       } else if (logo.t && logo.t !== 'none') {
         const c = paintLogo(logo, facing);
         if (c) {
-          const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
-          const size = { wing: 0.23, ramhorn: 0.25, horn: 0.15, bolt: 0.17, horseshoe: 0.12, steelmark: 0.085 }[logo.t] || 0.11;
-          const at = logo.t === 'wing' ? [0.35, 0.25] : logo.t === 'ramhorn' ? [0.25, 0.2] : logo.at;
+          const t = canvasTexture(c, { flipY: true }); this.textures.push(t);
+          const size = logo.size ?? ({ wing: 0.23, ramhorn: 0.25, horn: 0.15, bolt: 0.17, horseshoe: 0.12, steelmark: 0.085 }[logo.t] || 0.11);
+          const at = logo.at ?? (logo.t === 'wing' ? [0.35, 0.25] : logo.t === 'ramhorn' ? [0.25, 0.2] : undefined);
           this.decal(shell, this.hitSide(sx, at), size, size, t, finish, false);
         }
       }
       if (helmet.numbers) {
         const N = numeralCanvas(String(player.number ?? ''), [helmet.numbers], numeralStyle(player.font) ? player.font : 'block', { px: 160 });
         if (N) {
-          const t = new THREE.CanvasTexture(N.canvas); t.colorSpace = THREE.SRGBColorSpace; this.textures.push(t);
+          const t = canvasTexture(N.canvas, { flipY: true }); this.textures.push(t);
           const h = 0.045 / N.inkHeight;
           this.decal(shell, this.hitSide(sx, helmet.numAt || [-0.25, -0.75]), h * N.aspect, h, t, finish, false);
         }
@@ -157,10 +326,10 @@ export class Helmet {
     }
   }
 
-  // NFL shield decal, low on the back of the shell
+  // NFL shield decal, low on the back of the shell above the rear bumper
   shieldDecal(shield, finish) {
     if (!shield?.image) return;
-    const dir = new THREE.Vector3(0, -0.5, -1).normalize();
+    const dir = new THREE.Vector3(0, -0.36, -1).normalize();
     const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
     const rc = new THREE.Raycaster(center.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate(), 0, 1);
     const hit = rc.intersectObjects(this.parts.shell || [], false)[0];
@@ -168,8 +337,28 @@ export class Helmet {
     this.decal(this.parts.shell || [], hit, 0.026 * a, 0.026, shield, finish, false);
   }
 
-  // point on the shell side: at = [up, back] offsets of the aim direction
-  hitSide(sx, at = [0.2, 0.06]) {
+  // Mark on the back of the shell, centred above the rear bumper and the NFL shield.
+  // up: tilt of the aim (default 0, about mid-height on the back); size: width in metres (default 0.06).
+  rearDecal(rl, img, finish) {
+    const dir = new THREE.Vector3(0, rl.up ?? 0, -1).normalize();
+    const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
+    const rc = new THREE.Raycaster(center.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate(), 0, 1);
+    const hit = rc.intersectObjects(this.parts.shell || [], false)[0];
+    const w = rl.size || 0.06;
+    if (img?.image) {
+      this.decal(this.parts.shell || [], hit, w, w * img.image.height / img.image.width, img, finish, false);
+    } else if (rl.t) {
+      const c = paintLogo(rl, 'left');
+      if (!c) return;
+      const t = canvasTexture(c, { flipY: true }); this.textures.push(t);
+      this.decal(this.parts.shell || [], hit, w, w, t, finish, false);
+    }
+  }
+
+  // point on the shell side: at = [up, back] offsets of the aim direction. The
+  // default centres a mark about 6 cm above eye level, just behind the ear line,
+  // where NFL decals sit on a SpeedFlex (clear of the strap rocker below).
+  hitSide(sx, at = [0.5, 0.08]) {
     const [up, back] = at;
     const dir = new THREE.Vector3(sx, up, -back).normalize();
     const center = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld);
@@ -180,18 +369,25 @@ export class Helmet {
 
   decal(meshes, hit, w, h, texture, finish, flip) {
     if (!hit || !texture) return;
+    // vinyl edge; the padded canvas is a little larger than the mark
+    const tex = vinyl(texture);
+    if (tex !== texture) {
+      const [px, py] = tex.userData.padFrac;
+      w /= 1 - 2 * px; h /= 1 - 2 * py;
+    }
     const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
     const helper = new THREE.Object3D();
     helper.position.copy(hit.point);
     helper.lookAt(hit.point.clone().add(n));
     const mat = new THREE.MeshPhysicalMaterial({
-      map: texture, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, ...finish,
+      map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, ...finish,
     });
     const inv = new THREE.Matrix4().copy(this.group.matrixWorld).invert();
     for (const mesh of meshes) {
       const geo = new DecalGeometry(mesh, hit.point, helper.rotation, new THREE.Vector3(w, h, 0.08));
       if (!geo.attributes.position.count) { geo.dispose(); continue; }
-      // keep only triangles facing the projector (avoids smearing at the rim)
+      // keep only triangles facing the projector (avoids smearing at the rim
+      // and onto the vent walls)
       const pos = geo.attributes.position, nor = geo.attributes.normal, uv = geo.attributes.uv;
       const idx = [];
       const tmp = new THREE.Vector3();
@@ -205,6 +401,7 @@ export class Helmet {
       geo.applyMatrix4(inv);
       const d = new THREE.Mesh(geo, mat);
       d.renderOrder = 2;
+      d.receiveShadow = true;
       this.group.add(d);
       this.decals.push(d);
     }

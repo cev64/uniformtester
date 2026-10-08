@@ -3,3 +3,8 @@ dist
 dist-single
 .DS_Store
 research/*.log
+shots/
+.claude/worktrees/
+__pycache__/
+*.pyc
+research/logos_src/sheets/

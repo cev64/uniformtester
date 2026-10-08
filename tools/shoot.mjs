@@ -1,0 +1,161 @@
+// Screenshots of the 3D stage for reviewing changes without a browser.
+//
+//   node tools/shoot.mjs --team BUF --look Home --views front,three,back,helmet --out /tmp/shots
+//   node tools/shoot.mjs --team PIT --sel white,black,gold,black --number 7 --name SMITH
+//   node tools/shoot.mjs --team "LAR:Road@backclose,HOU:Battle Red@helmetback+helmettop,BAL@numclose"
+//     (per-team look after ':' and per-team views after '@', joined with '+'; they override --look / --views)
+//
+// Starts `vite` on a free port (or uses --url), loads the page with ?debug,
+// dresses the player through window.__stage0 and saves one PNG per view as
+// <out>/<TEAM>_<look>_<view>.png. Needs Playwright (resolved from the project
+// or /opt/node-tools) and a Chromium build.
+import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
+import path from 'node:path';
+import net from 'node:net';
+
+const args = Object.fromEntries(process.argv.slice(2).reduce((acc, a, i, all) => {
+  if (a.startsWith('--')) acc.push([a.slice(2), all[i + 1] && !all[i + 1].startsWith('--') ? all[i + 1] : true]);
+  return acc;
+}, []));
+
+function loadPlaywright() {
+  for (const base of [process.cwd(), '/opt/node-tools']) {
+    try { return createRequire(path.join(base, 'package.json'))('playwright'); } catch { /* next */ }
+  }
+  throw new Error('playwright not found (npm i -D playwright, or use /opt/node-tools)');
+}
+
+const freePort = () => new Promise((r) => { const s = net.createServer(); s.listen(0, () => { const p = s.address().port; s.close(() => r(p)); }); });
+
+const VIEWS = {
+  front: { theta: 0, phi: 1.43, r: 5.3, target: [0, 0.98, 0] },
+  three: { theta: 0.62, phi: 1.36, r: 5.3, target: [0, 0.98, 0] },
+  side: { theta: Math.PI / 2, phi: 1.43, r: 5.3, target: [0, 0.98, 0] },
+  back: { theta: Math.PI, phi: 1.43, r: 5.3, target: [0, 0.98, 0] },
+  helmet: { theta: 0.75, phi: 1.45, r: 1.25, target: [0, 1.72, 0] },
+  // centred forward of the shell so the facemask stays in frame
+  helmetside: { theta: Math.PI / 2, phi: 1.5, r: 1.25, target: [0, 1.73, 0.1] },
+  helmetsideR: { theta: -Math.PI / 2, phi: 1.5, r: 1.25, target: [0, 1.73, 0.1] },
+  helmetfront: { theta: 0, phi: 1.5, r: 1.1, target: [0, 1.72, 0] },
+  helmetback: { theta: Math.PI * 0.8, phi: 1.35, r: 1.1, target: [0, 1.72, 0] },
+  // straight down on the crown (front of the helmet at the bottom of the frame), for measuring stripe widths
+  helmettop: { theta: 0, phi: 0.02, r: 1.0, target: [0, 1.76, 0.02] },
+  chest: { theta: 0.2, phi: 1.5, r: 2.0, target: [0, 1.35, 0] },
+  backtop: { theta: Math.PI, phi: 1.5, r: 2.0, target: [0, 1.35, 0] },
+  shoulder: { theta: 1.1, phi: 1.2, r: 1.6, target: [0.15, 1.45, 0] },
+  pants: { theta: 0.5, phi: 1.5, r: 2.4, target: [0, 0.75, 0] },
+  feet: { theta: 0.7, phi: 1.3, r: 1.5, target: [0, 0.2, 0] },
+  // cleat close-ups: lateral side of the left shoe (and of the right), and a 3/4 from the front-outside
+  cleatside: { theta: Math.PI / 2, phi: 1.53, r: 0.62, target: [0.12, 0.065, 0.02] },
+  cleatsideR: { theta: -Math.PI / 2, phi: 1.53, r: 0.62, target: [-0.12, 0.065, 0.02] },
+  cleat34: { theta: 0.85, phi: 1.2, r: 0.7, target: [0.12, 0.06, 0.03] },
+  towel: { theta: -0.35, phi: 1.5, r: 1.1, target: [-0.08, 0.88, 0] },
+  // close-ups for cloth, stitching and branding detail
+  numclose: { theta: 0.25, phi: 1.5, r: 0.9, target: [0.04, 1.32, 0] },
+  neck: { theta: 0.1, phi: 1.4, r: 0.75, target: [0, 1.56, 0] },
+  sleeve: { theta: 1.15, phi: 1.45, r: 1.0, target: [0.25, 1.48, 0] },
+  sleeveR: { theta: -1.15, phi: 1.45, r: 1.0, target: [-0.25, 1.48, 0] },
+  hip: { theta: 0.35, phi: 1.5, r: 1.0, target: [0, 1.08, 0] },
+  backclose: { theta: Math.PI + 0.25, phi: 1.5, r: 1.0, target: [0, 1.45, 0] },
+  side3: { theta: 1.0, phi: 1.4, r: 3.2, target: [0, 1.2, 0] },
+  shouldertop: { theta: 0.15, phi: 0.75, r: 1.3, target: [0, 1.55, 0] },
+};
+
+const out = args.out || 'shots';
+fs.mkdirSync(out, { recursive: true });
+const views = String(args.views || 'front,three,back,helmet').split(',');
+const W = Number(args.w || 900), H = Number(args.h || 1100);
+
+let server = null;
+let url = args.url;
+// Wait for our own Vite to report it is listening. Polling the URL is not
+// enough: if another process grabs the port first, --strictPort makes our
+// server exit and the poll would succeed against someone else's server.
+const startVite = (port) => new Promise((resolve) => {
+  const child = spawn('npx', ['vite', '--port', String(port), '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'], detached: true, env: { ...process.env, NO_COLOR: '1' } });
+  let log = '';
+  const timer = setTimeout(() => resolve(null), 30000);
+  const onData = (d) => {
+    log += d;
+    if (log.includes(`localhost:${port}`)) { clearTimeout(timer); resolve(child); }
+  };
+  child.stdout.on('data', onData);
+  child.stderr.on('data', onData);
+  child.on('exit', () => { clearTimeout(timer); resolve(null); });
+});
+if (!url) {
+  for (let attempt = 0; attempt < 5 && !server; attempt++) {
+    const port = await freePort();
+    server = await startVite(port);
+    url = `http://localhost:${port}/`;
+  }
+  if (!server) throw new Error('could not start vite');
+  server.stdout.resume();
+  server.stderr.resume();
+  for (let i = 0; i < 100; i++) {
+    try { if ((await fetch(url)).ok) break; } catch { /* starting */ }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+}
+
+const { chromium } = loadPlaywright();
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+try {
+  const page = await browser.newPage({ viewport: { width: W + 380, height: H } });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto(url + '?debug', { waitUntil: 'networkidle', timeout: 180000 });
+  // hide the UI chrome over the canvas
+  await page.addStyleTag({ content: '.stage-label,.stage-tools{display:none!important}' });
+  await page.waitForFunction(() => window.__stage0?.player?.loaded && window.__stage0.player.helmet.loaded, null, { timeout: 120000 });
+
+  // --patch 'js': run against window.__teams before dressing, to try out data
+  // changes without editing teams.js, e.g. --patch "__teams.NYJ.jerseys[0].plateArch = 0.3"
+  if (args.patch) await page.evaluate((code) => new Function(code)(), String(args.patch));
+  const teams = String(args.team || 'BUF').split(',');
+  for (const spec of teams) {
+    const [, teamId, lookArg, viewArg] = spec.match(/^([^:@]+)(?::([^@]+))?(?:@(.+))?$/);
+    const looks = await page.evaluate(([id]) => window.__teams[id].looks.map((l) => l.name), [teamId]);
+    const look = lookArg || args.look;
+    const wanted = args.sel ? ['custom'] : look === 'all' ? looks : [look || looks[0]];
+    const teamViews = viewArg ? viewArg.split('+') : views;
+    for (const lookName of wanted) {
+      await page.evaluate(async ([id, lookName, sel, number, name, skin]) => {
+        const team = window.__teams[id];
+        const st = window.__stage0;
+        st.setAutoRotate(false);
+        st.running = false;   // render on demand: software GL is slow
+        let s;
+        if (sel) { const [h, j, p, so] = sel.split(','); s = { h, j, p, s: so }; } else {
+          const l = team.looks.find((x) => x.name === lookName) || team.looks[0];
+          s = { h: l.h, j: l.j, p: l.p, s: l.s };
+        }
+        await st.player.setUniform(team, s, { number, name, skin: Number(skin), gloves: 'jersey', cleats: 'auto' });
+        await st.player.helmet.ready;
+      }, [teamId, lookName, args.sel || null, String(args.number ?? '12'), String(args.name ?? 'PLAYER'), args.skin ?? 0]);
+      await page.waitForTimeout(Number(args.settle || 1200));
+      for (const v of teamViews) {
+        const view = VIEWS[v];
+        if (!view) { console.warn('unknown view', v); continue; }
+        await page.evaluate((view) => {
+          const THREE_V = window.__stage0.controls.target.constructor;
+          window.__stage0.tween = null;
+          window.__stage0.setView({ ...view, target: new THREE_V(...view.target) }, true);
+          window.__stage0.frame();
+        }, view);
+        await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => { window.__stage0.frame(); requestAnimationFrame(r); })));
+        const file = path.join(out, `${teamId}_${lookName.replace(/[^a-z0-9]+/gi, '-')}_${v}.png`);
+        const box = await page.locator('#stage-0').boundingBox();
+        await page.screenshot({ path: file, clip: box, animations: 'disabled', timeout: 120000 });
+        console.log(file);
+      }
+    }
+  }
+  if (errors.length) console.error('page errors:\n' + errors.join('\n'));
+} finally {
+  await browser.close();
+  if (server) try { process.kill(-server.pid); } catch { /* gone */ }
+}
