@@ -80,6 +80,8 @@ export const NUMERAL_STYLES = {
   broncos: { W: 0.54, th: 0.15, tv: 0.17, ro: 0.2, ri: 0.07, rt: 0.04, notch: 0, one: { flag: 0.12, base: false } },
   // Jaguars: squared counters inside clipped outer corners, flagged 1 without a foot
   jaguars: { cut: 'chamfer', ro: 0.12, ri: 0.0, rt: 0.01, th: 0.19, tv: 0.215, one: { flag: 0.12, base: false }, seven: 'stem' },
+  // Raiders: heavy squared block, clipped outer corners, sharp square counters, footed 1 (2021 and 2025 game photos)
+  raiders: { cut: 'chamfer', W: 0.6, th: 0.18, tv: 0.215, ro: 0.11, ri: 0.0, rt: 0.01, one: { flag: 0.17, base: true } },
 
   // ── team styles: NFC East + NFC North ──
   // Lions Rivalries: chamfered pro block leaning forward ("italicised numerals")

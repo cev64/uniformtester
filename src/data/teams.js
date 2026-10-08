@@ -656,20 +656,25 @@ export const TEAMS = [
   })(),
 
   (() => {
-    const SIL = '#C4C8CB', BK = '#000000';
+    // Raiders silver is a metallic grey (Pantone 877); it reads as a mid light grey under stadium light
+    const SIL = '#A9B0B4', SILP = '#B3B9BD', BK = '#000000';
     return {
       id: 'LV', city: 'Las Vegas', name: 'Raiders', conf: 'AFC', div: 'West',
-      colors: [BK, SIL, W], font: 'chiefs',
+      colors: [BK, SIL, W], font: 'raiders',
       helmets: [
-        { id: 'silver', name: 'Silver', tag: 'Primary', shell: '#BFC3C6', finish: 'metallic', mask: '#9EA2A6', stripe: [[BK, 2.6]], logo: { img: 'LV', size: 0.105 } },
+        // silver metallic shell, one black centre stripe, shield on both sides, grey mask (no second shell announced for 2026)
+        { id: 'silver', name: 'Silver', tag: 'Primary', shell: SIL, finish: 'metallic', mask: '#9EA2A6', stripe: [[BK, 2.9]], logo: { img: 'LV', size: 0.135 } },
       ],
       jerseys: [
-        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [SIL], tv: 'sleeve' },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, SIL], numO: [0.025, 0], tv: 'sleeve' },
-        { id: 'classic', name: 'Silver Numbers', tag: 'Throwback', base: W, num: [SIL, '#8F9396'], numO: [0.02, 0], tv: 'sleeve' },
+        // plain same-colour V collar, no sleeve stripes or sleeve logos; TV numbers on top of each shoulder with the swoosh in front of them.
+        // Sewn tackle twill numbers (Vapor F.U.S.E. Elite; stitched edges visible in 2025 game photos).
+        { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [SIL], tv: 'shoulder', numStyle: 'twill', swoosh: '#C9CED1', plateColor: SIL },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, SIL], numO: [0.022, 0], tv: 'shoulder', numStyle: 'twill', swoosh: BK, plateColor: BK, plateOutline: [SIL] },
+        // 1970 classic: silver numbers edged in black on white
+        { id: 'classic', name: 'Silver Numbers', tag: 'Throwback', base: W, num: [SIL, BK], numO: [0.02, 0], tv: 'shoulder', numStyle: 'twill', swoosh: BK, plateColor: SIL, plateOutline: [BK] },
       ],
       pants: [
-        { id: 'silver', name: 'Silver', base: SIL, stripe: [[BK, 3.2]] },
+        { id: 'silver', name: 'Silver', base: SILP, stripe: [[BK, 3.2]], swoosh: BK },
       ],
       socks: [
         { id: 'black', name: 'Black', base: BK },
@@ -677,7 +682,7 @@ export const TEAMS = [
       looks: [
         { name: 'Home', h: 'silver', j: 'black', p: 'silver', s: 'black', status: 'worn' },
         { name: 'Road', h: 'silver', j: 'white', p: 'silver', s: 'black', status: 'worn' },
-        { name: 'Classic Silver Numbers', h: 'silver', j: 'classic', p: 'silver', s: 'black', status: 'worn', note: 'Oct at NE' },
+        { name: 'Classic Silver Numbers', h: 'silver', j: 'classic', p: 'silver', s: 'black', note: 'Expected at New England, Week 5' },
       ],
     };
   })(),
