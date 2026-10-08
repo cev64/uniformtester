@@ -659,7 +659,7 @@ export class Player {
         if (where === 'top') {
           at = sh.clone().add(V(sx * 0.005, 0.07, 0)); dir = V(sx * 0.45, 1, 0); up = V(0, 0, -1);
         } else if (where === 'outer') {
-          at = sh.clone().lerp(el, 0.2); dir = V(sx, 0.12, 0.2);
+          at = sh.clone().lerp(el, sp.along ?? 0.2); dir = V(sx, 0.12, 0.2);
         } else if (where === 'cuff') {
           // the decal's +x runs down the arm with the 'left' artwork on the left arm, so the outer edge meets the hem
           at = sh.clone().lerp(el, 0.25); dir = V(sx, 0, 0.25); up = V(0, 0, 1); facing = sx > 0 ? 'left' : 'right';

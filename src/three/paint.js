@@ -444,6 +444,27 @@ export function paintLogo(logo, facing, size = 512) {
       ctx.restore();
       break;
     }
+    case 'sleevehorn': {
+      // Rams 2026 sleeve horn: a C-curl on the outside of the shoulder cap, wrapping round the
+      // swoosh. Thick along the top of the cap, down the back of the shoulder and round the bottom
+      // of the sleeve to a point under the swoosh; the open side faces the front.
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(-dirX * S, -S);          // unit coords, +x toward the front, +y up
+      ctx.fillStyle = logo.fill;
+      ctx.beginPath();
+      ctx.moveTo(0.24, 0.27);
+      ctx.bezierCurveTo(0.1, 0.38, -0.22, 0.4, -0.36, 0.2);
+      ctx.bezierCurveTo(-0.5, 0.0, -0.4, -0.3, -0.12, -0.35);
+      ctx.bezierCurveTo(0.04, -0.37, 0.18, -0.33, 0.27, -0.24);
+      ctx.bezierCurveTo(0.14, -0.27, 0.0, -0.27, -0.1, -0.22);
+      ctx.bezierCurveTo(-0.26, -0.15, -0.3, 0.06, -0.2, 0.17);
+      ctx.bezierCurveTo(-0.08, 0.28, 0.1, 0.29, 0.24, 0.27);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      break;
+    }
     case 'ramhorn': {
       // Big curling horn that starts at the forehead and wraps the ear
       ctx.save();

@@ -1314,7 +1314,7 @@ export const TEAMS = [
     const ramhorn = (fill) => ({ t: 'ramhorn', fill, stroke: fill, size: 0.2, at: [0.2, -0.1] });
     // horn sleeve: the sleeve in one colour (cap) with the horn curling round it in the other.
     // Royal and Midnight jerseys: royal sleeve, Sol horn. White jersey: Sol sleeve, royal horn.
-    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, sweep: { t: 'horn', c: horn } });
+    const rams = (cap, horn) => ({ sleeve: { cap, top: [cap, 0] }, shoulder: { t: 'sleevehorn', fill: horn, at: 'outer', along: 0.04, size: 0.22 } });
     // 2026: a Sol "LA" monogram on royal backing sits over the back of the collar
     const neck = { s: 'LA', c: SOL, bg: ROY, font: 'block' };
     return {

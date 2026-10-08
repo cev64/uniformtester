@@ -148,15 +148,15 @@ Then stop.
    `player.js`): a tapered panel along the raglan seam from the collar to the underarm, with an edge
    line. It's drawn per side in front-view world metres and projected from the front, angled outward,
    across the torso/sleeve seam. The old torso `panels.raglan` stroke is no longer used by CAR.
-3. **Rams shoulder horn (LAR): IN PROGRESS, needs the real 2026 design.** The flat `loopPattern: 'horn'`
-   band is replaced by `sweep: { t: 'horn', c }` (set in the `rams()` helper, so all LAR jerseys using
-   it get it). It draws a crescent from the collar over the cap and down the sleeve. **The user points
-   out that the Rams updated the horn on all their jerseys for 2026**, and the current curve is a guess,
-   not traced from it. Find official 2026 Rams uniform photos (team site / unveiling, Apr 2026) of
-   Home, Road and the alternates. Then trace the horn's outline, where it starts at the collar, how it
-   wraps the cap, and where its point ends on the sleeve, and redraw the `horn` branch of `sweepPanel`
-   from that (add more control points as needed; the projection axis is the `axis` in the decal call).
-   Check that every LAR jersey uses the right horn colour and that Fearsome White / Classic Sol match photos.
+3. **DONE (first version): Rams 2026 sleeve horn (LAR).** From the user's 2026 photos: the horn sits on the
+   shoulder cap, not at the collar. It's a C-curl wrapped round the swoosh, thick along the top of the
+   cap, curling down the back of the shoulder and round the bottom of the sleeve to a point under the
+   swoosh, open toward the front. Drawn as `shoulder: { t: 'sleevehorn', fill, at: 'outer', along: 0.04,
+   size: 0.22 }` (the `rams()` helper; `sleevehorn` in `paintLogo`, `paint.js`; `along` = how far down
+   the arm the 'outer' mark sits). **Left to do:** the user says the design differs slightly between
+   jerseys. Compare each LAR jersey (Home royal, Road white, Midnight, Fearsome White, Classic Sol) with
+   2026 photos and adjust colour, outline and shape per jersey. Give `sleevehorn` options, e.g. a
+   thickness or an outline colour, rather than separate copies.
 4. **Texans sleeve horns (HOU road white and Battle Red jerseys).** Same `loopPattern: 'horn'` flat-band
    problem. The real sleeves carry a horn crescent with a red line. Fix by adding a branch to
    `sweepPanel` (traced from photos), as for items 2 and 3.
