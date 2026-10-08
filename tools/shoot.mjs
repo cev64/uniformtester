@@ -35,6 +35,7 @@ const VIEWS = {
   helmet: { theta: 0.75, phi: 1.45, r: 1.25, target: [0, 1.72, 0] },
   // centred forward of the shell so the facemask stays in frame
   helmetside: { theta: Math.PI / 2, phi: 1.5, r: 1.25, target: [0, 1.73, 0.1] },
+  helmetsideR: { theta: -Math.PI / 2, phi: 1.5, r: 1.25, target: [0, 1.73, 0.1] },
   helmetfront: { theta: 0, phi: 1.5, r: 1.1, target: [0, 1.72, 0] },
   helmetback: { theta: Math.PI * 0.8, phi: 1.35, r: 1.1, target: [0, 1.72, 0] },
   chest: { theta: 0.2, phi: 1.5, r: 2.0, target: [0, 1.35, 0] },
