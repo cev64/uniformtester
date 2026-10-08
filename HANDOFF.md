@@ -1,4 +1,4 @@
-# Uniform Lab realism project: handoff (round 3)
+# Uniform Lab realism project: handoff (after round 3)
 
 For the next agent (with subagents). Read all of it before starting.
 Branch: `claude/youthful-dijkstra-nww1vz`. Everything listed as done is merged and pushed there.
@@ -12,7 +12,7 @@ Make the 3D NFL uniform builder **as lifelike as physically possible**:
 - the helmet for every team is a faithful **Riddell SpeedFlex**;
 - the player and the way the gear sits on him read as a real NFL player.
 
-The user's current priority is **jersey detail**: the shoulder pads and collar are now fixed (§4 P0); next are the shoulder designs (§4 P1).
+The user's priority has been **jersey detail**; round 3 finished the shoulder designs and the jersey backs. Next: the punch list in §4.
 
 How the user wants it run:
 - Use subagents, choosing the model per task: **Opus** for 3D modelling, rendering-engine work and the
@@ -96,171 +96,52 @@ Team pass highlights (all merged):
   "KEEP POUNDING" tag; 49ers chest wordmark typeset; Rams helmet horn 20 cm curling round the ear;
   Vikings helmet horn 24 cm.
 
-## 4. Remaining work: specific instructions
+## 4. Round 3 results and what's left
 
-### P0: modern shoulder pads and collar: DONE (user approved the sizing and proportions)
+Round 3 finished P1, P1b, P2, P4 and P5 (all merged and pushed). The old P0–P5 instructions are in git
+history (`git show f4046bc:HANDOFF.md`) if you need the detail.
 
-Done in this session, in `tools/build_player.py`, with the player model rebuilt:
-- **Pads:** low-profile rounded caps over the deltoids (centre `SHX - 0.005`, rounder exponents, wider
-  inward taper so they blend into the trapezius slope), thinner plates. The upper chest stand-off went
-  from 8 cm to about 1–2 cm. The jersey is 64 cm across, down from 67; most of the width is the body's
-  own deltoids, which the user is happy with. The shoulder line now slopes down from the neck instead
-  of a flat shelf at chin height.
-- **Collar:** the neck opening (`R_NECK`) is widened from 0.086 to 0.10 m to match the thick base of
-  the neck, so the jersey no longer runs up the neck like a turtleneck. The `pad_arch()` lift is cut to
-  the neck base, and the neckline heights are smoothed (40 passes). The collar is now one clean band at
-  the base of the neck, with the V below the chin cup. Don't delete faces by radius to lower the
-  neckline: that splits the neckline into several loops and breaks the collar builder (`neck_loop`).
-- **Shape:** the old "crisp cap" step that snapped fabric back onto the pad shell left a crease round
-  the cap, so it's replaced by plain smoothing. The chest plate is slimmer (front radius 0.16, top at
-  `SHZ + 0.01`).
-- **TV numbers on the shoulder** (`player.js`) are now projected onto the crown of the sloped cap from
-  above and outside, so they no longer stretch.
-- The cleats came out identical (same vertex count and bounds). `player.glb` is 1.9 MB.
-- Shoulder decals (DAL, LAC, IND, DEN) and the SEA shoulders are now fitted to the new cap (§3). Still not
-  re-checked: the TV-number size on every team (BUF and LV look right); do it in P5.
+Done this round:
+- **P1:** LAR per-jersey sleeve horns (`sleevehorn` options `weight`, `line`, `outline`; 'outer' placement
+  `lift`, `minDot`; sleeve `top` fade → halftone; Fearsome White `sweep: { t: 'horn', lift }`). HOU sleeve
+  bullhorn drawn into the sleeve texture with the loop band (`sweep: { t: 'bullhorn', c, line }`). HOU
+  Battle Red helmet `t: 'bullhorn'` mark; H-Town/Rivalries blackletter H (Pirata One, `scaleX`, `shift`,
+  `starAt`, size 0.21); Rivalries shell stripe with tiled strips and "H-TOWN" bumper.
+- **P2:** helmet logos moved clear of the temple clip and vents for 30 teams (12–15 cm, `at` ≈ [0.46, 0.22–0.34]).
+- **P1b:** `research/backs.md` (ratios from back photos). Back layout calibrated (plate letters 0.055 m,
+  plate top 0.08 H below the seam at `neckY - 0.03`, gap 0.09 H; name width cap 0.235 m). New fields:
+  `numBack`, `numBackH`, `plateAt`, `plateMaxW`, `numBackMaxW` (back number condensed above 1.05 x its
+  height; it used to run off the torso panel and clip), `backShoulder`, `neckTag.at` ('inside'/'hidden'),
+  `neckTag: { img, w }`, `chestLogoAt`, `chestLogoSize`, `sleeveLogoSize`; `panels.wing` draws its back
+  view. Per-team nameplate fonts, arches, colours, bars, neck tags, back shoulder graphics for all 32.
+- **P5:** 13 team numeral styles narrowed to photo proportions (they were 15–30% too wide); road
+  nameplate bars removed (PIT, NE, DEN, WAS); BUF Charge streak 0.26.
+- **Belt off by default** (`ACCESSORIES.belt = false`; painted belt loops skipped): real jerseys blouse
+  over the waistband and hide it (user request).
+- README rewritten; Commons sheet licence corrected everywhere (CC BY / CC BY-SA 4.0, not CC0).
 
-### P1: the user's "glaring problems" (do these first)
-
-Each needs engine work plus data. Give them to **one Opus engine agent** (they share the same code:
-shoulder/sleeve graphics), with the reference sheet and real 2025/2026 game photos for each team.
-Verify each at `chest`, `shoulder`, `sleeve`, `three` and `back`, with a render next to the reference.
-Then stop.
-
-1. **DONE: Seahawks shoulders (SEA, all three jerseys)** (see §3). Note: the reference sheet puts the TV
-   numbers on the jersey-colour cap *above* the band, not on the grey, so that's how it's built. Back is
-   plain (the sheet shows the front only; see P1b). The "12" tag stays on the back neck. The band's
-   corners are rounded (`poly(..., radii)` in `wingCanvas`) so it sweeps round the shoulder; the user
-   judged the first, straight-edged version "jagged". The band is a canvas drawn in front-view world
-   metres and projected from the front onto torso + sleeves (`wingPanel` in `player.js`). That is the
-   pattern to reuse for items 2–4, since it crosses the torso/sleeve seam cleanly. Draw curved edges,
-   not straight polygons.
-   Original brief, for reference:
-   - Now: `panels: { yoke: [WG, 11, 0] }` plus `sleeve.top`, and `feathers: G` draws green spikes around
-     the collar that read as a spiky fringe.
-   - Real (sheet + photos): a wolf-grey band runs over the top of each shoulder from the collar to the
-     sleeve, edged in Action Green at the sleeve end. The TV numbers sit on the grey, and the collar
-     trim is a feather/laurel pattern beside the V with the "12" tab at the front.
-   - Fix: make the yoke a shaped shoulder panel that matches the sheet outline, continuous across torso
-     and sleeve, with the green edge accent. Redraw the collar feathers as the real small feather trim,
-     not spikes. The road (navy yoke on white) and Action Green (navy on green) versions follow.
-2. **DONE: Panthers shoulders (CAR).** New `sweep: { t: 'raglan', c, edge }` (`sweepPanel` in
-   `player.js`): a tapered panel along the raglan seam from the collar to the underarm, with an edge
-   line. It's drawn per side in front-view world metres and projected from the front, angled outward,
-   across the torso/sleeve seam. The old torso `panels.raglan` stroke is no longer used by CAR.
-3. **DONE (first version): Rams 2026 sleeve horn (LAR).** From the user's 2026 photos: the horn sits on the
-   shoulder cap, not at the collar. It's a C-curl wrapped round the swoosh, thick along the top of the
-   cap, curling down the back of the shoulder and round the bottom of the sleeve to a point under the
-   swoosh, open toward the front. Drawn as `shoulder: { t: 'sleevehorn', fill, at: 'outer', along: 0.04,
-   size: 0.22 }` (the `rams()` helper; `sleevehorn` in `paintLogo`, `paint.js`; `along` = how far down
-   the arm the 'outer' mark sits). **Left to do:** the user says the design differs slightly between
-   jerseys. Compare each LAR jersey (Home royal, Road white, Midnight, Fearsome White, Classic Sol) with
-   2026 photos and adjust colour, outline and shape per jersey. Give `sleevehorn` options, e.g. a
-   thickness or an outline colour, rather than separate copies.
-4. **Texans sleeve horns (HOU road white and Battle Red jerseys).** Same `loopPattern: 'horn'` flat-band
-   problem. The real sleeves carry a horn crescent with a red line. Fix by adding a branch to
-   `sweepPanel` (traced from photos), as for items 2 and 3.
-5. **Texans alternate helmet logos (HOU).** Research each against team photos:
-   - **Battle Red helmet:** now `{ t: 'horn' }`, which is the *Vikings* horn shape, so it's wrong. Find
-     the real mark on the 2024+ Battle Red helmet. If it's the bull-head logo, use the `HOU` PNG (tinted
-     if the real decal is one colour). If it's a bull-horn graphic, the engine needs a new drawn mark;
-     never draw the bull head itself.
-   - **H-Town helmet** and **Rivalries helmet:** now a blackletter "H" typeset with a star. Check the real
-     letterform, colours, outline and size against photos, and fix the size, which is too small
-     (drawn marks now honour `logo.size`).
-   - The Rivalries shell is already plain white. Check that the stripe and mask colour are right.
-
-### P1b: the back of the jerseys (after P1; the fronts have had most of the work so far)
-
-Every pass so far compared fronts against the reference sheets, which only show the front. The backs
-have never been audited. What's on a jersey back and where the engine draws it (`placeDecals` in
-`src/three/player.js`, around the "Back: nameplate and number" comment):
-- **Nameplate:** `back(neckY - 0.1)`, letter height `plateH` (default 0.05 m), with `plateFont`,
-  `plateArch`, `plateTracking`, `plateScaleX`, `plateColor`, `plateOutline`, `plateBar`, `plateStyle`.
-- **Back number:** `back(neckY - 0.3)`, fixed height 0.25 m, same colours and font as the front.
-- **Back collar tag:** `neckTag` at `back(neckY - 0.045)`. Also the back-collar shape and bands
-  (`collar`; the collar mesh runs all the way round).
-- **Shoulder/yoke graphics seen from behind:** panels, loops, TV numbers, sleeve stripes. Projected
-  front graphics (the SEA `wingPanel`) stop at the sides, so they're blank on the back.
-
-**Process (one Opus engine agent first, then 4 Sonnet data agents by division group, as in round 2):**
-1. **References.** For each team's Home and Road (then alternates), find at least one straight-on back
-   photo of the 2025/2026 on-field jersey: Commons game photos from behind, team-shop "back" product
-   images, or team uniform-reveal pages. Keep them in scratch. Use a player with a long name and one with
-   a short name where you can. Note for each jersey:
-   - nameplate font family, letter height, arch (straight / slight / full), tracking, colours and
-     outline, and whether it's on a separate sewn bar;
-   - back number height, digit width and gap, outlines; whether the back colours differ from the front
-     (e.g. the PIT 1933 throwback);
-   - the vertical layout: collar → nameplate → number. Measure the gaps;
-   - the back collar tag (text, size, colours), the back collar shape (how far the round neck dips at
-     the back, band widths);
-   - any back yoke, panel or shoulder graphic, and how the sleeve stripes or loops look from behind.
-2. **Measure in ratios, not pixels:** back number height / shoulder width across the back, nameplate
-   letter height / number height, gap nameplate-to-number / number height, nameplate top below the
-   collar / number height. Average over a few photos. These ratios are scale-free, so they transfer to
-   the model. Measure the same ratios on a `back` render to get the corrections.
-3. **League-wide defaults first (Opus engine agent).** If the ratios show that the defaults are off for
-   most teams (number height 0.25 m, nameplate 0.05 m at `neckY - 0.1`, number at `neckY - 0.3`),
-   fix the defaults in `player.js` once, not per team. Then add the engine fields the references need:
-   - `numBack: [fill, outline, ...]` (back number colours when different from the front);
-   - `numBackH` / `plateAt` (per-jersey number height and nameplate position, only if a team truly differs);
-   - a back yoke/panel or back half of shoulder graphics, so SEA (and any team whose band or yoke
-     continues on the back) can be drawn. Project a `wingPanel`-style canvas from behind, or paint the
-     torso back half;
-   - back-collar shape details, if photos show the round back neck differs from the model.
-   Document new fields in the `src/data/teams.js` header.
-4. **Per-team data pass (Sonnet agents, data only):** set the nameplate font/arch/tracking/scale/colours,
-   `plateBar`, back number colours, `neckTag` and back panels per jersey, from step 1.
-5. **Render to verify, economically:** one `shoot.mjs` call per group with `--views back,backclose,backtop`
-   and `--name WILLIAMSON --number 88` (wide name, wide digits), plus one short name (`--name LEE`) for
-   teams with arched plates. Sheet: the back photo next to the render at the same scale. Iterate only on
-   what's wrong, then stop.
-6. **Check across teams** at the end (lead): nameplate heights and gaps should be consistent league-wide
-   except where a team really differs. Long names must fit inside the shoulder blades without crowding
-   the sleeves (`plateScaleX` compresses them, as on real jerseys).
-
-### P2: helmet logo placement on the new helmet (one Sonnet agent; data only)
-
-The helmet was rebuilt after most teams tuned their logos. The UV layout is unchanged, so placements
-carried over, but they need a check.
-- Render `helmetside` (and `helmetsideR` for PIT) for every team's primary helmet: 32 teams, in a few
-  multi-team calls. Then check the alternates.
-- Known problems: the **LV shield** is too big and too far forward and high, overlapping the vents (real:
-  ~12 cm, centred on the side). The temple clip overlaps the logo on **LV, TEN, IND**. NYG and WAS sit
-  close to the top vent. **BUF, NE, NYJ, BAL, CIN** helmet stripes and logos were never measured.
-- Real decals are 12–15 cm and centred on the side between the ear hole and the crown, clear of the
-  vents. Stripes are in true cm.
-- Optional: set `nameplate: { text }` where the real helmet's front bumper isn't "Riddell". The
-  Falcons and Rams agent reported team lettering there; confirm with photos first.
-
-### P3: smaller engine requests from the team agents (Opus or yourself; do only what's cheap)
-
-- `numBack: [fill, outline, ...]` for different back-number colours (PIT 1933 throwback: white front numbers, black back numbers).
-- `chestLogo` position is fixed and collides with the number when there's no wordmark (HOU Rivalries worked around it with an empty `word`). Add `chestLogoAt`/size.
-- A sleeve-logo size field (90s Seahawks big hawk-head sleeves).
-- Eagles helmet wing has no feather detail (needs a properly licensed image asset; never forge one).
-- DET Concrete: black carbon-fibre shoulder caps (approximated with `loop`).
-- Ravens numeral 3: squared terminals look wrong; the glyph engine breaks on narrow counters.
-- Missing marks: JAX Rivalries "904" helmet mark, 1983–2001 Seahawks logo for the throwback helmet,
-  Saints 60th-season patch. Add only from properly licensed sources.
-
-### P4: data to verify (cheap; fold into P2's agent or the final review)
-
-- `numStyle: 'pressed'` assignments (all teams) and LAR primaries (`pressed` is a guess).
-- KC pants stripe order (gold-red vs red-gold-red), ATL 1966 socks (white with black/red bands per the
-  2026 sheet), JAX Rivalries socks (white per the team site, cream on the sheet).
-- Nameplate fonts for HOU IND JAX TEN DEN KC LV LAC were not checked against photos (none found).
-
-### P5: final realism review (one Opus agent), then ship
-
-- Render the Home and Road looks of all 32 teams (`three` and `back`) plus a helmet close-up, in
-  multi-team calls. Compare against the reference sheets for inconsistencies, logo sizes, colours under
-  the stadium lighting, clipping, seams and decal stretching.
-- Output a prioritized punch list. Apply the small fixes, send larger ones to a subagent, then stop.
-- Ship: update README.md (data fields from the `teams.js` header, `shoot.mjs` and its views,
-  `cleat.py`, `paint_brows.py`, the logo scripts including `recut_marks.py`, the model pipeline), run
-  `npm run build`, commit, and push to `claude/youthful-dijkstra-nww1vz`. Open a PR only if the user asks.
+Remaining punch list (priority order):
+1. **(Medium, engine)** A nameplate bar matching the jersey colour renders as a shaded, stitched box
+   (`letteringLayers` bar layer `thick 0.35, halo 0.3`); LAR road and DET home look boxy. Needs a subtler edge.
+2. **(Player model, report only so far)** The back collar dips toward the centre and bunches (KC, BUF,
+   PIT, NE, NO); real back necks are nearly flat. Needs a `build_player.py` change and rebuild.
+3. **(Small)** Faint grey patch at the front centre of the waistband where the hidden buckle sat (KC `hip`).
+4. **(Small, glyph)** Ravens 8 has no waist notch (`ravens` style `notch: 0`) and the 3 has squared
+   terminals; check against photos.
+5. **(Small, engine)** Charge streak is thickest at the front; the sheet has it thickest at the back
+   (`paint.js` case 'streak'). CHI "GSH" sleeve letters fixed at 0.065 m; real patch ~4 cm (`sleeveText.h`).
+6. **(Data, needs photos)** Digit widths unmeasured for packers, vikings, commanders (2026), patriots,
+   jaguars, titans, broncos, raiders, cardinals, seahawks (packers and vikings look wide). Front numbers
+   have no width cap; only the back does.
+7. **(Data)** NO nameplate arch 0.3 came from a Color Rush photo; NO's black number outline looks thicker
+   in photos (~0.045 vs 0.022); ARI road plate outline too heavy; NE shoulder stripes angled on the sheet
+   but flat on the cap; SEA outside "12" neck tag unconfirmed; KC white pants stripe order unconfirmed.
+8. **(Assets)** ATL 2026 "FALCONS" back plate (needs a `plateText` field and a game photo), WAS round crest
+   neck tag (no licensed PNG), JAX "904", 1983–2001 Seahawks logo, Saints 60th patch, Eagles wing feathers.
+9. **(Engine)** Back-of-helmet marks (HOU Rivalries "TEXANS" rear bumper, Battle Red rear bull head);
+   a top-down helmet view in `shoot.mjs` to measure stripe widths; DET Concrete carbon-fibre caps.
+10. **Unchanged from before:** towel off (needs a player rebuild); helmet jaw area shows some jagged
+    black pieces from the side (only if the user asks).
 
 ## 5. Rules to give every parallel subagent
 
