@@ -20,6 +20,9 @@ two teams side by side.
   its own camera. Tap a side to edit it; swap flips home and away.
 - Custom number and name on the back, skin tone, glove and cleat colors,
   camera presets (front, ¾, side, back, helmet close-up) and a turntable.
+- Camera: drag to orbit, scroll / pinch to zoom toward the point under the
+  cursor (down to about 35 cm), right-drag / two-finger drag to pan. The view
+  stays on the player; a preset button resets it.
 
 ## Running it
 

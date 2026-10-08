@@ -96,14 +96,19 @@ export class Stage {
     const camera = new THREE.PerspectiveCamera(28, 1, 0.05, 50);
     this.camera = camera;
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enablePan = false;
+    // Zoom toward whatever is under the cursor (helmet, numbers, cleats...),
+    // right-drag / two-finger drag pans. The orbit target is kept inside the
+    // player's bounding box and the camera above the turf (see clampView).
+    controls.zoomToCursor = true;
+    controls.enablePan = true;
+    controls.screenSpacePanning = true;
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.minDistance = 1.0;
+    controls.minDistance = 0.35;
     controls.maxDistance = 8;
     controls.maxPolarAngle = Math.PI * 0.56;
     controls.autoRotateSpeed = 1.6;
-    controls.addEventListener('start', () => { this.tween = null; this.onInteract?.(); });
+    controls.addEventListener('start', () => { this.tween = null; this.bounds = this.playerBounds(); this.onInteract?.(); });
     this.controls = controls;
 
     this.tween = null;
@@ -137,6 +142,24 @@ export class Stage {
 
   setAutoRotate(on) { this.controls.autoRotate = on; }
 
+  // The player's box (with a little margin); a fixed box until the model loads.
+  playerBounds() {
+    const b = new THREE.Box3();
+    if (this.player.loaded) b.setFromObject(this.player.group);
+    if (b.isEmpty() || b.max.y < 1) b.set(new THREE.Vector3(-0.45, 0, -0.35), new THREE.Vector3(0.45, 1.95, 0.35));
+    b.min.y = Math.max(b.min.y, 0.03);
+    return b.expandByScalar(0.03);
+  }
+
+  // Keep the orbit target on the player and the camera above the turf.
+  clampView() {
+    if (!this.bounds) return;
+    const t = this.controls.target, cam = this.camera.position;
+    const c = t.clone().clamp(this.bounds.min, this.bounds.max);
+    if (!c.equals(t)) { cam.add(c.clone().sub(t)); t.copy(c); }
+    if (cam.y < 0.04) cam.y = 0.04;
+  }
+
   frame() {
     this.timer.update();
     const dt = Math.min(0.05, this.timer.getDelta());
@@ -157,6 +180,7 @@ export class Stage {
       if (tw.t >= 1) this.tween = null;
     }
     this.controls.update();
+    if (!this.tween) this.clampView();
     this.renderer.render(this.scene, this.camera);
   }
 
