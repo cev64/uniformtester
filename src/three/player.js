@@ -138,7 +138,10 @@ function repeatNormal(base, repeat) {
 
 // Optional gear modelled as separate meshes (by material name) and whether
 // each is shown by default. Toggle with player.setAccessory(name, on).
-export const ACCESSORIES = { belt: true, towel: false, wristband: true, eyeblack: true, armsleeve: false };
+// belt: off. NFL players tuck the jersey and blouse it over the waistband, so
+// the belt is hidden in game photos; with it off, the painted belt loops on
+// the pants are left out too (set before load, as they are in the texture).
+export const ACCESSORIES = { belt: false, towel: false, wristband: true, eyeblack: true, armsleeve: false };
 
 function tex(canvas, aniso) {
   const t = new THREE.CanvasTexture(canvas);
@@ -216,7 +219,7 @@ export class Player {
       sleeve: fabric({ micro: ['stretch'], cm: cm(reg.sleeve, 1.4), macro: sleeveDetail(meta, A), zone: sleeveZones(meta, A),
         microStrength: 0.8, smooth: 0.3, roughness: 0.66, sheen: 0.55, aniso: A }),
       // game pants: glossy stretch twill
-      pants: fabric({ micro: ['pantsTwill'], cm: cm(reg.pants), macro: pantsDetail(meta, A), microStrength: 0.45, cavity: 0.3,
+      pants: fabric({ micro: ['pantsTwill'], cm: cm(reg.pants), macro: pantsDetail(meta, A, ACCESSORIES.belt ? undefined : []), microStrength: 0.45, cavity: 0.3,
         roughness: 0.4, sheen: 0.8, sheenRoughness: 0.35, sheenColor: new THREE.Color(0.32, 0.32, 0.32), aniso: A }),
       socks: fabric({ micro: ['rib'], cm: cm(reg.socks), microStrength: 0.9, cavity: 0.6, roughness: 0.9, sheen: 0.35, aniso: A }),
       // matte skin with a fine pore/crease normal map so it doesn't read as plastic

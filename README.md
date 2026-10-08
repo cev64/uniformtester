@@ -84,7 +84,7 @@ Plain JavaScript + [three.js](https://threejs.org), bundled with Vite.
   seams, back nameplate yoke, side vents, mesh insert under the collar) as
   sewn seams with cover stitching, a fine double knit with laser-perforated
   vent panels and smooth stretch shoulders, all at true scale; pants are
-  glossy stretch twill with a stitched waistband and belt loops; socks and
+  glossy stretch twill with a stitched waistband (the belt is modelled but off by default, since the bloused jersey hides it in real photos); socks and
   collar are rib knit. Numbers, names and wordmarks are built as tackle
   twill (stacked cloth layers with zig-zag stitched edges) or heat-pressed
   film (`numStyle`), the shield and swooshes as embroidery, plus the woven
@@ -130,7 +130,7 @@ or look announced but not yet worn.
   `along`, `lift`, `minDot`); `backShoulder` is the same seen from behind, as
   polygons `{ shapes, out, lift }`.
 - **Pants** (`pants[]`): `base`, `stripe` (plus `stripeStart`, `stripeTaper`),
-  `hipLogo`, `hipStyle`, `swoosh`, `belt`, `fade`, `pattern`. **Socks**
+  `hipLogo`, `hipStyle`, `swoosh`, `belt` (colour, used only when the belt accessory is on), `fade`, `pattern`. **Socks**
   (`socks[]`): `base`, `stripes` with `stripesFrom` (cm from the foot), and
   `lower` (`[colour, cm]` foot colour). Both take `tag` and `debut`.
 - **Looks** (`looks[]`): `{ name, h, j, p, s }` reference a helmet, jersey,
