@@ -14,7 +14,12 @@
 //   tv: 'shoulder' | 'sleeve' | null         TV numbers
 //   sleeve: { cap, top: [colour, cmFromHem], stripes, from, pattern }
 //   loop / loopPattern / loopAt: stripes around the top of the arm (UCLA, horns, bolts)
-//   shoulder: decal on each shoulder (drawn mark or logo image)
+//   shoulder: decal on each shoulder (drawn mark { t: 'star'|'bolt'|'bars'|'peak'|... } or { img }).
+//             size: decal width in metres (default 0.1). at: where it sits on the pad cap:
+//             'front' (default; down the front of the shoulder from the cap toward the armpit),
+//             'top' (crown of the cap like shoulder TV numbers, vertical axis running front to back),
+//             'outer' (outside of the upper sleeve under the cap), 'cuff' (outside of the sleeve at
+//             the hem, the mark's outer edge toward the hem).
 //   panels: { yoke, sides, vstripes }        word: chest wordmark
 //   chestLogo / sleeveLogo / centerLogo: logo image keys (public/logos)
 //   neckTag: text on the back of the collar ({ s, c, bg, font, style })
@@ -459,8 +464,8 @@ export const TEAMS = [
     const B = '#003B7B', GRAY = '#A2AAAD', ANV = '#4A4B4D', BK = '#0E0E0F';
     // the two UCLA stripes over each shoulder: bars running front to back (edged in `edge` when given)
     const ucla = (c, edge) => {
-      const one = edge ? [[edge, 0.03], [c, 0.09], [edge, 0.03]] : [[c, 0.15]];
-      return { t: 'bars', stripes: [...one, [null, 0.2], ...one], size: 0.14, skew: -0.1, len: 0.95 };
+      const one = edge ? [[edge, 0.02], [c, 0.075], [edge, 0.02]] : [[c, 0.115]];
+      return { t: 'bars', stripes: [...one, [null, 0.115], ...one], size: 0.22, skew: -0.06, len: 0.95, at: 'top' };
     };
     return {
       id: 'IND', city: 'Indianapolis', name: 'Colts', conf: 'AFC', div: 'South',
@@ -586,7 +591,7 @@ export const TEAMS = [
     const logo = { img: 'DEN', faces: 'right', size: 0.15 };
     const DW = (c) => ({ img: `DEN_word_name@${c}`, h: 0.021 });
     const TAG = (bg) => ({ s: 'BRONCOS COUNTRY', c: W, bg, font: 'condensed' });
-    const peak = (fill, spike) => ({ t: 'peak', fill, spike, size: 0.15 });
+    const peak = (fill, spike) => ({ t: 'peak', fill, spike, size: 0.11, at: 'cuff' });
     return {
       id: 'DEN', city: 'Denver', name: 'Broncos', conf: 'AFC', div: 'West',
       colors: [OR, NAVY, W], font: 'broncos',
@@ -697,7 +702,7 @@ export const TEAMS = [
 
   (() => {
     const PB = '#0080C6', GOLD = '#FFC20E', NAVY = '#0B1F4D';
-    const bolt = (fill, stroke) => ({ t: 'bolt', fill, stroke, size: 0.17, vertical: true });
+    const bolt = (fill, stroke) => ({ t: 'bolt', fill, stroke, size: 0.22, vertical: true, at: 'front' });
     return {
       id: 'LAC', city: 'Los Angeles', name: 'Chargers', conf: 'AFC', div: 'West',
       colors: [PB, GOLD, NAVY], font: 'chargers',
@@ -738,7 +743,7 @@ export const TEAMS = [
     // pants stripes sit on the side seam, which is ~1.5 cm behind the front-view silhouette: nudge them forward
     const fwd = (s) => s && [[null, 3], ...s];
     const NAVY = '#041E42', ROY = '#003594', SB = '#9CA7AE', GR = '#B4B8BC';
-    const star = (fill) => ({ t: 'star', fill, stroke: fill, size: 0.085 });
+    const star = (fill, at = 'top', size = 0.11) => ({ t: 'star', fill, stroke: fill, size, at });
     return {
       id: 'DAL', city: 'Dallas', name: 'Cowboys', conf: 'NFC', div: 'East',
       colors: [NAVY, SB, W], font: 'cowboys',
@@ -750,7 +755,7 @@ export const TEAMS = [
         { id: 'white', name: 'White', tag: 'Home', base: W, num: [ROY], numStyle: 'twill', tv: 'shoulder', sleeve: { stripes: rep(ROY, 1.1, 0.7, 3, W), from: 1.2 } },
         { id: 'navy', name: 'Navy', tag: 'Road', base: NAVY, num: [W, NAVY, W], numO: [0.03, 0.025], numStyle: 'twill', tv: 'shoulder',
           word: { img: 'DAL_word@#FFFFFF', h: 0.027 },
-          collar: [[W, 0.6], [GR, 0.6], [W, 0.6], [GR, 0.6]], sleeve: { stripes: [[W, 0.3], [GR, 1.3], [W, 0.3]], from: 2 }, shoulder: star(W) },
+          collar: [[W, 0.6], [GR, 0.6], [W, 0.6], [GR, 0.6]], sleeve: { stripes: [[W, 0.3], [GR, 1.3], [W, 0.3]], from: 2 }, shoulder: star(W, 'outer', 0.07) },
         { id: 'arctic', name: 'Arctic Cowboy', tag: 'Color Rush', base: W, num: [NAVY, W, NAVY], numO: [0.03, 0.025], numStyle: 'pressed', tv: 'sleeve', sleeve: { cap: NAVY, top: [NAVY, 0] }, shoulder: star(W) },
         { id: '60s', name: '1960s', tag: 'Throwback', base: NAVY, num: [W], numStyle: 'twill', tv: 'sleeve', panels: { yoke: [W, 14, 0] }, sleeve: { cap: W }, shoulder: star(NAVY) },
       ],

@@ -552,16 +552,34 @@ export class Player {
         this.lettering(sleeves, hit, num, 0.08, colors.slice(0, 2), font, { ...numOpts, o1: 0.06, o2: 0, minDot: 0.2 });
       }
       if (jersey.shoulder) {
-        // shoulder graphic (bolts, stars, horns) on the front of each shoulder, aimed from above and in front
+        // shoulder graphic (bolts, stars, UCLA bars, peaks); `at` picks where it sits on the rounded pad cap:
+        //   'front' (default): down the front of the shoulder from the cap to the armpit, upright
+        //   'top':   on the crown of the cap like the shoulder TV numbers, its vertical axis running front to back
+        //   'outer': on the outside of the upper sleeve under the cap, upright
+        //   'cuff':  on the outside of the sleeve at the hem, the mark's outer edge toward the hem
         const sp = jersey.shoulder;
-        const at = sh.clone().add(new THREE.Vector3(-sx * 0.02, 0.05, 0.0));
-        const dir = new THREE.Vector3(sx * 0.35, 0.55, 1).normalize();
-        const hit = this.raycast([...sleeves, ...torso], at.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate());
+        const where = sp.at || 'front';
+        const V = (x, y, z) => new THREE.Vector3(x, y, z);
+        let at, dir, up = V(0, 1, 0), facing = sx > 0 ? 'right' : 'left';
+        if (where === 'top') {
+          at = sh.clone().add(V(sx * 0.005, 0.07, 0)); dir = V(sx * 0.45, 1, 0); up = V(0, 0, -1);
+        } else if (where === 'outer') {
+          at = sh.clone().lerp(el, 0.2); dir = V(sx, 0.12, 0.2);
+        } else if (where === 'cuff') {
+          // the decal's +x runs down the arm with the 'left' artwork on the left arm, so the outer edge meets the hem
+          at = sh.clone().lerp(el, 0.25); dir = V(sx, 0, 0.25); up = V(0, 0, 1); facing = sx > 0 ? 'left' : 'right';
+        } else {
+          at = sh.clone().add(V(-sx * 0.035, -0.005, 0)); dir = V(sx * 0.25, 0.45, 1);
+        }
+        dir.normalize();
+        const meshes = [...sleeves, ...torso];
+        const hit = this.raycast(meshes, at.clone().add(dir.clone().multiplyScalar(0.6)), dir.clone().negate());
         const size = sp.size || 0.1;
-        if (sp.img && logos[sp.img]) this.image([...sleeves, ...torso], hit, size, logos[sp.img], { depth: 0.14, style: patchStyle });
+        const opts = { depth: where === 'top' ? 0.2 : 0.14, style: patchStyle, up, minDot: 0.2 };
+        if (sp.img && logos[sp.img]) this.image(meshes, hit, size, logos[sp.img], opts);
         else {
-          const c = paintLogo(sp, sx > 0 ? 'right' : 'left');
-          if (c) this.canvasDecal([...sleeves, ...torso], hit, size, c, { depth: 0.14, style: patchStyle, key: JSON.stringify(sp) + sx });
+          const c = paintLogo(sp, facing);
+          if (c) this.canvasDecal(meshes, hit, size, c, { ...opts, key: JSON.stringify(sp) + sx });
         }
       }
       if (jersey.sleeveText) {
