@@ -31,6 +31,8 @@ const BASE = {
 
 // Digit widths (W) of chiefs, chargers, cowboys, eagles, dolphins, browns, texans, lions, giants, falcons, saints,
 // panthers and niners were measured on straight-on back photos (research/backs.md; outer digit width / height, P5 review).
+// Round 4: packers (10: 0.84), vikings (18: ~0.94), commanders (13: ~0.78), jaguars (65: 1.13), cardinals (18: ~0.74) narrowed the same way;
+// patriots (12: 1.04) and broncos (43: 1.20) already matched their photos. Raiders, titans, seahawks: no full-number photo.
 export const NUMERAL_STYLES = {
   // Pro block: Packers, Chiefs, Bills, Cowboys, Giants, Raiders, 49ers, Colts, Bucs, Browns
   block: {},
@@ -45,7 +47,7 @@ export const NUMERAL_STYLES = {
   // Cowboys road/Color Rush: square block with a footed 1
   cowboys: { cut: 'chamfer', W: 0.48, th: 0.18, tv: 0.17, ro: 0.08, ri: 0.03, rt: 0.01, one: { flag: 0.12, base: true } },
   // Vikings: wide and heavy with square counters and a footed 1
-  vikings: { W: 0.64, th: 0.2, tv: 0.26, ro: 0.17, ri: 0.02, rt: 0.02, notch: 0.4, one: { flag: 0.22, base: true } },
+  vikings: { W: 0.55, th: 0.17, tv: 0.18, ro: 0.15, ri: 0.02, rt: 0.02, notch: 0.4, gap: 0.05, one: { flag: 0.1, base: true, bw: 0.3 } },
   // Rams 2020s: heavy rounded set with a slight lean
   rams: { W: 0.56, th: 0.2, tv: 0.23, ro: 0.22, ri: 0.1, rt: 0.06, slant: 0.07, one: { flag: 0.17, base: false } },
   // Titans 2026 (Oilers lineage): octagonal block, based 1
@@ -93,7 +95,7 @@ export const NUMERAL_STYLES = {
   // Broncos: tall, narrow rounded block with a flagged 1
   broncos: { W: 0.54, th: 0.15, tv: 0.17, ro: 0.2, ri: 0.07, rt: 0.04, notch: 0, one: { flag: 0.12, base: false } },
   // Jaguars: squared counters inside clipped outer corners, flagged 1 without a foot
-  jaguars: { cut: 'chamfer', ro: 0.12, ri: 0.0, rt: 0.01, th: 0.19, tv: 0.215, one: { flag: 0.12, base: false }, seven: 'stem' },
+  jaguars: { cut: 'chamfer', W: 0.54, ro: 0.12, ri: 0.0, rt: 0.01, th: 0.17, tv: 0.19, gap: 0.06, one: { flag: 0.12, base: false }, seven: 'stem' },
   // Titans Rivalries (Music City): rounded neon-tube numerals with a white inline stripe in every stroke
   titansNeon: { W: 0.52, th: 0.21, tv: 0.21, ro: 0.26, ri: 0.13, rt: 0.07, notch: 0, one: { flag: 0.14, base: true }, inline: { c: '#FFFFFF', d: 0.09 } },
   // Texans 2024+: very heavy block, the 0 has a diagonal cut top-left and a rounded bottom-right corner, flagged 1 without a foot
@@ -110,9 +112,9 @@ export const NUMERAL_STYLES = {
   // Giants: heavy block with clipped outer corners, flagged and footed 1
   giants: { cut: 'chamfer', W: 0.53, th: 0.19, tv: 0.18, ro: 0.1, ri: 0.03, rt: 0.015, one: { flag: 0.14, base: true } },
   // Commanders: octagonal 0 (big chamfers), stepped flag and wide foot on the 1
-  commanders: { cut: 'chamfer', W: 0.62, th: 0.19, tv: 0.2, ro: 0.15, ri: 0.035, rt: 0.02, one: { flag: 0.15, base: true } },
+  commanders: { cut: 'chamfer', W: 0.42, th: 0.15, tv: 0.15, ro: 0.11, ri: 0.03, rt: 0.02, gap: 0.05, one: { flag: 0.1, base: true, bw: 0.3 } },
   // Packers: wide block with clipped corners and a footed 1
-  packers: { cut: 'chamfer', W: 0.64, th: 0.18, tv: 0.22, ro: 0.15, ri: 0.03, rt: 0.02, one: { flag: 0.12, base: true } },
+  packers: { cut: 'chamfer', W: 0.47, th: 0.15, tv: 0.16, ro: 0.11, ri: 0.03, rt: 0.02, gap: 0.05, one: { flag: 0.08, base: true, bw: 0.3 } },
   lionsItalic: { cut: 'chamfer', ro: 0.12, ri: 0.04, rt: 0.02, slant: 0.2, one: { flag: 0.17, base: true } },
 
   // ── team styles: NFC South + NFC West ──
@@ -126,7 +128,7 @@ export const NUMERAL_STYLES = {
   // Panthers: block with clipped (octagonal) corners on 0 6 8 9, footed flagged 1, narrow rectangular counters
   panthers: { cut: 'chamfer', W: 0.51, th: 0.165, tv: 0.17, ro: 0.13, ri: 0.035, rt: 0.02, one: { flag: 0.17, base: true } },
   // Cardinals: heavy collegiate block, mild clipped corners, footed 1 (traced from the 2025 sheet)
-  cardinals: { cut: 'chamfer', W: 0.62, th: 0.2, tv: 0.225, ro: 0.1, ri: 0.03, rt: 0.02, one: { flag: 0.17, base: true } },
+  cardinals: { cut: 'chamfer', W: 0.44, th: 0.17, tv: 0.17, ro: 0.09, ri: 0.03, rt: 0.02, gap: 0.06, one: { flag: 0.08, base: false } },
   // 49ers: clean square-shouldered block, tiny clipped corners, no foot on the 1
   niners: { cut: 'chamfer', W: 0.52, th: 0.2, tv: 0.18, ro: 0.06, ri: 0.02, rt: 0.015, one: { flag: 0.17, base: false } },
   // Seahawks: heavy block with clipped outer corners and square counters

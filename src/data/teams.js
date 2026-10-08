@@ -727,7 +727,8 @@ export const TEAMS = [
       ],
       pants: [
         // gold edge at the side seam, red line inside it
-        { id: 'white', name: 'White', base: W, stripe: [[GOLD, 0.55], [R, 0.55]], swoosh: R },
+        // red-gold-red (2009214468: red | gold | red across the side seam; the sheet shows gold-red)
+        { id: 'white', name: 'White', base: W, stripe: [[R, 0.4], [GOLD, 0.65], [R, 0.4]], swoosh: R },
         { id: 'red', name: 'Red', base: R, stripe: [[GOLD, 0.6], [null, 0.2], ['#F3C5CB', 0.3]], swoosh: W },
       ],
       socks: [
@@ -1261,7 +1262,8 @@ export const TEAMS = [
   (() => {
     const GOLD = '#D3BC8D', BK = '#101820', RG = '#C2A418';
     const fleurGold = 'NO@#D3BC8D', fleurBlack = 'NO@#101820';
-    const saintsPlate = { plateFont: 'clarendon', plateArch: 0.3 };
+    // plate arch: BREES 9 (white), OLAVE 12 (black) and YIADOM 27 (Color Rush) are all nearly straight (<= 0.05); the old 0.3 was a misread
+    const saintsPlate = { plateFont: 'clarendon', plateArch: 0.04 };
     return {
       id: 'NO', city: 'New Orleans', name: 'Saints', conf: 'NFC', div: 'South',
       colors: [GOLD, BK, W], font: 'saints',
@@ -1278,7 +1280,7 @@ export const TEAMS = [
         { id: 'white', name: 'White', tag: 'Road', base: W, num: [BK, GOLD], plateColor: BK, numO: [0.022, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 3.2]], ...saintsPlate, sleeveLogo: 'NO', swoosh: BK },
         { id: 'gold', name: 'Gold', tag: 'Alternate', base: GOLD, num: [BK, W], numO: [0.025, 0], numStyle: 'twill', tv: 'shoulder', collar: [[BK, 3.2]], ...saintsPlate, sleeveLogo: fleurBlack, swoosh: BK },
         // Color Rush: gold numbers edged in black, black / gold diagonal bars on the sleeves, plain white collar
-        { id: 'rush', name: 'Color Rush White', tag: 'Color Rush', base: W, num: [RG, BK], numO: [0.03, 0], numStyle: 'twill', tv: 'shoulder', swoosh: BK, ...saintsPlate,
+        { id: 'rush', name: 'Color Rush White', tag: 'Color Rush', base: W, num: [RG, BK], numO: [0.04, 0], numStyle: 'twill', tv: 'shoulder', swoosh: BK, ...saintsPlate,
           sleeve: { stripes: [[BK, 0.9], [RG, 0.9], [BK, 0.9], [RG, 0.9], [BK, 0.9]], from: 5 } },
       ],
       pants: [
@@ -1501,11 +1503,11 @@ export const TEAMS = [
         // chest at the V (wordmark on it) and sweeps down the front of each sleeve, with an accent wedge at the
         // outer sleeve end; TV numbers on the shoulder tops above it
         { id: 'navy', name: 'College Navy', tag: 'Home', base: NAVY, num: [WG, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#A7ACB0' }, tv: 'shoulder', word: word(NAVY), swoosh: G,
-          neckTag: { s: '12', c: NAVY, bg: WG }, collarFeathers: { c: G }, collar: [[NAVY, 2.6]], panels: { wing: [WG, G] } },
+          neckTag: { s: '12', c: NAVY, bg: WG, at: 'inside' }, collarFeathers: { c: G }, collar: [[NAVY, 2.6]], panels: { wing: [WG, G] } },
         { id: 'white', name: 'White', tag: 'Road', base: W, num: [NAVY, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(W), swoosh: G,
-          neckTag: { s: '12', c: W, bg: NAVY }, collarFeathers: { c: NAVY }, collar: [[W, 2.6]], panels: { wing: [NAVY, NAVY] } },
+          neckTag: { s: '12', c: W, bg: NAVY, at: 'inside' }, collarFeathers: { c: NAVY }, collar: [[W, 2.6]], panels: { wing: [NAVY, NAVY] } },
         { id: 'green', name: 'Action Green', tag: 'Alternate', base: G, num: [NAVY, WG], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(W), swoosh: W,
-          neckTag: { s: '12', c: G, bg: NAVY }, collarFeathers: { c: NAVY }, collar: [[G, 2.6]], panels: { wing: [NAVY, NAVY] } },
+          neckTag: { s: '12', c: G, bg: NAVY, at: 'inside' }, collarFeathers: { c: NAVY }, collar: [[G, 2.6]], panels: { wing: [NAVY, NAVY] } },
         { id: 'wolf', name: 'Wolf Grey Rivalries', tag: 'Rivalries', base: '#C4C7C9', num: [G, NAVY], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#3E9A2A' },
           word: { img: 'SEA_word_name@#002244', h: 0.026 }, swoosh: NAVY, collar: [[NAVY, 2.6]], sleeve: { pattern: { t: 'feathers', c: G } } },
         { id: 'royal', name: '90s Royal', tag: 'Throwback', base: ROY, num: [W], font: 'chamfer', numStyle: 'twill', tv: 'shoulder', swoosh: W, collar: [[G, 0.6], [W, 0.5], [ROY, 1.2]], sleeveLogo: 'SEA' },
