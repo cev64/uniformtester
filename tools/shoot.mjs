@@ -65,10 +65,30 @@ const W = Number(args.w || 900), H = Number(args.h || 1100);
 
 let server = null;
 let url = args.url;
+// Wait for our own Vite to report it is listening. Polling the URL is not
+// enough: if another process grabs the port first, --strictPort makes our
+// server exit and the poll would succeed against someone else's server.
+const startVite = (port) => new Promise((resolve) => {
+  const child = spawn('npx', ['vite', '--port', String(port), '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'], detached: true, env: { ...process.env, NO_COLOR: '1' } });
+  let log = '';
+  const timer = setTimeout(() => resolve(null), 30000);
+  const onData = (d) => {
+    log += d;
+    if (log.includes(`localhost:${port}`)) { clearTimeout(timer); resolve(child); }
+  };
+  child.stdout.on('data', onData);
+  child.stderr.on('data', onData);
+  child.on('exit', () => { clearTimeout(timer); resolve(null); });
+});
 if (!url) {
-  const port = await freePort();
-  server = spawn('npx', ['vite', '--port', String(port), '--strictPort'], { stdio: 'ignore', detached: true });
-  url = `http://localhost:${port}/`;
+  for (let attempt = 0; attempt < 5 && !server; attempt++) {
+    const port = await freePort();
+    server = await startVite(port);
+    url = `http://localhost:${port}/`;
+  }
+  if (!server) throw new Error('could not start vite');
+  server.stdout.resume();
+  server.stderr.resume();
   for (let i = 0; i < 100; i++) {
     try { if ((await fetch(url)).ok) break; } catch { /* starting */ }
     await new Promise((r) => setTimeout(r, 200));
@@ -82,7 +102,7 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto(url + '?debug', { waitUntil: 'networkidle' });
+  await page.goto(url + '?debug', { waitUntil: 'networkidle', timeout: 180000 });
   // hide the UI chrome over the canvas
   await page.addStyleTag({ content: '.stage-label,.stage-tools{display:none!important}' });
   await page.waitForFunction(() => window.__stage0?.player?.loaded && window.__stage0.player.helmet.loaded, null, { timeout: 120000 });
