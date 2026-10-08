@@ -61,11 +61,12 @@
 //              the number colour on light ones.
 //   sweep: { t: 'raglan', c, edge } | { t: 'horn', c }: shoulder graphic across the
 //              torso/sleeve seam (Panthers raglan panel, Rams horn).
-//              { t: 'bullhorn', c, line, tip: [in, up], out }: Texans sleeve stripe. The jersey's
-//              `loop` band runs round the sleeve; on the front its top edge sweeps up into a horn
-//              point (tip: metres from the band's inner top corner, default [0, 0.08]) and `line`
-//              (a loop colour) follows it as a thin crescent; below the horn the front is the
-//              jersey colour.
+//              lift: upward tilt of the projection (default 0.12; higher lays it over the shoulder top).
+//              { t: 'bullhorn', c, line, tip: [a, cm] }: Texans sleeve stripe, painted into the sleeve
+//              texture with the jersey's `loop` band: on the front both band edges sweep up into a
+//              horn point (tip: a = fraction round the arm from the outer side, default 0.36; cm above
+//              the band top, default 8) and `line` (a loop colour) follows the top edge as a thin
+//              crescent; below the horn the front is the jersey colour.
 //   jockTag: true or { size, bg, fg } opts in to the woven tag at the lower left
 //              front; off by default (a tucked game jersey hides it).
 // Optional pants fields: swoosh (colour of the hip swoosh), hipStyle (finish
@@ -442,7 +443,7 @@ export const TEAMS = [
     const logo = { img: 'HOU', faces: 'right', size: 0.14 };
     // chest wordmark: the club's wide squared sans, small, above the number
     // blackletter "H" helmet mark, typeset (not the logo artwork): wide H, red star off its front
-    const H = { t: 'text', s: 'H', font: 'blackletter', scaleX: 1.3, shift: [-0.05, 0.02], star: RED, starAt: [0.27, -0.05, 0.065], size: 0.19 };
+    const H = { t: 'text', s: 'H', font: 'blackletter', scaleX: 1.3, shift: [-0.05, 0.02], star: RED, starAt: [0.27, -0.05, 0.065], size: 0.21, at: [0.52, 0.36] };
     const TXN = (s, c) => ({ s, c, font: 'squareBlock', h: 0.023, tracking: s === 'HOUSTON' ? 0.18 : 0.12, scaleX: 1.2 });
     return {
       id: 'HOU', city: 'Houston', name: 'Texans', conf: 'AFC', div: 'South',
@@ -1359,7 +1360,7 @@ export const TEAMS = [
           ...rams(ROY, SOL, { cap: BK, top: [ROY, 9, 6] }, 1.2) },
         // Fearsome Foursome tribute: royal horns over the shoulders, TV numbers on the sleeves, black names
         { id: 'fearsome', name: 'Fearsome White', tag: 'New 2026', debut: '2026-11-25', base: W, num: [ROY, BK], numO: [0.03, 0], font: 'block', numStyle: 'twill', tv: 'sleeve', swoosh: BK,
-          plateColor: BK, plateOutline: [], sweep: { t: 'horn', c: ROY } },
+          plateColor: BK, plateOutline: [], sweep: { t: 'horn', c: ROY, lift: 0.7 } },
         // 1951 championship tribute: royal satin triple stripes on a Sol jersey
         { id: 'sol', name: 'Classic Sol', tag: '75th Anniversary', base: SOL, num: [ROY], font: 'block', numStyle: 'twill', neckTag: neck, swoosh: ROY, sleeve: { stripes: rep(ROY, 1, 0.7, 3), from: 3 } },
       ],
