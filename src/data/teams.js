@@ -1166,11 +1166,11 @@ export const TEAMS = [
       colors: [GOLD, BK, W], font: 'saints',
       helmets: [
         // metallic old gold, black fleur-de-lis; black centre stripe edged in white
-        { id: 'gold', name: 'Old Gold', tag: 'Primary', shell: GOLD, finish: 'metallic', mask: BK, stripe: sym([W, 0.4], [BK, 3.0]), logo: { img: 'NO', size: 0.11 } },
+        { id: 'gold', name: 'Old Gold', tag: 'Primary', shell: GOLD, finish: 'metallic', mask: BK, stripe: sym([W, 0.4], [BK, 3.0]), logo: { img: 'NO', size: 0.11, at: [0.6, 0.12] } },
         // black shell with gold dots thickening toward the back, gold fleur
-        { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: null, pattern: { t: 'halftone', c: GOLD }, logo: { img: fleurGold, size: 0.11 } },
+        { id: 'black', name: 'Black', tag: 'Alternate', shell: BK, finish: 'gloss', mask: BK, stripe: null, pattern: { t: 'halftone', c: GOLD }, logo: { img: fleurGold, size: 0.11, at: [0.6, 0.12] } },
         // 2025 Color Rush white shell: gold facemask, gold-edged centre stripe, gold fleur
-        { id: 'white', name: 'White', tag: 'Color Rush', shell: W, finish: 'gloss', mask: RG, stripe: sym([BK, 0.35], [RG, 2.4]), logo: { img: 'NO@#CDB46A', size: 0.11 } },
+        { id: 'white', name: 'White', tag: 'Color Rush', shell: W, finish: 'gloss', mask: RG, stripe: sym([BK, 0.35], [RG, 2.4]), logo: { img: 'NO@#CDB46A', size: 0.11, at: [0.6, 0.12] } },
       ],
       jerseys: [
         { id: 'black', name: 'Black', tag: 'Home', base: BK, num: [GOLD, W], numO: [0.022, 0], numStyle: 'twill', tv: 'shoulder', collar: [[GOLD, 3.2]], sleeveLogo: fleurGold, swoosh: GOLD },
@@ -1397,7 +1397,7 @@ export const TEAMS = [
           neckTag: { s: '12', c: NAVY, bg: WG }, feathers: G, collar: [[NAVY, 2.6]], panels: { yoke: [WG, 11, 0] }, sleeve: { top: [WG, 14] } },
         { id: 'white', name: 'White', tag: 'Road', base: W, num: [NAVY, G], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(NAVY), swoosh: G,
           neckTag: { s: '12', c: W, bg: NAVY }, feathers: NAVY, collar: [[W, 2.6]], panels: { yoke: [NAVY, 11, 0] }, sleeve: { top: [NAVY, 14] } },
-        { id: 'green', name: 'Action Green', tag: 'Alternate', base: G, num: [NAVY, W], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(W), swoosh: W,
+        { id: 'green', name: 'Action Green', tag: 'Alternate', base: G, num: [NAVY, WG], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#243D6E' }, tv: 'shoulder', word: word(W), swoosh: W,
           neckTag: { s: '12', c: G, bg: NAVY }, feathers: NAVY, collar: [[G, 2.6]], panels: { yoke: [NAVY, 11, 0] }, sleeve: { top: [NAVY, 14] } },
         { id: 'wolf', name: 'Wolf Grey Rivalries', tag: 'Rivalries', base: '#C4C7C9', num: [G, NAVY], numO: [0.035, 0], numPattern: { t: 'feathers', c: '#3E9A2A' },
           word: { img: 'SEA_word_name@#002244', h: 0.026 }, swoosh: NAVY, collar: [[NAVY, 2.6]], sleeve: { pattern: { t: 'feathers', c: G } } },
