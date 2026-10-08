@@ -72,6 +72,7 @@ const LETTERS = {
   falcons: 'falconsPlate',
   saints: 'plate',
   bucs: 'plate',
+  panthers: 'plate', cardinals: 'roundBlock', niners: 'plate', seahawks: 'plate',
 
 };
 export function letterFont(style) {

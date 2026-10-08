@@ -90,9 +90,17 @@ export const NUMERAL_STYLES = {
   // chamfers, square counters, flagged 1 with no foot, waist bites on 3 and 8
   falcons: { cut: 'chamfer', W: 0.6, th: 0.17, tv: 0.2, m: 0.5, ro: 0.055, ri: 0.02, rt: 0.03, hook: 0.2, notch: 0.4, twoWaist: 0.42, one: { flag: 0.23, base: false } },
   // Saints: square block with clipped corners (big chamfers on 0 6 8 9) and a footed 1
-  saints: { cut: 'chamfer', W: 0.58, th: 0.18, tv: 0.21, ro: 0.13, ri: 0.04, rt: 0.02, one: { flag: 0.17, base: true } },
+  saints: { cut: 'chamfer', W: 0.58, th: 0.18, tv: 0.21, ro: 0.15, ri: 0.04, rt: 0.02, one: { flag: 0.17, base: true } },
   // Buccaneers: heavy block with clipped corners, notched 1 foot
   bucs: { cut: 'chamfer', W: 0.6, th: 0.185, tv: 0.215, ro: 0.12, ri: 0.04, rt: 0.02, one: { flag: 0.17, base: true } },
+  // Panthers: block with clipped (octagonal) corners on 0 6 8 9, footed flagged 1, narrow rectangular counters
+  panthers: { cut: 'chamfer', W: 0.6, th: 0.165, tv: 0.19, ro: 0.13, ri: 0.035, rt: 0.02, one: { flag: 0.17, base: true } },
+  // Cardinals: heavy collegiate block, mild clipped corners, footed 1 (traced from the 2025 sheet)
+  cardinals: { cut: 'chamfer', W: 0.62, th: 0.2, tv: 0.225, ro: 0.1, ri: 0.03, rt: 0.02, one: { flag: 0.17, base: true } },
+  // 49ers: clean square-shouldered block, tiny clipped corners, no foot on the 1
+  niners: { cut: 'chamfer', W: 0.62, th: 0.2, tv: 0.22, ro: 0.06, ri: 0.02, rt: 0.015, one: { flag: 0.17, base: false } },
+  // Seahawks: heavy block with clipped outer corners and square counters
+  seahawks: { cut: 'chamfer', W: 0.62, th: 0.19, tv: 0.215, ro: 0.1, ri: 0.015, rt: 0.02, one: { flag: 0.16, base: false } },
 
 };
 
