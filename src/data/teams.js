@@ -444,6 +444,11 @@ export const TEAMS = [
 
   (() => {
     const B = '#003B7B', GRAY = '#A2AAAD', ANV = '#4A4B4D', BK = '#0E0E0F';
+    // the two UCLA stripes over each shoulder: bars running front to back (edged in `edge` when given)
+    const ucla = (c, edge) => {
+      const one = edge ? [[edge, 0.03], [c, 0.09], [edge, 0.03]] : [[c, 0.15]];
+      return { t: 'bars', stripes: [...one, [null, 0.2], ...one], size: 0.14, skew: -0.1, len: 0.95 };
+    };
     return {
       id: 'IND', city: 'Indianapolis', name: 'Colts', conf: 'AFC', div: 'South',
       colors: [B, W, GRAY], font: 'colts',
@@ -455,14 +460,14 @@ export const TEAMS = [
       ],
       jerseys: [
         // two UCLA stripes over each shoulder, TV numbers on the outside of the sleeves, plain same-colour V collar
-        { id: 'blue', name: 'Blue', tag: 'Home', base: B, num: [W], tv: 'sleeve', loop: sym([W, 1.6], [null, 2.2], [W, 1.6]), loopAt: 17 },
-        { id: 'white', name: 'White', tag: 'Road', base: W, num: [B], tv: 'sleeve', loop: sym([B, 1.6], [null, 2.2], [B, 1.6]), loopAt: 17 },
+        { id: 'blue', name: 'Blue', tag: 'Home', base: B, num: [W], tv: 'sleeve', shoulder: ucla(W) },
+        { id: 'white', name: 'White', tag: 'Road', base: W, num: [B], tv: 'sleeve', shoulder: ucla(B) },
         // black collar and hem bands, one thin white stripe along the top of the shoulder
         { id: 'nights', name: 'Indiana Nights', tag: 'Alternate', base: B, num: [W, BK], numO: [0.02, 0], tv: 'sleeve', collar: [[BK, 2.8]], sleeve: { stripes: [[BK, 3]], from: 0 },
           loop: [[W, 0.7]], loopAt: 20.5 },
         // anthracite: each shoulder stripe is royal blue edged in black; white horseshoe on the sleeves
         { id: 'anvil', name: 'Anvil Strike', tag: 'Rivalries · New', debut: '2026-09-27', base: ANV, num: [B, W, BK], tv: 'sleeve', sleeveLogo: 'IND',
-          loop: [[BK, 0.4], [B, 1.1], [BK, 0.4], [null, 1.9], [BK, 0.4], [B, 1.1], [BK, 0.4]], loopAt: 17 },
+          shoulder: ucla(B, BK) },
       ],
       pants: [
         { id: 'white', name: 'White', base: W, stripe: [[B, 1.2]] },
@@ -486,7 +491,7 @@ export const TEAMS = [
   (() => {
     const T = '#006778', BK = '#101820', GOLD = '#D7A22A', ALB = '#EFE6D2';
     const logo = { img: 'JAX', faces: 'right', size: 0.14 };
-    const SLV = 5;   // cm of black (or teal) cuff on the sleeve, measured up from the hem
+    const SLV = 9;   // cm of black (or teal) cuff on the sleeve, measured up from the hem
     return {
       id: 'JAX', city: 'Jacksonville', name: 'Jaguars', conf: 'AFC', div: 'South',
       colors: [T, BK, GOLD], font: 'jaguars',
@@ -540,7 +545,7 @@ export const TEAMS = [
       ],
       jerseys: [
         { id: 'blue', name: 'Titans Blue', tag: 'Home · New 2026', base: LB, num: [W, RED], tv: 'shoulder', word: { s: 'TITANS', c: W, font: 'slab', tracking: 0.1 }, swoosh: NAVY, sleeve: sleeveStrings(LB) },
-        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [LB, RED], tv: 'shoulder', word: { s: 'TENNESSEE', c: LB, font: 'squareSans', tracking: 0.25 }, swoosh: NAVY, sleeve: { stripes: [[RED, 0.7], [W, 0.5], ...rep(NAVY, 0.3, 0.45, 6, LB)], from: 2 } },
+        { id: 'white', name: 'White', tag: 'Road · New 2026', base: W, num: [LB, RED], tv: 'shoulder', word: { s: 'TENNESSEE', c: LB, font: 'squareBlock', tracking: 0.14, scaleX: 1.2 }, swoosh: NAVY, sleeve: { stripes: [[RED, 0.7], [W, 0.5], ...rep(NAVY, 0.3, 0.45, 6, LB)], from: 2 } },
         { id: 'music', name: 'Music City', tag: 'Rivalries · New', debut: '2026-11-15', base: NAVY, num: [LB, W], numO: [0.02, 0], numShadow: { color: '#2F6FB5', dx: 0.05, dy: 0.04 }, tv: 'shoulder', word: { s: 'Music City', c: W, script: true },
           sleeve: { stripes: [[W, 0.5], ...rep(LB, 0.3, 0.45, 6, NAVY)], from: 2 } },
       ],
@@ -565,9 +570,9 @@ export const TEAMS = [
   (() => {
     const OR = '#FB4F14', NAVY = '#0A2343', RB = '#1E4FD0';
     const logo = { img: 'DEN', faces: 'right', size: 0.15 };
-    const DW = (c) => ({ img: `DEN_word_name@${c}`, h: 0.0165 });
+    const DW = (c) => ({ img: `DEN_word_name@${c}`, h: 0.021 });
     const TAG = (bg) => ({ s: 'BRONCOS COUNTRY', c: W, bg, font: 'condensed' });
-    const peak = (fill, spike) => ({ t: 'peak', fill, spike, size: 0.12 });
+    const peak = (fill, spike) => ({ t: 'peak', fill, spike, size: 0.15 });
     return {
       id: 'DEN', city: 'Denver', name: 'Broncos', conf: 'AFC', div: 'West',
       colors: [OR, NAVY, W], font: 'broncos',

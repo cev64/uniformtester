@@ -356,6 +356,26 @@ export function paintLogo(logo, facing, size = 512) {
       fillStroke(ctx, (g) => { path(g); g.closePath(); }, logo.fill, logo.stroke, S * 0.035);
       break;
     }
+    case 'bars': {
+      // UCLA shoulder stripes (Colts): parallel bars running front to back over
+      // the shoulder. stripes: [[colour|null, width as a fraction of the canvas], ...]
+      // centred left to right, len = fraction of the canvas height, skew = lean (x per y)
+      const total = logo.stripes.reduce((a, [, w]) => a + w, 0);
+      const len = logo.len ?? 0.9, sk = logo.skew ?? 0;
+      let x = -total / 2;
+      for (const [col, w] of logo.stripes) {
+        if (col) {
+          ctx.fillStyle = col;
+          const x0 = (x * dirX) * S + cx, x1 = ((x + w) * dirX) * S + cx;
+          const t = -len / 2 * S, b = len / 2 * S, d = sk * len * S / 2 * dirX;
+          ctx.beginPath();
+          ctx.moveTo(x0 + d, cy + t); ctx.lineTo(x1 + d, cy + t); ctx.lineTo(x1 - d, cy + b); ctx.lineTo(x0 - d, cy + b);
+          ctx.closePath(); ctx.fill();
+        }
+        x += w;
+      }
+      break;
+    }
     case 'peak': {
       // Broncos shoulder graphic: a wedge of colour over the shoulder with a
       // jagged "mountain" spike under it. Outer edge of the arm is +x for 'right'.
