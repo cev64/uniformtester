@@ -42,7 +42,8 @@
 //              Text wordmarks also take word.arch and word.scaleX.
 //   swoosh: sleeve swoosh colour, or false; default white on dark jerseys,
 //              the number colour on light ones.
-//   jockTag: { size, bg, fg } for the woven tag at the lower left front, or false.
+//   jockTag: true or { size, bg, fg } opts in to the woven tag at the lower left
+//              front; off by default (a tucked game jersey hides it).
 // Optional pants fields: swoosh (colour of the hip swoosh), hipStyle (finish
 //   of the hip logos, default 'pressed').
 // Helmet logo: { img: key, faces: 'left'|'right' } uses the real team mark;
