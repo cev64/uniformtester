@@ -129,6 +129,17 @@ rear helmet marks (`nameplate.rear`, `rearLogo`; HOU Rivalries "TEXANS"); `helme
 0.04; SEA "12" tag inside; KC white pants red-gold-red; NE shoulder stripes `sweep: { t: 'stripes' }`
 front and back; player rebuilt with a flat back neckline and a level waistband front.
 
+Round 5 (user feedback after the first merge to main): smooth back neck (`back_yoke()` in
+build_player.py; the round-4 lift had built a ledge behind the neck); relaxed standing pose (arms
+closer, elbows bent ~17°, palms to thighs, curled fingers); helmet with much less visible black (jaw
+pads inside the shell, slim forehead pad, thinner trim, white stock chinstrap by default); per-team
+rear/front bumper colours and lettering from 2025 game photos (38 helmets; alternates and NE, DAL rear,
+IND/KC/NYG/SF/SEA fronts left at default); matte cloth pants (`PANTS_FINISH` in player.js, silver keeps
+a little lustre; optional `pants.finish: 'metallic'`); camera zoom-to-cursor, right-drag pan, 0.35 m
+minimum distance; Chiefs Lamar Hunt / AFL patch (`KC_LH.png`, user-supplied licensed artwork).
+Engine gaps from the bumper pass: blank rear text needs a `' '` workaround; script lettering (PIT)
+uses the generic sans; no logo on the front bumper (CIN "B").
+
 Remaining (all small or blocked on sources):
 1. A faint lighter rectangle and a slight V in the waistband stitch line at the front of the pants
    (pants UVs measured along each thigh; measure the waistband UVs by height in build_player.py).
