@@ -746,7 +746,10 @@ def pad_arch(bm):
     fabric round the sides and back only enough for the collar band to hug
     the neck there, leaving the front V where it is."""
     C = Vector((0, NECK.y + 0.005))
-    H_SIDE, H_BACK = SHZ + 0.07, SHZ + 0.075
+    # The back of the arch is as high as the pads' back arch: the back neckline
+    # runs nearly level (1-2 cm under the sides) instead of dipping ~5 cm to
+    # the centre, which bunched the back collar into a V seen from behind.
+    H_SIDE, H_BACK = SHZ + 0.07, SHZ + 0.11
     NB = 72
     def ang(co):
         return math.atan2(co.x - C.x, -(co.y - C.y))
@@ -772,7 +775,7 @@ def pad_arch(bm):
         f = smooth01(0.5, 1.35, abs(th))
         if f <= 0:
             continue
-        H = H_SIDE + (H_BACK - H_SIDE) * smooth01(2.2, 3.0, abs(th))
+        H = H_SIDE + (H_BACK - H_SIDE) * smooth01(1.2, 3.0, abs(th))
         b = int((th + math.pi) / (2 * math.pi) * NB) % NB
         r_in = neck_r[b] + 0.013
         r = math.hypot(co.x - C.x, co.y - C.y)
@@ -804,6 +807,52 @@ pants = make_garment('Pants',
     lambda c, i: (not i['arm']) and c.z < WAIST_Z + 0.05 and c.z > KNEE['L'].z - PANTS_HEM - 0.08,
     pants_cuts, pants_offset, smooth_iters=12,
     tension=(lambda c: (c.z > HIP['L'].z - 0.22 and abs(c.x) < 0.11) or (KNEE['L'].z + 0.07 < c.z < HIP['L'].z - 0.04), 30), min_off=0.006, detail=pants_detail)
+
+def waistband(ob, depth=0.07, taper=0.15, lift=0.03, YC=0.0, NBIN=120):
+    """The waistband is an elastic band pulled level and taut round the waist.
+    The offset along the belly's downward-facing normals drops the top edge
+    ~5 mm at the front centre and the fabric under it follows the belly in, so
+    the front of the band faced the floor and read as a grey patch once the
+    belt stopped covering it. Lift the edge back level and push the band out
+    to a near-vertical line below its top edge (outward only, fading out down
+    the front)."""
+    bm = bmesh.new(); bm.from_mesh(ob.data)
+    polar = lambda co: (math.atan2(co.x, -(co.y - YC)), math.hypot(co.x, co.y - YC))
+    bin_of = lambda a: int((a + math.pi) / (2 * math.pi) * NBIN) % NBIN
+    def fill(arr, empty):
+        for i in range(NBIN):
+            if arr[i] == empty:
+                arr[i] = arr[i - 1] if arr[i - 1] != empty else arr[(i + 1) % NBIN]
+        for _ in range(2):
+            arr[:] = [(arr[i - 1] + 2 * arr[i] + arr[(i + 1) % NBIN]) / 4 for i in range(NBIN)]
+    top = [v for v in bm.verts if v.is_boundary and v.co.z > WAIST_Z - 0.02]
+    ze = [9.0] * NBIN
+    for v in top:
+        b = bin_of(polar(v.co)[0])
+        ze[b] = min(ze[b], v.co.z)
+    fill(ze, 9.0)
+    for v in bm.verts:
+        dz = WAIST_Z - v.co.z
+        if -0.01 < dz < lift:
+            v.co.z += max(0.0, WAIST_Z - ze[bin_of(polar(v.co)[0])]) * (1 - smooth01(0.0, lift, max(dz, 0.0)))
+    rt = [0.0] * NBIN
+    for v in bm.verts:
+        if v.co.z > WAIST_Z - 0.012:
+            a, r = polar(v.co)
+            rt[bin_of(a)] = max(rt[bin_of(a)], r)
+    fill(rt, 0.0)
+    for v in bm.verts:
+        dz = WAIST_Z - v.co.z
+        if not (0 <= dz < depth):
+            continue
+        a, r = polar(v.co)
+        target = rt[bin_of(a)] - taper * dz
+        if target > r:
+            k = (target - r) * (1 - smooth01(0.0, depth, dz)) / r
+            v.co.x *= 1 + k
+            v.co.y = YC + (v.co.y - YC) * (1 + k)
+    bm.to_mesh(ob.data); bm.free()
+waistband(pants)
 
 # ─── socks ───
 socks_cuts = []
@@ -1207,6 +1256,10 @@ def neck_loop(obj):
             break
         prev, cur = cur, nxt[0]
         loop.append(cur)
+    # walk a fixed way round (toward -x first) so the collar's u and front_uv
+    # don't flip when the neckline's mesh changes
+    if sum(v.co.x for v in loop[1:8]) > 0:
+        loop = loop[:1] + loop[1:][::-1]
     pts = [v.co.copy() for v in loop]
     nrm = [v.normal.copy() for v in loop]
     bm.free()
