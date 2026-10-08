@@ -4,7 +4,7 @@ import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { paintFabricNormal, paintLogo, shade, luminance } from './paint.js';
 import { paintTorso, paintSleeveTex, paintPantsTex, paintSocksTex, paintCollar, letteringLayers, eyeCanvas, swooshCanvas, jockTagCanvas, wingCanvas } from './garments.js';
-import { fabricMaterial, torsoDetail, torsoZones, sleeveDetail, sleeveZones, pantsDetail, collarDetail } from './fabric.js';
+import { fabricMaterial, setFabric, torsoDetail, torsoZones, sleeveDetail, sleeveZones, pantsDetail, collarDetail } from './fabric.js';
 import { buildApplique, imageApplique } from './applique.js';
 import { Helmet } from './helmet.js';
 import { loadLogo } from './logos.js';
@@ -111,6 +111,20 @@ const FINISH = {
   pressed: { micro: ['knit'], microStrength: 0.22, roughness: 0.4, sheen: 0, clearcoat: 0.25, clearcoatRoughness: 0.45, cavity: 0.15 },
   embroidered: { micro: ['satin'], microStrength: 0.8, roughness: 0.55, sheen: 0.7, sheenRoughness: 0.35, cavity: 0.5 },
   print: { micro: ['knit'], microStrength: 0.45, roughness: 0.8, sheen: 0.3, cavity: 0.4 },
+};
+
+// Game pants (Nike Vapor): nylon/spandex stretch twill. A broad, soft sheen
+// at grazing angles from the yarns, a weak and wide specular lobe (no
+// plastic hot spot), the diagonal twill visible up close. The sheen is tinted
+// by the dye; silver (metallic) pants keep a little more lustre.
+const PANTS_FINISH = {
+  cloth: { microStrength: 0.75, cavity: 0.42, roughness: 0.68, specularIntensity: 0.55, sheen: 0.75, sheenRoughness: 0.5 },
+  metallic: { microStrength: 0.65, cavity: 0.36, roughness: 0.56, specularIntensity: 0.8, sheen: 0.95, sheenRoughness: 0.42 },
+};
+const isMetallicPants = (p) => {
+  if (p.finish) return p.finish === 'metallic';
+  const hsl = new THREE.Color(p.base).getHSL({});
+  return hsl.s < 0.2 && hsl.l > 0.55 && hsl.l < 0.86;
 };
 
 // Built appliqués are cached: repainting the same uniform is instant.
@@ -250,9 +264,8 @@ export class Player {
         microStrength: 0.9, roughness: 0.85, sheen: 0.35, aniso: A }),
       sleeve: fabric({ micro: ['stretch'], cm: cm(reg.sleeve, 1.4), macro: sleeveDetail(meta, A), zone: sleeveZones(meta, A),
         microStrength: 0.8, smooth: 0.3, roughness: 0.66, sheen: 0.55, aniso: A }),
-      // game pants: glossy stretch twill
-      pants: fabric({ micro: ['pantsTwill'], cm: cm(reg.pants), macro: pantsDetail(meta, A, ACCESSORIES.belt ? undefined : []), microStrength: 0.45, cavity: 0.3,
-        roughness: 0.4, sheen: 0.8, sheenRoughness: 0.35, sheenColor: new THREE.Color(0.32, 0.32, 0.32), aniso: A }),
+      // game pants: satin stretch twill (finish set per pants in setUniform)
+      pants: fabric({ micro: ['pantsTwill'], cm: cm(reg.pants), macro: pantsDetail(meta, A, ACCESSORIES.belt ? undefined : []), ...PANTS_FINISH.cloth, aniso: A }),
       socks: fabric({ micro: ['rib'], cm: cm(reg.socks), microStrength: 0.9, cavity: 0.6, roughness: 0.9, sheen: 0.35, aniso: A }),
       // matte skin with a fine pore/crease normal map so it doesn't read as plastic
       skin: new THREE.MeshPhysicalMaterial({ roughness: 0.6, sheen: 0.25, sheenRoughness: 0.5, sheenColor: new THREE.Color(0.3, 0.18, 0.12), clearcoat: 0.06, clearcoatRoughness: 0.55, normalMap: skinNormal(), normalScale: new THREE.Vector2(0.22, 0.22) }),
@@ -342,6 +355,15 @@ export class Player {
     m.sleeve.map = T(paintSleeveTex(jersey, meta));
     m.pants.map = T(paintPantsTex(pants, meta));
     m.socks.map = T(paintSocksTex(socks, meta));
+    {
+      const metallic = isMetallicPants(pants), f = PANTS_FINISH[metallic ? 'metallic' : 'cloth'];
+      for (const k of ['roughness', 'specularIntensity', 'sheen', 'sheenRoughness']) m.pants[k] = f[k];
+      setFabric(m.pants, f);
+      // dyed yarn: the sheen takes the colour of the cloth, lifted toward white
+      // (a fixed grey sheen washed dark pants out and looked like a coating)
+      const base = new THREE.Color(pants.base);
+      m.pants.sheenColor.copy(base).lerp(new THREE.Color(1, 1, 1), metallic ? 0.55 : 0.3).multiplyScalar(metallic ? 0.7 : 0.5);
+    }
     // cloth never reflects all the light: keep whites a touch below 1 so shading reads on them
     for (const k of ['jersey', 'sleeve', 'pants', 'socks']) { m[k].color.set(ALBEDO); m[k].needsUpdate = true; }
 
