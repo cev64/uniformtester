@@ -67,7 +67,7 @@ export const TEAMS = [
       helmets: [
         { id: 'white', name: 'White', tag: 'Primary', shell: W, finish: 'gloss', mask: '#E4E6E8', stripe: sym([R, 0.8], [RED, 2.2]), logo },
         { id: 'red', name: 'Red', tag: 'Alternate', shell: RED, finish: 'gloss', mask: '#E4E6E8', stripe: sym([W, 0.8], [R, 2.2]), logo },
-        { id: 'charge', name: '"The Charge"', tag: 'New 2026', debut: '2026-09-27', shell: R, finish: 'gloss', mask: R, stripe: null,
+        { id: 'charge', name: '"The Charge"', tag: 'New 2026', debut: '2026-09-27', shell: R, finish: 'metallic', mask: R, stripe: null,
           logo: { t: 'streak', fill: RED, stroke: W } },
         { id: 'coldfront', name: 'Cold Front', tag: 'Rivalries', shell: W, finish: 'gloss', mask: W, stripe: null,
           logo: { img: 'BUF@#A9B0B8', faces: 'left', size: 0.14 } },
@@ -115,7 +115,7 @@ export const TEAMS = [
       colors: [AQUA, OR, '#005778'], font: 'round',
       helmets: [
         { id: 'white', name: 'White', tag: 'Primary', shell: W, finish: 'gloss', mask: '#D9DCDF', stripe: sym([OR, 0.6], [AQUA, 1.4]), logo },
-        { id: 'dark', name: 'Dark Water', tag: 'Rivalries', shell: '#1A1D24', finish: 'gloss', mask: '#9EA3A8', stripe: null, logo },
+        { id: 'dark', name: 'Dark Water', tag: 'Rivalries', shell: '#12151D', finish: 'gloss', mask: '#3A3F48', stripe: null, logo },
         { id: 'throwback', name: '1966 Throwback', tag: 'Throwback', shell: W, finish: 'gloss', mask: '#D9DCDF', stripe: sym([OR, 0.9], [null, 0.5], [AQUA, 1.4]), logo: { img: 'MIA_tb', faces: 'left', size: 0.12 } },
       ],
       jerseys: [
@@ -158,7 +158,7 @@ export const TEAMS = [
       colors: [NAVY, RED, SIL], font: 'blockRound',
       helmets: [
         { id: 'silver', name: 'Silver', tag: 'Primary', shell: '#C6CACE', finish: 'metallic', mask: RED, stripe: null, logo: { img: 'NE', faces: 'right', size: 0.15 } },
-        { id: 'white', name: "Nor'easter White", tag: 'Rivalries', shell: W, finish: 'gloss', mask: '#C6CACE', stripe: null, logo: { img: 'NE@#4B5D72', faces: 'right', size: 0.15 } },
+        { id: 'white', name: "Nor'easter White", tag: 'Rivalries', shell: W, finish: 'matte', mask: '#C6CACE', stripe: null, logo: { img: 'NE@#4B5D72', faces: 'right', size: 0.15 } },
         { id: 'pat', name: 'Pat Patriot', tag: 'Throwback', shell: W, finish: 'gloss', mask: '#E4E6E8', stripe: [[RED, 2.6]], logo: { img: 'NE_pat', faces: 'left', size: 0.11 } },
       ],
       jerseys: [
