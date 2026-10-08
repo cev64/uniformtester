@@ -103,6 +103,15 @@
 //   sweep: { t: 'raglan', c, edge } | { t: 'horn', c }: shoulder graphic across the
 //              torso/sleeve seam (Panthers raglan panel, Rams horn).
 //              lift: upward tilt of the projection (default 0.12; higher lays it over the shoulder top).
+//              { t: 'stripes', bands: [[colour, cm], ...], front, back, cut, lift, out }: a group of
+//              parallel stripes (bands listed from the neck side out) that comes up the front along the
+//              sleeve seam, over the top of the shoulder pad and down the back (Patriots). Each half's
+//              centre line is [x0, x1, y1] in metres (x out from the centre line, y above the shoulder
+//              joint, as in backShoulder): vertical over the pad top at x0, curving to its end at
+//              [x1, y1]; defaults front [0.205, 0.165, -0.09], back [0.205, 0.17, -0.03]. The ends are cut
+//              along a line rising outward by `cut` (m per m, default 0.25). Projected from the front and
+//              from behind with upward tilt `lift` (default 0.35) and outward tilt `out` (default 0);
+//              replaces a `loop`. A jersey with its own backShoulder shares that projection.
 //              { t: 'bullhorn', c, line, tip: [a, cm] }: Texans sleeve stripe, painted into the sleeve
 //              texture with the jersey's `loop` band: on the front both band edges sweep up into a
 //              horn point (tip: a = fraction round the arm from the outer side, default 0.36; cm above
@@ -241,14 +250,14 @@ export const TEAMS = [
       ],
       jerseys: [
         { id: 'navy', name: 'Navy', tag: 'Home', numStyle: 'twill', base: NAVY, num: [W, RED, SIL], numO: [0.03, 0.03], word: { img: 'NE_word@white', h: 0.03 }, neckTag: { s: 'WE ARE ALL PATRIOTS', c: RED, font: 'condensed', at: 'inside' }, plateFont: 'heavyBlock', plateBar: true,
-          sleeveLogo: 'NE', loop: sym([RED, 1.3], [W, 1], [RED, 1.3]), loopAt: 16.5 },
+          sleeveLogo: 'NE', sweep: { t: 'stripes', bands: [[RED, 3.4], [W, 2.6], [RED, 3.4]] } },
         { id: 'white', name: 'White', tag: 'Road', numStyle: 'twill', base: W, num: [NAVY, SIL, RED], numO: [0.025, 0.03], word: { img: 'NE_word@#002244', h: 0.03 }, neckTag: { s: 'WE ARE ALL PATRIOTS', c: NAVY, font: 'condensed', at: 'inside' }, plateFont: 'heavyBlock',
-          sleeveLogo: 'NE', loop: sym([RED, 1.3], [NAVY, 1], [RED, 1.3]), loopAt: 16.5 },
+          sleeveLogo: 'NE', sweep: { t: 'stripes', bands: [[RED, 3.4], [NAVY, 2.6], [RED, 3.4]] } },
         { id: 'noreaster', name: "Nor'easter", tag: 'Rivalries', numStyle: 'pressed', base: STORM, num: [W, NAVY], numO: [0.05, 0], numShadow: { color: NAVY, dx: 0.035, dy: 0.035 },
           numPattern: { t: 'dots', c: '#9AA6B6', step: 0.04, r: 0.2 }, collar: [[STORM, 2.6]], collarStars: { c: RED, n: 3 }, neckTag: { s: 'We Are All Patriots', c: W, bg: RED, font: 'script', at: 'inside' }, swoosh: RED,
-          sleeveText: { L: 'N', R: 'E', c: [W, NAVY], font: 'slab' }, loop: sym([SIL, 1.2], [NAVY, 0.8]), loopAt: 16.5 },
+          sleeveText: { L: 'N', R: 'E', c: [W, NAVY], font: 'slab' }, sweep: { t: 'stripes', bands: [[SIL, 3.4], [NAVY, 2.2], [SIL, 3.4]] } },
         { id: 'red', name: 'Pat Patriot Red', tag: 'Throwback', numStyle: 'twill', base: RED, num: [W, BLUE], font: 'block', tv: 'sleeve',
-          loop: sym([BLUE, 1.2], [W, 1.2], [BLUE, 1.2]), loopAt: 16.5 },
+          sweep: { t: 'stripes', bands: [[BLUE, 3], [W, 3], [BLUE, 3]] } },
       ],
       pants: [
         { id: 'silver', name: 'Silver', base: SIL, stripe: sym([RED, 0.7], [NAVY, 1.6]), swoosh: NAVY },

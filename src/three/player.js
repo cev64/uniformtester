@@ -152,6 +152,38 @@ function tex(canvas, aniso) {
   return t;
 }
 
+// A group of parallel stripes along a curve, for sweep { t: 'stripes' } (Patriots shoulder stripes).
+// Drawn in one side's view metres through P ([x, y] → canvas px). The centre line rises vertically
+// over the shoulder top at x0 (from far above, so the front and back halves meet on the top of the
+// pad) and curves down to its end at [x1, y1]; bands ([colour, cm], inside out) are laid across it
+// and cut along a line through the end rising outward by `cut` (m per m), like the sleeve seam.
+function stripeGroup(ctx, P, [x0, x1, y1], top, bands, cut = 0.25) {
+  const tot = bands.reduce((a, [, w]) => a + w, 0) / 100;
+  const T = [x0, top], K = [x0, y1 + (top - y1) * 0.45], E = [x1 + (x1 - x0) * 0.15, y1 - 0.03];
+  const at = (t, off) => {
+    const u = 1 - t, p = [u * u * T[0] + 2 * u * t * K[0] + t * t * E[0], u * u * T[1] + 2 * u * t * K[1] + t * t * E[1]];
+    const d = [2 * u * (K[0] - T[0]) + 2 * t * (E[0] - K[0]), 2 * u * (K[1] - T[1]) + 2 * t * (E[1] - K[1])];
+    const l = Math.hypot(...d) || 1;
+    return P([p[0] - (d[1] / l) * off, p[1] + (d[0] / l) * off]);
+  };
+  ctx.save();
+  ctx.beginPath();   // keep what lies above the cut through the end point
+  const [ax, ay] = P([x1 - 1, y1 - cut]), [bx, by] = P([x1 + 1, y1 + cut]), [cx, cy] = P([x1 + 1, top + 1]), [dx, dy] = P([x1 - 1, top + 1]);
+  ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(cx, cy); ctx.lineTo(dx, dy); ctx.closePath();
+  ctx.clip();
+  let o = -tot / 2;
+  for (const [col, w] of bands) {
+    const a = o, b = o + w / 100 + 0.0008;   // a hair of overlap hides seams between bands
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    for (let i = 0; i <= 48; i++) ctx[i ? 'lineTo' : 'moveTo'](...at(i / 48, a));
+    for (let i = 48; i >= 0; i--) ctx.lineTo(...at(i / 48, b));
+    ctx.closePath(); ctx.fill();
+    o += w / 100;
+  }
+  ctx.restore();
+}
+
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 let modelPromise = null;
 function loadModel() {
@@ -485,6 +517,8 @@ export class Player {
   // (+x = the player's left) and projected from the front, angled out so they reach the outer sleeve:
   //   { t: 'raglan', c, edge }: a tapered panel along the raglan seam from the collar to the underarm (Panthers)
   //   { t: 'horn', c }: a horn from the collar over the cap, curling down the outer sleeve to a point (Rams)
+  //   { t: 'stripes', bands, front, back, cut, lift, out }: a stripe group over the shoulder (Patriots),
+  //     front and back halves meeting on the pad top (stripeGroup; the back half in backShoulderPanel)
   //   lift (either): upward tilt of the projection (default 0.12); higher lays it over the top of the shoulder
   //   ({ t: 'bullhorn' } is painted into the sleeve texture with the loop band: garments.js)
   sweepPanel(spec, torso, sleeves) {
@@ -504,7 +538,8 @@ export class Player {
     const fr = hem.filter((q) => q.z >= zc);
     const xi = Math.min(...fr.map((q) => q.x)), xo = Math.max(...fr.map((q) => q.x));
     const yh = fr.reduce((a, q) => a + q.y, 0) / fr.length;
-    const x0 = 0.03, x1 = xo + 0.07, yT = neckY + 0.02, yB = yh - 0.04, ppm = 2600;
+    const stripes = spec.t === 'stripes';
+    const x0 = 0.03, x1 = xo + 0.07, yT = stripes ? sh.y + 0.22 : neckY + 0.02, yB = yh - 0.04, ppm = 2600;
     for (const sx of [1, -1]) {
       const W = Math.round((x1 - x0) * ppm), H = Math.round((yT - yB) * ppm);
       const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -524,6 +559,9 @@ export class Player {
         };
         if (spec.edge) { ctx.fillStyle = spec.edge; shape(0.005); }
         ctx.fillStyle = spec.c; shape(0);
+      } else if (stripes) {
+        const [a, b, c] = spec.front || [0.205, 0.165, -0.09];
+        stripeGroup(ctx, P, [a, b, sh.y + c], yT, spec.bands, spec.cut);
       } else if (spec.t === 'horn') {
         ctx.fillStyle = spec.c;
         ctx.beginPath();
@@ -539,7 +577,7 @@ export class Player {
       this.textures.push(t);
       const hit = { point: new THREE.Vector3(sx * (x0 + x1) / 2, (yT + yB) / 2, 0.05) };
       this.decal([...torso, ...sleeves], hit, x1 - x0, yT - yB, t,
-        { axis: new THREE.Vector3(sx * (spec.t === 'horn' ? 0.6 : 0.35), spec.lift ?? 0.12, 1), depth: 0.5, finish: 'print', minDot: 0.12, order: 1 });
+        { axis: new THREE.Vector3(sx * (stripes ? spec.out ?? 0 : spec.t === 'horn' ? 0.6 : 0.35), spec.lift ?? (stripes ? 0.35 : 0.12), 1), depth: 0.5, finish: 'print', minDot: 0.12, order: 1 });
     }
   }
 
@@ -554,6 +592,8 @@ export class Player {
   backShoulderPanel(jersey, torso, sleeves) {
     const sh = this.J['upperarm01.L'];
     let spec = jersey.backShoulder;
+    const stripes = jersey.sweep?.t === 'stripes' ? jersey.sweep : null;
+    if (!spec && stripes) spec = { shapes: [], out: stripes.out ?? 0, lift: stripes.lift ?? 0.35 };
     if (!spec) {
       const [band, accent] = jersey.panels.wing;
       spec = { shapes: [
@@ -568,6 +608,7 @@ export class Player {
       const ctx = c.getContext('2d');
       // seen from behind the decal's +u runs toward world -x: the left shoulder's outer end is at u = 0
       const P = ([x, y]) => [(sx > 0 ? x1 - x : x - x0) * ppm, (yT - sh.y - y) * ppm];
+      if (stripes) stripeGroup(ctx, P, stripes.back || [0.205, 0.17, -0.03], yT - sh.y, stripes.bands, stripes.cut);
       for (const [col, pts, r = 0] of spec.shapes) {
         ctx.fillStyle = col;
         ctx.beginPath();
@@ -735,7 +776,7 @@ export class Player {
     // torso panel at the seam, so they are condensed to numBackMaxW (default 1.05 x the outer height).
     const numMaxW = jersey.numBackMaxW ?? 1.05 * Hout;
     this.lettering(torso, back(numTop - numH / 2), num, numH, backColors, font, { ...numOpts, maxW: numMaxW });
-    if (jersey.backShoulder || jersey.panels?.wing) this.backShoulderPanel(jersey, torso, sleeves);
+    if (jersey.backShoulder || jersey.panels?.wing || jersey.sweep?.t === 'stripes') this.backShoulderPanel(jersey, torso, sleeves);
 
     // TV numbers: on top of the shoulders, or on the outside of the sleeves
     for (const s of ['L', 'R']) {
